@@ -33,21 +33,31 @@ npm.cmd run dev
 Electron 44 的 npm 包没有自动下载二进制的 install hook，必须显式执行官方下载器。不要复用调查工具的 node_modules。
 
 ```powershell
+npm.cmd run format:check
 npm.cmd run typecheck
 npm.cmd test
-npm.cmd run smoke:dev
-npm.cmd run build
-npm.cmd run smoke:built
-npm.cmd run package:win:x64
-npm.cmd run smoke:packaged
 npm.cmd run docs:check
 ```
+
+生产源码、测试、scripts 和根级受管配置使用仓库 Prettier 配置；主动整理执行 `npm.cmd run format`，不会自动夹进 build。Markdown、lockfile、历史调查、实验工具、证据和 generated artifacts 不参与格式化，不使用全目录 `prettier .`。
+
+需要完整原生平台验收时执行：
+
+```powershell
+npm.cmd run validate:foundation
+```
+
+该命令按当前 OS/Node 架构顺序执行 format:check → typecheck → test → docs:check → smoke:dev → 一次生产 build → smoke:built → builder → smoke:packaged，任何失败都停止。开发态构建不能复用为生产产物，因此仍保留。运行期间不要修改源码，也不要并行运行会覆盖 `out/` 或 `dist/` 的命令。
+
+独立使用 `npm.cmd run package:win:x64` 仍会先重新 build，再打包，不信任已有产物；`smoke:built` 和 `smoke:packaged` 单独执行时要求已有对应最新产物。日常按变更选择最小验证层级，不为每次局部修改运行完整链路，详见 [开发流程](docs/DEVELOPMENT-PROCESS.md)。
 
 目录包位于 `dist/win-unpacked/RefAtlas.exe`；`--dir` 保留 ASAR，不生成安装器、不发布、不签名。开发／诊断页面只验证基础设施，不读取数据集。smoke 使用隐藏窗口、120 秒总超时、明确退出码和自动清理；可重复报告保存于被忽略的 `artifacts/`。
 
 macOS 在对应原生 x64／arm64 机器使用相同安装步骤（确认当地系统 7890 代理后设置当前 shell 的 HTTP_PROXY、HTTPS_PROXY、NO_PROXY），分别执行 `npm run package:mac:x64` 或 `npm run package:mac:arm64`，再执行 `npm run smoke:packaged`。脚本要求 OS 和 Node 架构与目标一致；本轮未在 macOS 执行，不新增远程 workflow。
 
 [Phase 1A 交付与局限](docs/investigations/phase-1a-foundation.md)、[性能口径](docs/PERFORMANCE.md)。
+
+[工程规范与工具链清理](docs/investigations/phase-1a-development-policy-cleanup.md)记录 formatter、测试审阅和验证编排，不改变平台 gate 或已接受架构。
 
 贡献前阅读 [AGENTS.md](AGENTS.md)。保留 [MIT 许可证](LICENSE)。
 

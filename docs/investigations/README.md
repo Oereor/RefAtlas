@@ -9,3 +9,4 @@
 
 - [Phase 1A 桌面基础交付](phase-1a-foundation.md)：Windows x64 真实开发／构建／ASAR 打包验证、兼容组合和剩余门槛；工具链长期接受仍待用户评审。
 - [Phase 1A 测量](evidence/phase-1a-measurements.json)、[Phase 1A 官方来源与版本](evidence/phase-1a-sources.json)：紧凑证据快照，不是永久接口或预算。
+- [Phase 1A 工程规范与工具链清理](phase-1a-development-policy-cleanup.md)：formatter 范围、35 项原始测试审阅、昂贵命令政策及去重验证编排；不改变架构或平台 gate。

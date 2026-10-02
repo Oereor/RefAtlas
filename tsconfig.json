@@ -10,5 +10,13 @@
     "types": ["node", "electron-vite/node"],
     "lib": ["ES2022", "DOM"]
   },
-  "include": ["src/main/**/*.ts", "src/preload/**/*.ts", "src/utility/**/*.ts", "src/shared/**/*.ts", "tests/**/*.ts", "electron.vite.config.ts", "vitest.config.ts"]
+  "include": [
+    "src/main/**/*.ts",
+    "src/preload/**/*.ts",
+    "src/utility/**/*.ts",
+    "src/shared/**/*.ts",
+    "tests/**/*.ts",
+    "electron.vite.config.ts",
+    "vitest.config.ts"
+  ]
 }

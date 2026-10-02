@@ -16,3 +16,23 @@
 - 新文档和人类可读说明采用中文，必要标识符保留原文。
 
 `tools/investigation/` 独立依赖、明确非生产；不得将实验表、采样规则或合成边作为生产真相。禁止提交依赖、数据库、数据副本及大型产物。未经请求不提交、不建分支、不推进实现阶段。
+
+## Formatter Policy
+
+- 生产源码、测试、scripts 和受管配置使用仓库定义的 formatter；不手工维持与其冲突的样式。修改后执行 `format:check`。
+- 格式化范围必须限于本仓库受管文件，不触及外部只读数据，不批量重排历史调查、证据、实验工具或 generated artifacts。
+- formatter 版本与配置由 repository tooling 管理；具体命令见 README 和 DEVELOPMENT-PROCESS。
+
+## Test Policy
+
+- 测试规模由风险、可观察行为、边界和回归价值决定，不按 LOC、函数数量、test count 或 coverage percentage 分配；不追求数量，不设置指标驱动的 coverage quota。
+- 优先验证对外行为、架构边界、数据不变量、安全约束和实际 bug regression；不机械测试 trivial wrapper、getter/setter、第三方能力、私有步骤或调用次数。合理的 bug 修复增加可复现回归，文案/typo 无需机械加测试。
+- 同类边界输入优先参数化。普通测试应快速、确定、尽可能离线；unit 验证纯逻辑、validation 和状态机，真实进程、IPC、SQLite/native、构建与打包边界使用 integration/smoke，不以大量 mocks 冒充集成证据。
+- 普通行为不使用源码字符串匹配。重要安全、bundler、packaging invariant 无合理行为验证时可保留小范围 guard，但优先结构化配置或 runtime assertion。
+
+## Expensive Command Policy
+
+- 下载、build、package、Electron integration、E2E、smoke 等明显耗时命令，先执行能验证当前假设的最小检查；日常按变更选择验证层级，完整流水线用于需要的验收。
+- 同一失败在没有代码、环境、参数或假设变化时不得机械重跑。同类昂贵命令连续失败两次后停止重试、调查根因，只有新证据或实际修改后才重新执行。
+- 超时先调查死锁、进程泄漏、网络、权限、native 阻塞和执行路径；仅有合法耗时证据时调整 timeout，不靠持续延长等待掩盖问题。
+- scripts 不增加无限或不透明重试；必要 retry 必须次数有限、条件明确、输出序号，且始终遵守代理 fail-closed。详细 cadence 和命令见 DEVELOPMENT-PROCESS。

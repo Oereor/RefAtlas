@@ -5,13 +5,24 @@ export function runProbe(input: ProbeInput, signal: AbortSignal): Promise<ProbeR
   return new Promise((resolve, reject) => {
     let completedSteps = 0
     let timer: ReturnType<typeof setTimeout>
-    const cancel = (): void => { clearTimeout(timer); signal.removeEventListener('abort', cancel); reject(new FoundationError('CANCELLED', '任务已取消')) }
-    if (signal.aborted) { cancel(); return }
+    const cancel = (): void => {
+      clearTimeout(timer)
+      signal.removeEventListener('abort', cancel)
+      reject(new FoundationError('CANCELLED', '任务已取消'))
+    }
+    if (signal.aborted) {
+      cancel()
+      return
+    }
     signal.addEventListener('abort', cancel, { once: true })
     const step = (): void => {
       if (signal.aborted) return
       completedSteps += 1
-      if (completedSteps === input.steps) { signal.removeEventListener('abort', cancel); resolve({ completedSteps }); return }
+      if (completedSteps === input.steps) {
+        signal.removeEventListener('abort', cancel)
+        resolve({ completedSteps })
+        return
+      }
       timer = setTimeout(step, input.stepDelayMs)
     }
     timer = setTimeout(step, input.stepDelayMs)

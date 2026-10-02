@@ -22,8 +22,12 @@
 - sandbox / context isolation 窄 Preload bridge、Main 来源与输入校验、Utility ready handshake、MessagePort 和请求匹配。
 - 最多 16 KiB 消息、32 个未完成请求（含一个取消控制槽）、批次取消、超时、窗口销毁、异常退出与显式重启；不自动重放请求。
 - Utility 内临时 SQLite：Unicode 和大整数文本往返、close/cleanup；Windows ASAR 目录包实际加载预构建 `.node`，普通打包态拒绝故障注入。
-- 35 项自动测试、类型检查、开发态/构建态/打包态 smoke、基础响应性与测量。验证使用 synthetic probe，不证明真实数据产品性能。
+- 基础交付时 35 项自动测试、类型检查、开发态/构建态/打包态 smoke、基础响应性与测量；工程清理后的当前测试结果见下节。验证使用 synthetic probe，不证明真实数据产品性能。
 - AGENTS 加入所有公网操作经系统 7890 代理的长期规则；修复当前文档过时状态，历史调查仅追加带日期补记。
+
+## 工程规范清理
+
+工程卫生清理（2026-10-02）：引入受限范围的 Prettier、长期 formatter/test/昂贵命令政策和分层验证；调整配置 guard、补充打包编排行为验证，并提供单次生产构建的完整验收入口。当前 6 文件 / 43 项测试、类型检查和 Windows 九阶段完整验收通过，独立打包仍重新构建。具体执行结果与失败修正见 [清理报告](investigations/phase-1a-development-policy-cleanup.md)。这是开发流程改进，不改变 Phase 或跨平台 gate。
 
 ## 已接受决策（仍为四项）
 

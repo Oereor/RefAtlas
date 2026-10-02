@@ -4,11 +4,20 @@ import { LIMITS } from '../src/shared/protocol'
 import type { ProbeResult, Request } from '../src/shared/protocol'
 import { RequestBroker } from '../src/main/request-broker'
 
-const probe = (requestId: string = randomUUID()): Request => ({ type: 'request', id: requestId, operation: 'probe', input: { requestId, steps: 1, stepDelayMs: 1 } })
-const success = (request: Request, completedSteps = 1) => ({ type: 'response', id: request.id, result: { ok: true, value: { completedSteps } } })
+const probe = (requestId: string = randomUUID()): Request => ({
+  type: 'request',
+  id: requestId,
+  operation: 'probe',
+  input: { requestId, steps: 1, stepDelayMs: 1 },
+})
+const success = (request: Request, completedSteps = 1) => ({
+  type: 'response',
+  id: request.id,
+  result: { ok: true, value: { completedSteps } },
+})
 const harness = (timeoutMs = 1000) => {
   const sent: Request[] = []
-  return { sent, broker: new RequestBroker(request => sent.push(request), timeoutMs) }
+  return { sent, broker: new RequestBroker((request) => sent.push(request), timeoutMs) }
 }
 afterEach(() => vi.useRealTimers())
 
@@ -45,9 +54,17 @@ describe('request broker observable behavior', () => {
     const pending = broker.request<ProbeResult>(request, 7)
     const cancellation = broker.cancel(request.id, 7)
     expect(sent[1].operation).toBe('cancel')
-    broker.accept({ type: 'response', id: sent[1].id, result: { ok: true, value: { accepted: true } } })
+    broker.accept({
+      type: 'response',
+      id: sent[1].id,
+      result: { ok: true, value: { accepted: true } },
+    })
     await expect(cancellation).resolves.toEqual({ accepted: true })
-    broker.accept({ type: 'response', id: sent[0].id, result: { ok: false, error: { code: 'CANCELLED', message: 'cancelled' } } })
+    broker.accept({
+      type: 'response',
+      id: sent[0].id,
+      result: { ok: false, error: { code: 'CANCELLED', message: 'cancelled' } },
+    })
     await expect(pending).rejects.toMatchObject({ code: 'CANCELLED' })
     broker.accept(success(sent[0]))
     expect(broker.size).toBe(0)
@@ -73,7 +90,7 @@ describe('request broker observable behavior', () => {
     vi.useFakeTimers()
     const { broker, sent } = harness(20)
     const request = probe()
-    const expired = broker.request<ProbeResult>(request).catch(error => error.code)
+    const expired = broker.request<ProbeResult>(request).catch((error) => error.code)
     await vi.advanceTimersByTimeAsync(20)
     expect(await expired).toBe('TIMEOUT')
     expect(sent[1].operation).toBe('cancel')
@@ -86,32 +103,45 @@ describe('request broker observable behavior', () => {
   it('reserves a control slot so a full task pool can still cancel', async () => {
     const { broker, sent } = harness()
     const requests = Array.from({ length: LIMITS.pending - 1 }, () => probe())
-    const pending = requests.map(request => broker.request<ProbeResult>(request, 1).catch(error => error.code))
+    const pending = requests.map((request) =>
+      broker.request<ProbeResult>(request, 1).catch((error) => error.code),
+    )
     await expect(broker.request(probe())).rejects.toMatchObject({ code: 'BUSY' })
     const cancellation = broker.cancel(requests[0].id, 1)
     expect(broker.size).toBe(LIMITS.pending)
-    broker.accept({ type: 'response', id: sent.at(-1)!.id, result: { ok: true, value: { accepted: true } } })
+    broker.accept({
+      type: 'response',
+      id: sent.at(-1)!.id,
+      result: { ok: true, value: { accepted: true } },
+    })
     await expect(cancellation).resolves.toEqual({ accepted: true })
     broker.exit()
     await Promise.all(pending)
   })
-  it('invalidates the channel after malformed or oversized responses', async () => {
-    for (const message of [null, { type: 'response', payload: 'x'.repeat(LIMITS.bytes) }]) {
+  it.each([null, { type: 'response', payload: 'x'.repeat(LIMITS.bytes) }])(
+    'invalidates the channel after an invalid response (case %#)',
+    async (message) => {
       const { broker } = harness()
       const pending = broker.request<ProbeResult>(probe())
       broker.accept(message)
       await expect(pending).rejects.toMatchObject({ code: 'PROTOCOL_ERROR' })
       expect(broker.isAvailable).toBe(false)
-    }
-  })
+    },
+  )
   it('rejects a wrong result shape for a matched operation', async () => {
     const { broker, sent } = harness()
     const pending = broker.request<ProbeResult>(probe())
-    broker.accept({ type: 'response', id: sent[0].id, result: { ok: true, value: { accepted: true } } })
+    broker.accept({
+      type: 'response',
+      id: sent[0].id,
+      result: { ok: true, value: { accepted: true } },
+    })
     await expect(pending).rejects.toMatchObject({ code: 'PROTOCOL_ERROR' })
   })
   it('settles immediately if transport send fails', async () => {
-    const broker = new RequestBroker(() => { throw new Error('closed') })
+    const broker = new RequestBroker(() => {
+      throw new Error('closed')
+    })
     await expect(broker.request(probe())).rejects.toMatchObject({ code: 'SERVICE_EXIT' })
     expect(broker.size).toBe(0)
   })

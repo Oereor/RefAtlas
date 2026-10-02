@@ -7,7 +7,8 @@ import { runProcess } from './process.mjs'
 const root = resolve(import.meta.dirname, '..')
 const mode = process.argv[2] ?? 'built'
 if (!['built', 'dev', 'packaged'].includes(mode)) throw new Error('无效 smoke 模式')
-if (!['win32-x64', 'darwin-x64', 'darwin-arm64'].includes(process.platform + '-' + process.arch)) throw new Error('不支持的验证平台')
+if (!['win32-x64', 'darwin-x64', 'darwin-arm64'].includes(process.platform + '-' + process.arch))
+  throw new Error('不支持的验证平台')
 const require = createRequire(import.meta.url)
 const electron = mode === 'packaged' ? undefined : require('electron')
 const reportDirectory = process.argv[3]
@@ -15,7 +16,12 @@ if (!reportDirectory) throw new Error('smoke worker 需要父进程提供临时�
 const report = join(reportDirectory, 'report.json')
 let server
 try {
-  const env = { ...process.env, TEMP: reportDirectory, TMP: reportDirectory, TMPDIR: reportDirectory }
+  const env = {
+    ...process.env,
+    TEMP: reportDirectory,
+    TMP: reportDirectory,
+    TMPDIR: reportDirectory,
+  }
   delete env.ELECTRON_RUN_AS_NODE
   delete env.ELECTRON_RENDERER_URL
   if (mode === 'dev') {
@@ -23,7 +29,11 @@ try {
     const { createServer } = await import('vite')
     await build({ root, mode: 'development' })
     const config = await resolveConfig({ root }, 'serve')
-    server = await createServer({ ...config.config.renderer, configFile: false, server: { host: '127.0.0.1', port: 0 } })
+    server = await createServer({
+      ...config.config.renderer,
+      configFile: false,
+      server: { host: '127.0.0.1', port: 0 },
+    })
     await server.listen()
     const address = server.httpServer.address()
     env.ELECTRON_RENDERER_URL = 'http://127.0.0.1:' + address.port
@@ -31,26 +41,109 @@ try {
   let command = electron
   let args = [root, '--smoke', '--smoke-report', report]
   if (mode === 'packaged') {
-    command = process.platform === 'win32' ? resolve(root, 'dist/win-unpacked/RefAtlas.exe')
-      : resolve(root, process.arch === 'arm64' ? 'dist/mac-arm64' : 'dist/mac', 'RefAtlas.app/Contents/MacOS/RefAtlas')
+    command =
+      process.platform === 'win32'
+        ? resolve(root, 'dist/win-unpacked/RefAtlas.exe')
+        : resolve(
+            root,
+            process.arch === 'arm64' ? 'dist/mac-arm64' : 'dist/mac',
+            'RefAtlas.app/Contents/MacOS/RefAtlas',
+          )
     args = ['--smoke', '--smoke-report', report]
   }
   if (!existsSync(command)) throw new Error('未找到 Electron 应用：' + command)
-  await runProcess(command, args, { cwd: root, env, capture: true, ownGroup: false, timeoutMs: 90000 })
+  await runProcess(command, args, {
+    cwd: root,
+    env,
+    capture: true,
+    ownGroup: false,
+    timeoutMs: 90000,
+  })
   const content = JSON.parse(await readFile(report, 'utf8'))
-  if (content.ok !== true || content.platform !== process.platform || content.arch !== process.arch || content.packaged !== (mode === 'packaged')) throw new Error('smoke 结果或目标身份错误：' + JSON.stringify(content))
-  if (mode === 'packaged' && !content.renderer.sqlite.every(result => result.nativeUnpacked)) throw new Error('native addon 未验证在 ASAR 外加载')
+  if (
+    content.ok !== true ||
+    content.platform !== process.platform ||
+    content.arch !== process.arch ||
+    content.packaged !== (mode === 'packaged')
+  )
+    throw new Error('smoke 结果或目标身份错误：' + JSON.stringify(content))
+  if (
+    content.security?.contextIsolation !== true ||
+    content.security?.nodeIntegration !== false ||
+    content.security?.sandbox !== true
+  )
+    throw new Error('实际 BrowserWindow 安全配置验证失败')
+  if (mode === 'packaged' && !content.renderer.sqlite.every((result) => result.nativeUnpacked))
+    throw new Error('native addon 未验证在 ASAR 外加载')
   if (mode === 'packaged') {
+    const resources =
+      process.platform === 'win32'
+        ? resolve(root, 'dist/win-unpacked/resources')
+        : resolve(
+            root,
+            process.arch === 'arm64' ? 'dist/mac-arm64' : 'dist/mac',
+            'RefAtlas.app/Contents/Resources',
+          )
+    const archive = join(resources, 'app.asar')
+    const builderRequire = createRequire(require.resolve('electron-builder/package.json'))
+    const asarRequire = createRequire(builderRequire.resolve('app-builder-lib/package.json'))
+    const asar = asarRequire('@electron/asar')
+    const entries = asar
+      .listPackage(archive)
+      .map((entry) => entry.replace(/\\/g, '/').replace(/^\//, ''))
+    if (
+      entries.some(
+        (entry) =>
+          !['out', 'node_modules', 'package.json'].includes(entry) &&
+          !entry.startsWith('out/') &&
+          !entry.startsWith('node_modules/'),
+      ) ||
+      entries.some((entry) => /(^|\/)TurnBasedGameData(\/|$)/.test(entry))
+    )
+      throw new Error('ASAR 包含非运行时文件或外部数据')
+    for (const entry of [
+      'out/main/index.cjs',
+      'out/preload/index.cjs',
+      'out/renderer/index.html',
+    ]) {
+      if (!entries.includes(entry)) throw new Error('ASAR 缺少生产入口：' + entry)
+    }
+    const nativeFile = join(
+      'node_modules',
+      'better-sqlite3',
+      'prebuilds',
+      process.platform + '-' + process.arch + '.node',
+    )
+    if (
+      !asar.statFile(archive, nativeFile).unpacked ||
+      !existsSync(join(archive + '.unpacked', nativeFile))
+    )
+      throw new Error('ASAR native 解包文件验证失败')
+    content.packageContents = {
+      runtimeOnly: true,
+      externalDataExcluded: true,
+      nativeUnpacked: true,
+    }
     const guardReport = join(reportDirectory, 'guard-report.json')
-    await runProcess(command, ['--guard-smoke', '--smoke-report', guardReport], { cwd: root, env, capture: true, ownGroup: false, timeoutMs: 90000 })
+    await runProcess(command, ['--guard-smoke', '--smoke-report', guardReport], {
+      cwd: root,
+      env,
+      capture: true,
+      ownGroup: false,
+      timeoutMs: 90000,
+    })
     const guard = JSON.parse(await readFile(guardReport, 'utf8'))
-    if (!guard.ok || !guard.packaged || guard.renderer.diagnostics !== false) throw new Error('普通打包态的诊断保护验证失败')
+    if (!guard.ok || !guard.packaged || guard.renderer.diagnostics !== false)
+      throw new Error('普通打包态的诊断保护验证失败')
     content.normalModeGuard = guard.renderer
   }
   content.measuredAt = new Date().toISOString()
   content.mode = mode
   await mkdir(resolve(root, 'artifacts'), { recursive: true })
-  const saved = resolve(root, 'artifacts/foundation-' + mode + '-' + process.platform + '-' + process.arch + '.json')
+  const saved = resolve(
+    root,
+    'artifacts/foundation-' + mode + '-' + process.platform + '-' + process.arch + '.json',
+  )
   await writeFile(saved, JSON.stringify(content, null, 2), 'utf8')
   console.log('smoke passed: ' + mode + ' ' + process.platform + '/' + process.arch)
   console.log('checks: ' + content.renderer.checks.join(', '))

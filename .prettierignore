@@ -1,0 +1,12 @@
+**/*.md
+**/package-lock.json
+**/npm-shrinkwrap.json
+docs/
+tools/
+node_modules/
+.git/
+.cache/
+out/
+dist/
+artifacts/
+coverage/
