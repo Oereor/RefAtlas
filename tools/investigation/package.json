@@ -1,0 +1,18 @@
+{
+  "name": "refatlas-phase-0-investigation",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "RefAtlas Phase 0 非生产调查与基准",
+  "scripts": {
+    "scan": "node scan.mjs",
+    "bench": "node run.mjs",
+    "test": "node --test test.mjs",
+    "validate": "node validate.mjs"
+  },
+  "devDependencies": {
+    "better-sqlite3": "13.0.3",
+    "electron": "44.5.1",
+    "stream-json": "3.7.0"
+  }
+}
