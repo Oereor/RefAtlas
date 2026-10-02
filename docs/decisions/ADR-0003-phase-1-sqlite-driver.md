@@ -4,6 +4,8 @@
 - 日期：2026-10-02（UTC+8）。
 - 适用阶段：Phase 1 存储实现方向。
 
+范围补记（2026-10-02，UTC+8）：下述历史三目标 native/package gate 已由 [ADR-0005](ADR-0005-macos-platform-scope.md) 部分替代为 Windows x64 与 macOS arm64，macOS x64 不再构成 gate。SQLite 驱动方向及其他边界仍有效；原决定正文保留。
+
 ## 背景
 
 Phase 0 比较了 node:sqlite 与 better-sqlite3。better-sqlite3 的成熟 API、当前生态以及 Windows Electron Utility Process 探针支持其可用性；代表性查询表现良好，测试工作负载中的插入更快。node:sqlite 在调查版本中仍是 release-candidate API。

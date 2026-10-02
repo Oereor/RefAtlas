@@ -5,7 +5,6 @@ import { validationSteps } from '../scripts/validate.mjs'
 describe('foundation validation commands', () => {
   it.each([
     ['win32', 'x64', '--win'],
-    ['darwin', 'x64', '--mac'],
     ['darwin', 'arm64', '--mac'],
   ])('always builds before standalone packaging for %s/%s', (platform, arch, flag) => {
     const steps = packageSteps(platform, arch)

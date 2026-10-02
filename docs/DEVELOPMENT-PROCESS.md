@@ -19,7 +19,9 @@
 
 smoke 通过真实隐藏窗口/Preload bridge 运行，120 秒总超时；父 runner 清理自身进程树和已核实边界的临时目录。报告含目标身份、安全配置、运行时、SQLite 清理与 ASAR native 证据；打包态另验普通模式拒绝故障注入。失败须报告非零退出码，不以残留旧成功报告替代当前结果。
 
-macOS 的脚本路径未验证时必须保留 gate。工具链候选通过本机测试不自动成为已接受 ADR；本轮不发布、不签名、不操作远程 workflow。
+macOS arm64 的脚本路径必须在原生 Apple Silicon 环境验证；macOS x64 不属于正式 gate。工具链候选通过本机测试不自动成为已接受 ADR；本轮不发布、不签名、不操作远程 workflow。
+
+2026-10-02 的 Apple M2 原生九阶段验收已通过，见 [macOS 报告](investigations/phase-1a-macos-arm64-validation.md)。受限执行环境可能禁止 localhost 监听或 Electron 启动，应走获准的本地执行路径，不降低应用 sandbox/context isolation，也不更改 timeout 掩盖权限错误。
 
 ## Formatter 与测试维护
 

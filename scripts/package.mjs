@@ -6,7 +6,7 @@ import { proxyEnvironment } from './proxy.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 export function packageSteps(platform, arch) {
-  if (!['win32-x64', 'darwin-x64', 'darwin-arm64'].includes(platform + '-' + arch))
+  if (!['win32-x64', 'darwin-arm64'].includes(platform + '-' + arch))
     throw new Error('不支持的验证目标')
   return [
     {

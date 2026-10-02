@@ -17,7 +17,7 @@ RefAtlas 面向开发者、逆向研究者和配置维护者，是桌面原始�
 
 ## 平台与非目标
 
-Windows/macOS 桌面，GitHub Releases 分发。已接受 Electron、Svelte 5、TypeScript；具体构建／打包工具的验证状态与待评审长期决定见 [STATUS](STATUS.md)，版本快照不成为永久产品要求。
+Windows x64 与 macOS arm64 桌面，GitHub Releases 分发。macOS x64 不属于正式支持目标。已接受 Electron、Svelte 5、TypeScript；具体构建／打包工具的验证状态与待评审长期决定见 [STATUS](STATUS.md)，版本快照不成为永久产品要求。[ADR-0005](decisions/ADR-0005-macos-platform-scope.md)
 
 不建设网页部署、玩家百科、语义归一化、自动引用推断、AI 真相层或全数据集图。未来可选 Agent 只是 Query API 客户端，不改变事实规则。
 

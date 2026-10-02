@@ -22,7 +22,6 @@
     "smoke:built": "node scripts/smoke.mjs built",
     "smoke:dev": "node scripts/smoke.mjs dev",
     "package:win:x64": "node scripts/package.mjs win32 x64",
-    "package:mac:x64": "node scripts/package.mjs darwin x64",
     "package:mac:arm64": "node scripts/package.mjs darwin arm64",
     "smoke:packaged": "node scripts/smoke.mjs packaged",
     "docs:check": "node scripts/check-docs.mjs"

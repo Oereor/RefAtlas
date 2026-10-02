@@ -2,6 +2,8 @@
 
 日期：2026-10-02（UTC+8）。应用基线 `bd5b7ae Complete Phase 1A: building infrastructure for the APP`，开始时工作树干净；外部数据 HEAD `724b139d8c9c32d12552eb95745a4fee72bfe48b`，开始时工作树干净。本轮是工程卫生任务，不新增产品能力或已接受 ADR，不推进 Phase。
 
+后续补记（2026-10-02，UTC+8）：macOS x64 已由 [ADR-0005](../decisions/ADR-0005-macos-platform-scope.md) 移出正式支持范围；macOS arm64 已通过原生 gate，见 [验证报告](phase-1a-macos-arm64-validation.md)。下文保留本轮工程清理时的三目标入口与未测状态，不作为当前 gate 状态。
+
 ## 1. Prettier 与格式范围
 
 官方 npm registry 的 latest 元数据在安装前通过确认的系统 `http://127.0.0.1:7890` 代理复核：Prettier 3.9.9（Node ≥14），prettier-plugin-svelte 4.1.1（Node ≥20，peer Prettier ^3.0.0、Svelte ^5.0.0）。当前 Node 24.21.0、Svelte 5.57.1 与之兼容，两包精确锁为开发依赖；未更新其他已有依赖，未使用 force/legacy-peer-deps。

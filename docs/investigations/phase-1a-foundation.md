@@ -10,6 +10,8 @@
 
 本轮 Windows gate 通过，macOS gate 未验证。没有 commit、push、创建分支、PR/issue、触发 workflow、签名、公证或发布；保持原 main 分支。
 
+范围补记（2026-10-02，UTC+8）：后续平台决策见 [ADR-0005](../decisions/ADR-0005-macos-platform-scope.md)。macOS x64 已移出正式支持矩阵；macOS arm64 已通过原生 gate，见 [验证报告](phase-1a-macos-arm64-validation.md)。本报告中的三目标矩阵与命令保留为当时的历史证据，不代表当前仍需维护 Intel macOS gate。
+
 ## 2. 工具链与兼容性
 
 安装后 `npm ls --depth=0 --offline` 无 peer/engine 错误。正式锁文件与调查 package 完全独立。官方包元数据通过系统代理重新查询，见 [来源快照](evidence/phase-1a-sources.json)。

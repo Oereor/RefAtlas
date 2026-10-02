@@ -8,8 +8,9 @@
 | --- | --- | --- |
 | [ADR-0001](ADR-0001-desktop-stack-and-process-model.md) | 桌面栈与 Renderer/Preload/Main/Utility Process 边界 | 已接受 |
 | [ADR-0002](ADR-0002-lossless-raw-data-and-bounded-access.md) | 无损原始数据、物理/逻辑身份与有界混合访问 | 已接受 |
-| [ADR-0003](ADR-0003-phase-1-sqlite-driver.md) | Phase 1 首选 better-sqlite3，需三个目标打包验证 | 已接受 |
+| [ADR-0003](ADR-0003-phase-1-sqlite-driver.md) | Phase 1 首选 better-sqlite3，保留历史打包验证门槛 | 已接受，目标范围由 ADR-0005 部分替代 |
 | [ADR-0004](ADR-0004-deterministic-search-semantics.md) | 确定性检索语义，最终 FTS 加速方案未决 | 已接受 |
+| [ADR-0005](ADR-0005-macos-platform-scope.md) | 正式支持 Windows x64 与 macOS arm64 | 已接受 |
 
 ## 维护约定
 
@@ -17,4 +18,4 @@
 
 候选不冒充已接受 ADR。变更时新增记录，旧记录标为被替代并链接，不改写历史，不以改写调查报告代替决策。
 
-Phase 1A 的 electron-vite + electron-builder 已有 Windows 验证证据，但尚未接受为新的长期工具链 ADR；四项已接受决定保持不变，详情见 [验证报告](../investigations/phase-1a-foundation.md)。
+Phase 1A 的 electron-vite + electron-builder 已有 Windows x64 与 macOS arm64 原生验证证据，但尚未接受为新的长期工具链 ADR；ADR-0005 仅接受平台范围。详情见 [Windows 验证报告](../investigations/phase-1a-foundation.md) 与 [macOS 验证报告](../investigations/phase-1a-macos-arm64-validation.md)。

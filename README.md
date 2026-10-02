@@ -2,7 +2,7 @@
 
 面向开发者、逆向研究者和配置维护者的桌面原始配置与显式引用调查工作台。
 
-**Phase 0 已关闭／已接受；Phase 1A Windows x64 桌面基础已验证。** macOS x64／arm64 gate 仍未验证，不能视为整个 Phase 1A 完成。`tools/investigation/` 保持独立的非生产实验工具。
+**Phase 0 已关闭／已接受；Windows x64 与 macOS arm64 两个正式目标的 Phase 1A native/package gate 均已通过，技术验证完成。** 长期工具链接受仍待用户评审，不自动推进阶段。macOS x64 不属于正式支持范围。macOS 原生证据见 [验证报告](docs/investigations/phase-1a-macos-arm64-validation.md)。`tools/investigation/` 保持独立的非生产实验工具。
 
 ## 开始阅读
 
@@ -12,11 +12,11 @@
 
 `../TurnBasedGameData/` 是只读外部数据，不复制、不修改、不作为子模块。权威项目文档位于本仓库 `docs/`，与应用代码使用同一 Git 仓库；工作区外层只是本地容器。
 
-已接受 Electron、Svelte 5、TypeScript，以及 Utility Process 数据服务和 Phase 1 首选 better-sqlite3。当前构建/打包候选已在 Windows 验证，长期工具链决定仍待评审；目标 Windows/macOS，通过 GitHub Releases 分发，不是网页服务。
+已接受 Electron、Svelte 5、TypeScript，以及 Utility Process 数据服务和 Phase 1 首选 better-sqlite3。当前构建/打包候选已在 Windows x64 与 macOS arm64 验证，长期工具链决定仍待评审；通过 GitHub Releases 分发，不是网页服务。
 
 ## 开发与验证
 
-在本仓库根目录使用 Node 24.x（本轮 24.21.0）和 npm（本轮 11.16.0）。当前验证组合精确锁定于根级 package 与 lockfile，不是永久架构要求。
+在本仓库根目录使用 Node 24.x。Windows 验证使用 Node 24.21.0 / npm 11.16.0，macOS arm64 使用 Node 24.19.0 / npm 11.17.0；Electron 内部 Node 均为 24.21.0，与 shell Node 独立。当前验证组合精确锁定于根级 package 与 lockfile，不是永久架构要求。
 
 先依据当前系统设置确认代理协议和地址。本轮 Windows 系统代理为 `http://127.0.0.1:7890`；以下只修改当前 PowerShell 环境，不能在代理不可用时直连：
 
@@ -53,11 +53,25 @@ npm.cmd run validate:foundation
 
 目录包位于 `dist/win-unpacked/RefAtlas.exe`；`--dir` 保留 ASAR，不生成安装器、不发布、不签名。开发／诊断页面只验证基础设施，不读取数据集。smoke 使用隐藏窗口、120 秒总超时、明确退出码和自动清理；可重复报告保存于被忽略的 `artifacts/`。
 
-macOS 在对应原生 x64／arm64 机器使用相同安装步骤（确认当地系统 7890 代理后设置当前 shell 的 HTTP_PROXY、HTTPS_PROXY、NO_PROXY），分别执行 `npm run package:mac:x64` 或 `npm run package:mac:arm64`，再执行 `npm run smoke:packaged`。脚本要求 OS 和 Node 架构与目标一致；本轮未在 macOS 执行，不新增远程 workflow。
+macOS arm64 在对应原生 Apple Silicon 机器使用相同安装步骤（确认当地系统 7890 代理后设置当前 shell 的 HTTP_PROXY、HTTPS_PROXY、NO_PROXY），执行 `npm run package:mac:arm64`，再执行 `npm run smoke:packaged`。脚本要求 OS 和 Node 架构与目标一致；macOS x64 不提供正式打包入口，不新增远程 workflow。
+
+本轮 Mac 确认的代理为 `http://127.0.0.1:7890`，不能假定其他机器也相同。以下只修改当前 shell；如使用 nvm，可先切换已有的 Node 24，不需要修改全局默认版本：
+
+```sh
+nvm use 24.19.0
+export HTTP_PROXY='http://127.0.0.1:7890'
+export HTTPS_PROXY="$HTTP_PROXY"
+export NO_PROXY='localhost,127.0.0.1'
+export NODE_USE_ENV_PROXY=1
+npm ci --proxy="$HTTP_PROXY" --https-proxy="$HTTPS_PROXY" --cache .cache/npm --no-audit --no-fund
+npm run install:electron
+npm run validate:foundation
+```
+
+Mac 目录包位于 `dist/mac-arm64/RefAtlas.app`，本轮不签名、不公证、不生成 DMG。受限沙箱可能禁止 localhost 监听或 Electron 启动，需要获准的本地执行环境；这不要求关闭应用的 Preload sandbox。
 
 [Phase 1A 交付与局限](docs/investigations/phase-1a-foundation.md)、[性能口径](docs/PERFORMANCE.md)。
 
 [工程规范与工具链清理](docs/investigations/phase-1a-development-policy-cleanup.md)记录 formatter、测试审阅和验证编排，不改变平台 gate 或已接受架构。
 
 贡献前阅读 [AGENTS.md](AGENTS.md)。保留 [MIT 许可证](LICENSE)。
-

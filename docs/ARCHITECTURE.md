@@ -1,10 +1,10 @@
 # 已接受架构与约束
 
-2026-10-02 Phase 0 收尾后，下述方向已接受；Phase 1A 已实现并验证 Windows x64 的最小桌面链路。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。
+2026-10-02 Phase 0 收尾后，下述方向已接受；Phase 1A 已实现并验证 Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。
 
 ## 1. 桌面栈与进程所有权
 
-采用 Electron、Svelte 5、TypeScript，面向 Windows/macOS，通过 GitHub Releases 分发，无网页部署。具体构建/打包工具及版本未接受。[ADR-0001](decisions/ADR-0001-desktop-stack-and-process-model.md)
+采用 Electron、Svelte 5、TypeScript，面向 Windows x64 与 macOS arm64，通过 GitHub Releases 分发，无网页部署。macOS x64 不属于正式支持目标。具体构建/打包工具及版本未接受。[ADR-0001](decisions/ADR-0001-desktop-stack-and-process-model.md) [ADR-0005](decisions/ADR-0005-macos-platform-scope.md)
 
 初始拓扑：Renderer → Preload 类型化窄桥 → Main → Utility Process → Data Service。
 
@@ -15,7 +15,7 @@
 | Main | 生命周期、窗口、对话框、工作区编排、数据进程生命周期 | 重型数据处理引擎 |
 | Utility Process / Data Service | 扫描、解析/流式、索引、SQLite、搜索、记录/引用查询 | 启发式或 AI 关系真相 |
 
-初始不引入 Worker Threads；只有测量证明具体需要时再接受。Phase 1A 的该进程链路、最小请求生命周期与显式恢复已在 Windows 验证；不代表表中未来数据功能已实现。
+初始不引入 Worker Threads；只有测量证明具体需要时再接受。Phase 1A 的该进程链路、最小请求生命周期与显式恢复已在 Windows x64 和 macOS arm64 验证；不代表表中未来数据功能已实现。
 
 ### 已验证的基础链路
 
@@ -47,16 +47,16 @@ Core 不推断引用、不硬编码玩家实体。相等数值、相似字段、
 
 ## 4. Phase 1 存储与搜索方向
 
-Phase 1 首选 better-sqlite3，SQLite 属于 Data Service，经窄内部存储边界隔离，不引入 ORM。Windows x64、macOS x64、macOS arm64 打包后的原生加载与数据库访问是必过门槛；存在实质问题可复审驱动而不改高层 Query API 语义。本次不设计存储 API。[ADR-0003](decisions/ADR-0003-phase-1-sqlite-driver.md)
+Phase 1 首选 better-sqlite3，SQLite 属于 Data Service，经窄内部存储边界隔离，不引入 ORM。Windows x64 与 macOS arm64 打包后的原生加载与数据库访问是正式必过门槛；macOS x64 已由 [ADR-0005](decisions/ADR-0005-macos-platform-scope.md) 移出支持范围。存在实质问题可复审驱动而不改高层 Query API 语义。本次不设计存储 API。[ADR-0003](decisions/ADR-0003-phase-1-sqlite-driver.md)
 
 搜索先定义确定性行为：Exact 精确标量/显式 ID，Contains 字面 Unicode 子串，Field 字段名，File 文件/路径，Text 字面本地化文本。名称不固定 UI/API；FTS/tokenizer 只作加速，不能改变语义。最终 FTS、短词与回退策略未定，不引入分词语义、embeddings 或 AI 搜索。[ADR-0004](decisions/ADR-0004-deterministic-search-semantics.md)
 
 ## 5. 尚未设计或验证
 
-- 工具链长期 ADR 接受、macOS 两架构运行时与正式发布配置。electron-vite/electron-builder 当前仅作为已验证实现候选，具体版本不是永久架构要求。
+- 工具链长期 ADR 接受与正式发布配置。electron-vite/electron-builder 已通过两个正式平台 gate，当前仅作为已验证实现候选，具体版本不是永久架构要求。
 - 正式 Query API 与产品级协议／存储接口；已有 foundation IPC 只验证基础设施，不预先定义记录、契约或索引模型。
 - 原始记录模型、Dataset Contract schema、索引 schema、源偏移与具体大小阈值。
 - 最终 FTS/trigram/确定性回退、1–2 字符查询与索引体积。
-- UI 库最终选择、真实数据端到端性能、macOS 两架构打包运行时和签名/公证验证。
+- UI 库最终选择、真实数据端到端性能和正式签名/公证验证。
 
 实验表、合成边、采样与保护阈值不是生产架构。Phase 0 的具体版本矩阵没有被接受；真实测量见 [PERFORMANCE](PERFORMANCE.md)，阶段范围见 [Phase 1A](ROADMAP.md#下一步phase-1a--桌面基础与架构验证)，当前 gate 以 STATUS 为准。

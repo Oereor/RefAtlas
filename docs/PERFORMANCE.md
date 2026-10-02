@@ -59,7 +59,7 @@ TextMapCHS 原顺序前 50000 项，非随机样本、非全量索引。records 
 | 热工作区打开/增量刷新 | 未实现，未测 |
 | 记录/引用端到端 | 只有查询层/合成边，IPC 和 UI 未测 |
 | 产品虚拟化、图、编辑器、真实数据渲染 | 未实现，未测；基础模拟任务响应性见 Phase 1A |
-| 打包后的 Windows/macOS x64/arm64 | Windows 基础 ASAR 目录包已测；macOS 两架构未测，无正式发布构建 |
+| 打包后的 Windows x64/macOS arm64 | 两个目标均通过基础 ASAR 目录包运行验证；macOS 本轮不新增性能基线，无正式发布构建 |
 
 不设绝对产品预算。建议 Phase 1 复现同机基线、完成真实有界链路，再制定延迟/内存目标；建议不伪装实测。关注记录级内存、精度、索引膨胀与监控开销。
 
@@ -83,4 +83,10 @@ Packaged SQLite 三次为 125.60 / 9.60 / 8.30 ms；第一次包含 native 加�
 
 有限模拟批次工作时，Dev/Built/Packaged 的 50 ms DOM 心跳分别前进 38/39/40 次，合成 DOM 点击分别成功 18/19/20 次。隐藏窗口 rAF 仅采到 1/1/2 次，最大帧间隔约 956/999/1000 ms；隐藏窗口/遮挡节流不能据此当作可见 UI 帧率。结果只证明模拟任务时 renderer 仍有更新与交互，不证明未来重型索引负载或可见窗口 60 fps。
 
-未测：纯 MessagePort 吞吐、RSS/heap 高水位、冷启动分布、人工可见窗口交互与帧率、真实数据服务负载、macOS x64/arm64。未为产品设绝对预算；本轮 16 KiB/32 请求等是基础设施保护，不是未来产品上限。签名、公证、发布与全量索引仍不在本轮范围。
+未测：纯 MessagePort 吞吐、RSS/heap 高水位、冷启动分布、人工可见窗口交互与帧率、真实数据服务负载。macOS x64 已由 ADR-0005 移出正式支持范围。未为产品设绝对预算；本轮 16 KiB/32 请求等是基础设施保护，不是未来产品上限。签名、公证、发布与全量索引仍不在本轮范围。
+
+## 6. macOS arm64 原生验收口径
+
+2026-10-02 在 MacBook Air / Apple M2 / 16 GiB / macOS 27.0.1 通过 dev、built 与 ASAR packaged smoke，见 [macOS 报告](investigations/phase-1a-macos-arm64-validation.md)。shell 为 Node 24.19.0 / npm 11.17.0；Electron 44.5.1 内部 Node 24.21.0 / N-API 10 / ABI 149，SQLite 3.53.4。
+
+沿用原 smoke：每模式一次初始 ready、三次取消/恢复/SQLite，Probe 预热 5 次后采集 100 次。结果保存在本地被忽略的 `artifacts/foundation-{dev,built,packaged}-darwin-arm64.json`；这里只接受基础设施运行、SQLite 清理及模拟任务响应性的功能证据，不新增性能基线、不改写 Windows 数字。后台负载、OS 缓存、磁盘和热状态未控制；跨机器调度与隐藏窗口节流不同，不据此宣称 Mac 比 Windows 更快或可见窗口达到特定帧率。

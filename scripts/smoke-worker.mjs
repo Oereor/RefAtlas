@@ -7,7 +7,7 @@ import { runProcess } from './process.mjs'
 const root = resolve(import.meta.dirname, '..')
 const mode = process.argv[2] ?? 'built'
 if (!['built', 'dev', 'packaged'].includes(mode)) throw new Error('无效 smoke 模式')
-if (!['win32-x64', 'darwin-x64', 'darwin-arm64'].includes(process.platform + '-' + process.arch))
+if (!['win32-x64', 'darwin-arm64'].includes(process.platform + '-' + process.arch))
   throw new Error('不支持的验证平台')
 const require = createRequire(import.meta.url)
 const electron = mode === 'packaged' ? undefined : require('electron')
