@@ -4,6 +4,8 @@
 - 日期：2026-10-02（UTC+8）。
 - 适用阶段：Phase 1 起；本记录不表示应用已实现。
 
+后续补记（2026-10-02，UTC+8）：Phase 1A 桌面基础与正式平台 gate 已完成；electron-vite + electron-builder 路线现由 [ADR-0006](ADR-0006-electron-build-and-packaging-toolchain.md) 接受，具体版本及正式发布配置不在该接受范围内。下文保留本 ADR 当时的决定与推迟事项，当前状态见 [STATUS](../STATUS.md)。
+
 ## 背景
 
 RefAtlas 是 Windows/macOS 开发者桌面工作台。数据规模、重型解析和索引不能由 UI 或生命周期主进程承担。Phase 0 的 Windows Electron utilityProcess 数据探针已提供初始可行性证据。

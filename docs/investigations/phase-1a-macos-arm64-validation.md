@@ -2,6 +2,8 @@
 
 日期：2026-10-02（UTC+8）。应用基线为 main `694a506`；本任务修改未提交。正式平台范围已收敛为 Windows x64 与 macOS arm64，当前 Apple Silicon Mac 的开发态、构建态、ASAR 打包态及九阶段完整验收均已通过。此前代理不可用导致的阻断保留在失败记录中，不再是当前 gate 阻碍。
 
+收尾补记（2026-10-02，UTC+8）：本次 macOS 原生验收与平台决定已纳入 `573b28d Pass macOS gate of Phase 1A`。用户现通过 [ADR-0006](../decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 接受长期工具链路线，Phase 1A 已完成并关闭；下文“未提交”“待评审”保留为报告编写时事实，不代表当前状态。见 [STATUS](../STATUS.md) 与 [收尾记录](phase-1a-closeout.md)。
+
 ## 1. Mac 环境
 
 | 项目 | 结果 |
@@ -77,7 +79,7 @@ dev 与 built 均不在 ASAR 中运行，因此其 SQLite 结果 `nativeUnpacked
 `npm run package:mac:arm64` 成功，独立命令先执行 production build 再执行 builder。产物为：
 
 ```text
-/Users/wh3atl3y/RefAtlas-Project/RefAtlas/dist/mac-arm64/RefAtlas.app
+dist/mac-arm64/RefAtlas.app
 ```
 
 electron-builder 26.15.3 使用本地 Electron 44.5.1 arm64 distribution，`npmRebuild=false`，`--dir`、`--publish never`、`mac.identity=null`。日志确认跳过 macOS code signing；不公证、不发布、不生成 DMG，没有改变正式签名配置。

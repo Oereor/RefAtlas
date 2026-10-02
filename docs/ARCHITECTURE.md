@@ -1,10 +1,10 @@
 # 已接受架构与约束
 
-2026-10-02 Phase 0 收尾后，下述方向已接受；Phase 1A 已实现并验证 Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。
+2026-10-02 Phase 1A 已完成并关闭；下述方向已接受，Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。关闭基础阶段不代表后续产品功能已实现或获授权。
 
 ## 1. 桌面栈与进程所有权
 
-采用 Electron、Svelte 5、TypeScript，面向 Windows x64 与 macOS arm64，通过 GitHub Releases 分发，无网页部署。macOS x64 不属于正式支持目标。具体构建/打包工具及版本未接受。[ADR-0001](decisions/ADR-0001-desktop-stack-and-process-model.md) [ADR-0005](decisions/ADR-0005-macos-platform-scope.md)
+采用 Electron、Svelte 5、TypeScript，面向 Windows x64 与 macOS arm64，通过 GitHub Releases 分发，无网页部署。macOS x64 不属于正式支持目标。接受 electron-vite 负责 Main/Preload/Renderer/Utility 入口与开发构建，electron-builder 负责桌面打包、ASAR/native unpack 及后续发布打包基础；不永久冻结当前包版本，正式发布配置仍未决定。[ADR-0001](decisions/ADR-0001-desktop-stack-and-process-model.md) [ADR-0005](decisions/ADR-0005-macos-platform-scope.md) [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md)
 
 初始拓扑：Renderer → Preload 类型化窄桥 → Main → Utility Process → Data Service。
 
@@ -53,10 +53,10 @@ Phase 1 首选 better-sqlite3，SQLite 属于 Data Service，经窄内部存储�
 
 ## 5. 尚未设计或验证
 
-- 工具链长期 ADR 接受与正式发布配置。electron-vite/electron-builder 已通过两个正式平台 gate，当前仅作为已验证实现候选，具体版本不是永久架构要求。
+- 正式发布配置、CI/release workflow、签名、公证、安装器/DMG、自动更新与发布节奏。工具链路线已接受，但这些发布事项不属于 ADR-0006；具体版本由 package/lockfile 管理并按风险升级验证。
 - 正式 Query API 与产品级协议／存储接口；已有 foundation IPC 只验证基础设施，不预先定义记录、契约或索引模型。
 - 原始记录模型、Dataset Contract schema、索引 schema、源偏移与具体大小阈值。
 - 最终 FTS/trigram/确定性回退、1–2 字符查询与索引体积。
 - UI 库最终选择、真实数据端到端性能和正式签名/公证验证。
 
-实验表、合成边、采样与保护阈值不是生产架构。Phase 0 的具体版本矩阵没有被接受；真实测量见 [PERFORMANCE](PERFORMANCE.md)，阶段范围见 [Phase 1A](ROADMAP.md#下一步phase-1a--桌面基础与架构验证)，当前 gate 以 STATUS 为准。
+实验表、合成边、采样与保护阈值不是生产架构。Phase 0 的具体版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。

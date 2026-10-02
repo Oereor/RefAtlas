@@ -11,6 +11,7 @@
 | [ADR-0003](ADR-0003-phase-1-sqlite-driver.md) | Phase 1 首选 better-sqlite3，保留历史打包验证门槛 | 已接受，目标范围由 ADR-0005 部分替代 |
 | [ADR-0004](ADR-0004-deterministic-search-semantics.md) | 确定性检索语义，最终 FTS 加速方案未决 | 已接受 |
 | [ADR-0005](ADR-0005-macos-platform-scope.md) | 正式支持 Windows x64 与 macOS arm64 | 已接受 |
+| [ADR-0006](ADR-0006-electron-build-and-packaging-toolchain.md) | electron-vite + electron-builder 长期构建与打包路线，不永久冻结版本 | 已接受 |
 
 ## 维护约定
 
@@ -18,4 +19,4 @@
 
 候选不冒充已接受 ADR。变更时新增记录，旧记录标为被替代并链接，不改写历史，不以改写调查报告代替决策。
 
-Phase 1A 的 electron-vite + electron-builder 已有 Windows x64 与 macOS arm64 原生验证证据，但尚未接受为新的长期工具链 ADR；ADR-0005 仅接受平台范围。详情见 [Windows 验证报告](../investigations/phase-1a-foundation.md) 与 [macOS 验证报告](../investigations/phase-1a-macos-arm64-validation.md)。
+Phase 1A 已完成并关闭；ADR-0005 决定正式平台范围，ADR-0006 正式接受 electron-vite + electron-builder 长期路线。六项决定与既有平台证据齐备，当前版本组合不成为永久架构要求；见 [收尾记录](../investigations/phase-1a-closeout.md)、[Windows 验证报告](../investigations/phase-1a-foundation.md) 与 [macOS 验证报告](../investigations/phase-1a-macos-arm64-validation.md)。后续阶段未启动，需单独授权。

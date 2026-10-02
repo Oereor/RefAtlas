@@ -2,6 +2,8 @@
 
 日期：2026-10-02（UTC+8）。基线：应用 main `809a4a5 Closeout Phase 0`；外部数据 HEAD `724b139d8c9c32d12552eb95745a4fee72bfe48b`。本报告是实现/验证证据，不自行接受新架构决定；当前状态见 [STATUS](../STATUS.md)。
 
+收尾补记（2026-10-02，UTC+8）：macOS arm64 原生验收已纳入 `573b28d`；electron-vite + electron-builder 长期路线现由 [ADR-0006](../decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 正式接受，Phase 1A 已完成并关闭。macOS x64 不支持；下文保留 Windows 首次交付时的验证范围与待评审状态，当前事实见 [STATUS](../STATUS.md) 与 [收尾记录](phase-1a-closeout.md)。
+
 ## 1. 实施摘要
 
 已建立独立的根级 production package/lockfile 和 Electron + Svelte 5 + TypeScript 骨架，实际进程链路为 Renderer → Preload → Main → Utility Process → minimal Data Service。

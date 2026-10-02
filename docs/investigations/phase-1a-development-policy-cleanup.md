@@ -4,6 +4,8 @@
 
 后续补记（2026-10-02，UTC+8）：macOS x64 已由 [ADR-0005](../decisions/ADR-0005-macos-platform-scope.md) 移出正式支持范围；macOS arm64 已通过原生 gate，见 [验证报告](phase-1a-macos-arm64-validation.md)。下文保留本轮工程清理时的三目标入口与未测状态，不作为当前 gate 状态。
 
+收尾补记（2026-10-02，UTC+8）：macOS 原生验收已纳入 `573b28d`；工具链路线现由 [ADR-0006](../decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 正式接受，Phase 1A 已完成并关闭。下文未测/待评审内容保留为清理时的历史事实；当前状态见 [STATUS](../STATUS.md) 与 [收尾记录](phase-1a-closeout.md)。
+
 ## 1. Prettier 与格式范围
 
 官方 npm registry 的 latest 元数据在安装前通过确认的系统 `http://127.0.0.1:7890` 代理复核：Prettier 3.9.9（Node ≥14），prettier-plugin-svelte 4.1.1（Node ≥20，peer Prettier ^3.0.0、Svelte ^5.0.0）。当前 Node 24.21.0、Svelte 5.57.1 与之兼容，两包精确锁为开发依赖；未更新其他已有依赖，未使用 force/legacy-peer-deps。

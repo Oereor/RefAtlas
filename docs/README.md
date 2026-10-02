@@ -17,7 +17,7 @@
 
 信息在所属文档维护，其他文档链接引用。重大任务先读 PROJECT → STATUS → ARCHITECTURE → 相关 ADR/调查；性能任务再读 PERFORMANCE。结束更新当前状态与权威文档。
 
-Phase 1A 的具体版本、验证命令、打包策略和局限见 [交付报告](investigations/phase-1a-foundation.md)；开发入口见 [应用 README](../README.md)。报告是证据，未接受的工具链候选不升级为规范架构。
+Phase 1A 已完成并关闭，见 [收尾记录](investigations/phase-1a-closeout.md)；electron-vite + electron-builder 路线已由 [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 接受，不永久冻结版本。具体版本、验证命令、打包策略和局限仍保留在 [Windows 交付报告](investigations/phase-1a-foundation.md) 与 [macOS 原生报告](investigations/phase-1a-macos-arm64-validation.md)；开发入口见 [应用 README](../README.md)。报告是历史证据，当前状态与架构由权威文档/ADR 表达；下一阶段尚未启动，需单独授权。
 
 ## 版本管理
 

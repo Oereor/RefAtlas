@@ -2,7 +2,7 @@
 
 更新日期：2026-10-02（UTC+8）。
 
-**Phase 0 已关闭／已接受；Windows x64 与 macOS arm64 两个正式支持目标的 Phase 1A native/package gate 均已通过，Phase 1A 技术验证完成。** electron-vite + electron-builder 是否正式接受为长期工具链仍待用户评审；不据此自动关闭整个 Phase 1 或进入 Phase 2。macOS x64 已由 [ADR-0005](decisions/ADR-0005-macos-platform-scope.md) 移出正式支持范围，不构成未完成 gate。
+**Phase 0 已关闭／已接受；Phase 1A 已完成并关闭（CLOSED）。** Windows x64 与 macOS arm64 两个正式支持目标的 native/package gate 均已通过，electron-vite + electron-builder 已通过 [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 正式接受为当前长期工具链路线。macOS x64 由 [ADR-0005](decisions/ADR-0005-macos-platform-scope.md) 移出正式支持范围，不构成未完成 gate。Phase 2／后续阶段未启动（NOT STARTED），本次收尾不自动关闭整个 Phase 1 或授权下一阶段。
 
 ## 已完成
 
@@ -14,11 +14,11 @@
 - 完成 Windows x64 Electron 44.5.1 utilityProcess 双驱动/FTS5/BigInt 探针。
 - 完成官方版本/兼容范围、构建工具、UI 候选与跨平台发布文档调查。
 - 交付中文报告、性能基线与紧凑历史证据；针对性测试通过。
-- 评审并接受五项 ADR，更新当前架构、文档路径和维护规则；历史调查只增加收尾补记及必要链接修复。
+- 评审并接受六项 ADR，更新当前架构、文档路径和维护规则；历史调查只增加收尾补记及必要链接修复。
 
 ## 本轮 Phase 1A 已实现与验证
 
-- 独立生产 package/lockfile、electron-vite + Svelte 5 + TypeScript + electron-builder 工具链；兼容证据见 [报告](investigations/phase-1a-foundation.md)。工具链仍是已验证候选，不自行接受新的长期 ADR。
+- 独立生产 package/lockfile、electron-vite + Svelte 5 + TypeScript + electron-builder 工具链；兼容证据见 [报告](investigations/phase-1a-foundation.md)。工具链路线已由 ADR-0006 接受，当前精确版本不成为永久架构要求。
 - sandbox / context isolation 窄 Preload bridge、Main 来源与输入校验、Utility ready handshake、MessagePort 和请求匹配。
 - 最多 16 KiB 消息、32 个未完成请求（含一个取消控制槽）、批次取消、超时、窗口销毁、异常退出与显式重启；不自动重放请求。
 - Utility 内临时 SQLite：Unicode 和大整数文本往返、close/cleanup；Windows x64 与 macOS arm64 ASAR 目录包均实际加载预构建 `.node`，普通打包态拒绝故障注入。
@@ -42,11 +42,13 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 - [ADR-0003](decisions/ADR-0003-phase-1-sqlite-driver.md)：Phase 1 首选 better-sqlite3；历史三目标门槛由 ADR-0005 部分替代。
 - [ADR-0004](decisions/ADR-0004-deterministic-search-semantics.md)：确定性搜索语义独立于 FTS 加速。
 - [ADR-0005](decisions/ADR-0005-macos-platform-scope.md)：正式支持 Windows x64 与 macOS arm64，macOS x64 不属于支持目标。
+- [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md)：接受 electron-vite + electron-builder 为当前长期构建/打包路线，不永久冻结版本或决定正式发布配置。
 
-## 剩余 Phase 1A 门槛
+## Phase 1A 收尾与平台验收
 
-- 两个正式平台 gate 已通过；macOS x64 不再构成 gate。
-- 唯一剩余 Phase 1A 评审事项：是否把已验证的 electron-vite + electron-builder 路线接受为长期工具链决定。本轮仅新增平台范围 ADR-0005，不接受长期工具链或 Phase 0 版本矩阵。
+- 桌面骨架、进程链路、有界类型化 IPC、生命周期/取消/崩溃/重启、better-sqlite3 和 foundation validation/test/formatter/工程规范均已留下实现与验证证据。
+- 两个正式平台 native/package gate 已通过；平台范围 ADR-0005 与工具链 ADR-0006 均已接受，Phase 1A 无剩余收尾门槛，正式关闭。macOS x64 不属于支持目标，不再构成 gate。
+- 详细收尾与明确未完成领域见 [收尾记录](investigations/phase-1a-closeout.md)；签名、公证及正式发布不属于本阶段验收。
 
 | Target | Dev | Package | Utility | better-sqlite3 | SQLite smoke |
 | --- | --- | --- | --- | --- | --- |
@@ -57,4 +59,4 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 
 ## 下一步
 
-本轮只实施用户授权的 Phase 1A；签名凭据、发布配置和正式性能预算在对应阶段处理。文档与应用使用同一 Git 仓库，不再维护外层项目文档。
+下一阶段需由用户单独授权；Phase 1A closeout 本身不授权后续数据模型或产品功能实现。Phase 2／后续阶段未启动。签名凭据、发布配置和正式性能预算在对应阶段处理。文档与应用使用同一 Git 仓库，不再维护外层项目文档。

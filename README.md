@@ -2,7 +2,7 @@
 
 面向开发者、逆向研究者和配置维护者的桌面原始配置与显式引用调查工作台。
 
-**Phase 0 已关闭／已接受；Windows x64 与 macOS arm64 两个正式目标的 Phase 1A native/package gate 均已通过，技术验证完成。** 长期工具链接受仍待用户评审，不自动推进阶段。macOS x64 不属于正式支持范围。macOS 原生证据见 [验证报告](docs/investigations/phase-1a-macos-arm64-validation.md)。`tools/investigation/` 保持独立的非生产实验工具。
+**Phase 0 已关闭／已接受；Phase 1A 已完成并关闭。** Windows x64 与 macOS arm64 两个正式目标的 native/package gate 均已通过，electron-vite + electron-builder 长期工具链路线已接受；当前版本不永久冻结。Phase 2／后续阶段未启动，需单独授权。macOS x64 不属于正式支持范围。见 [收尾记录](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。`tools/investigation/` 保持独立的非生产实验工具。
 
 ## 开始阅读
 
@@ -12,7 +12,7 @@
 
 `../TurnBasedGameData/` 是只读外部数据，不复制、不修改、不作为子模块。权威项目文档位于本仓库 `docs/`，与应用代码使用同一 Git 仓库；工作区外层只是本地容器。
 
-已接受 Electron、Svelte 5、TypeScript，以及 Utility Process 数据服务和 Phase 1 首选 better-sqlite3。当前构建/打包候选已在 Windows x64 与 macOS arm64 验证，长期工具链决定仍待评审；通过 GitHub Releases 分发，不是网页服务。
+已接受 Electron、Svelte 5、TypeScript，以及 Utility Process 数据服务、Phase 1 首选 better-sqlite3 和 [electron-vite + electron-builder 工具链](docs/decisions/ADR-0006-electron-build-and-packaging-toolchain.md)。路线已在 Windows x64 与 macOS arm64 验证，具体版本由 package/lockfile 管理；通过 GitHub Releases 分发，不是网页服务。正式发布工作流、签名与公证不属于本次接受范围。
 
 ## 开发与验证
 
