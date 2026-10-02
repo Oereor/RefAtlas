@@ -4,6 +4,8 @@ tools/investigation/.cache/
 dist/
 out/
 coverage/
+.cache/
+artifacts/
 *.log
 *.db
 *.db-shm

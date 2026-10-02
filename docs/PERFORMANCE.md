@@ -1,4 +1,4 @@
-# 性能政策与 Phase 0 基线
+# 性能政策与 Phase 0 / Phase 1A 基线
 
 更新日期：2026-10-02（UTC+8）。本文件拥有性能口径与基线；结构及技术取舍见 [调查报告](investigations/phase-0-feasibility.md)。数字来自 [环境与样本证据](investigations/evidence/phase-0-measurements.json) 和 [全部运行结果](investigations/evidence/phase-0-benchmarks.json)。
 
@@ -58,18 +58,29 @@ TextMapCHS 原顺序前 50000 项，非随机样本、非全量索引。records 
 | 冷扫描/全量索引 | 缓存未控制，生产索引未建 |
 | 热工作区打开/增量刷新 | 未实现，未测 |
 | 记录/引用端到端 | 只有查询层/合成边，IPC 和 UI 未测 |
-| 虚拟化、图、编辑器、渲染响应 | 未实现，未测 |
-| 打包后的 Windows/macOS x64/arm64 | 无发布构建，未测 |
+| 产品虚拟化、图、编辑器、真实数据渲染 | 未实现，未测；基础模拟任务响应性见 Phase 1A |
+| 打包后的 Windows/macOS x64/arm64 | Windows 基础 ASAR 目录包已测；macOS 两架构未测，无正式发布构建 |
 
 不设绝对产品预算。建议 Phase 1 复现同机基线、完成真实有界链路，再制定延迟/内存目标；建议不伪装实测。关注记录级内存、精度、索引膨胀与监控开销。
 
-## 5. Phase 1A 测量议程（尚未执行）
+## 5. Phase 1A 首批端到端实测
 
-Phase 0 收尾已接受架构方向，原始测量保持不变。以下需在后续真实端到端和打包环境验证，不是性能承诺：
+日期：2026-10-02（UTC+8）；证据见 [完整小型快照](investigations/evidence/phase-1a-measurements.json)，命令与工具链见 [报告](investigations/phase-1a-foundation.md)。Phase 0 原始数字未重写。
 
-- 类型化 IPC 开销、MessagePort 吞吐、有界 payload 的条数/大小及传输行为。
-- Utility Process 启动、重启、崩溃恢复及请求取消/生命周期。
-- Windows x64、macOS x64/arm64 打包后 better-sqlite3 加载与访问，以及 macOS 打包行为。
-- 数据工作期间的 renderer 响应性，区分查询、传输与展示成本。
+环境：Windows 10.0.26300 x64、i9-14900HX、31.64 GiB RAM；Electron 44.5.1 / Chromium 152.0.7977.130 / Node 24.21.0 / N-API 10 / Node ABI 149；better-sqlite3 13.0.3 / SQLite 3.53.4。磁盘与后台负载未控制，未清空 OS 缓存，无置信区间，不宣称冷启动或跨机普适。
 
-预算在端到端证据建立后再制定；Phase 0 的保护阈值和实验 schema 不成为生产预算或接口。
+每模式执行一次完整 smoke；包含一次初始 Utility ready、三次重建 ready/恢复、三次取消和三次 SQLite。IPC 预热 5 次后测 100 次；p50 为中位数，p95 为排序后的第 95 项。SQLite 三次包含第一次 native 加载，不与后两次混称纯数据库耗时。
+
+| 模式 | 初始 Utility ready ms（n=1） | 重建 ready 中位 ms（n=3） | typed round-trip p50 / p95 ms（n=100） | 取消中位 ms（n=3） | 重启恢复中位 ms（n=3） | SQLite smoke 中位 ms（n=3） |
+| --- | ---: | ---: | --- | ---: | ---: | ---: |
+| Dev（Vite 本地服务器） | 67.16 | 47.59 | 6.80 / 16.00 | 0.80 | 47.80 | 8.20 |
+| Built（生产产物） | 66.94 | 56.79 | 7.20 / 16.00 | 0.60 | 57.20 | 9.50 |
+| Packaged（ASAR 目录包） | 82.91 | 65.39 | 6.80 / 15.70 | 0.70 | 65.60 | 9.60 |
+
+Packaged SQLite 三次为 125.60 / 9.60 / 8.30 ms；第一次包含 native 加载。所有模式均通过创建/写入/读回/close/cleanup；打包态 nativeUnpacked 为 true，并另外验证普通打包启动拒绝故障注入。
+
+口径：Utility ready 从 fork 前计到 MessagePort handshake；重启从 renderer 调用计到新服务 ready；取消从发起取消计到原请求返回 CANCELLED；typed round-trip 从 renderer 调用计到有限 Probe 返回，包含 Preload/Main/MessagePort 与一次计划 1 ms 的 Utility 定时步骤及 Windows 调度，不是纯 IPC 开销。SQLite 为完整窄桥往返及临时数据库生命周期，不是单条 SQL 性能。
+
+有限模拟批次工作时，Dev/Built/Packaged 的 50 ms DOM 心跳分别前进 38/39/40 次，合成 DOM 点击分别成功 18/19/20 次。隐藏窗口 rAF 仅采到 1/1/2 次，最大帧间隔约 956/999/1000 ms；隐藏窗口/遮挡节流不能据此当作可见 UI 帧率。结果只证明模拟任务时 renderer 仍有更新与交互，不证明未来重型索引负载或可见窗口 60 fps。
+
+未测：纯 MessagePort 吞吐、RSS/heap 高水位、冷启动分布、人工可见窗口交互与帧率、真实数据服务负载、macOS x64/arm64。未为产品设绝对预算；本轮 16 KiB/32 请求等是基础设施保护，不是未来产品上限。签名、公证、发布与全量索引仍不在本轮范围。

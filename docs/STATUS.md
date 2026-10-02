@@ -2,12 +2,12 @@
 
 更新日期：2026-10-02（UTC+8）。
 
-**Phase 0 已关闭／已接受。下一步为 Phase 1A：桌面基础与架构验证，尚未开始实施。** 当前没有生产桌面脚手架。
+**Phase 0 已关闭／已接受；Phase 1A 的 Windows x64 桌面基础已实现并通过开发态、构建态及 ASAR 打包态验证。** macOS x64／arm64 gate 尚未验证，因此不宣布整个 Phase 1A 或 Phase 1 完成。
 
 ## 已完成
 
 - 核实实际目录 TurnBasedGameData，外部仓库初始干净。
-- 项目文档整体迁入应用仓库 `docs/`，外层旧目录已移除，证据保留；本次收尾变更尚未提交。
+- 项目文档整体迁入应用仓库 `docs/`，外层旧目录已移除，证据保留；收尾已提交为 `809a4a5 Closeout Phase 0`。
 - 建立产品边界、文档权威模型与实验隔离规则。
 - 完成全数据集规模/前 30 大文件统计、15 个代表结构、ID/引用形态调查。
 - 完成 42 个重复基准：完整解析、流式与两种 SQLite 驱动；样本指纹和仓库状态一致。
@@ -16,7 +16,16 @@
 - 交付中文报告、性能基线与紧凑历史证据；针对性测试通过。
 - 评审并接受四项 ADR，更新当前架构、文档路径和维护规则；历史调查只增加收尾补记及必要链接修复。
 
-## 已接受决策
+## 本轮 Phase 1A 已实现与验证
+
+- 独立生产 package/lockfile、electron-vite + Svelte 5 + TypeScript + electron-builder 工具链；兼容证据见 [报告](investigations/phase-1a-foundation.md)。工具链仍是已验证候选，不自行接受新的长期 ADR。
+- sandbox / context isolation 窄 Preload bridge、Main 来源与输入校验、Utility ready handshake、MessagePort 和请求匹配。
+- 最多 16 KiB 消息、32 个未完成请求（含一个取消控制槽）、批次取消、超时、窗口销毁、异常退出与显式重启；不自动重放请求。
+- Utility 内临时 SQLite：Unicode 和大整数文本往返、close/cleanup；Windows ASAR 目录包实际加载预构建 `.node`，普通打包态拒绝故障注入。
+- 35 项自动测试、类型检查、开发态/构建态/打包态 smoke、基础响应性与测量。验证使用 synthetic probe，不证明真实数据产品性能。
+- AGENTS 加入所有公网操作经系统 7890 代理的长期规则；修复当前文档过时状态，历史调查仅追加带日期补记。
+
+## 已接受决策（仍为四项）
 
 - [ADR-0001](decisions/ADR-0001-desktop-stack-and-process-model.md)：Electron/Svelte 5/TypeScript 与 Utility Process 数据服务，初始无 Worker Threads。
 - [ADR-0002](decisions/ADR-0002-lossless-raw-data-and-bounded-access.md)：无损类型/词法/出处、物理与逻辑身份分离、有界混合访问。
@@ -25,13 +34,17 @@
 
 ## 剩余 Phase 1A 门槛
 
-- 选择并验证构建工具集成、具体 Vite/打包配置；未批准 Phase 0 的版本矩阵。
-- 验证 Windows x64、macOS x64/arm64 打包后 better-sqlite3 原生加载与访问。
-- 验证有界类型化 IPC、MessagePort、取消/请求生命周期、utility 启动/崩溃/恢复与 renderer 响应。
-- 后续设计原始记录/IPC 类型、源地址、契约/索引 schema、大小阈值，并评估中文短词与 FTS/子串回退；本次不创建这些接口。
+- macOS x64 与 macOS arm64 的原生开发／打包／Utility／better-sqlite3／SQLite smoke 均未验证；已提供本地可重复脚本，不用 Windows 成功替代 macOS 证据。
+- 待用户评审是否把已验证的 electron-vite + electron-builder 路线接受为长期工具链决定；本轮没有新增已接受 ADR，也没有接受 Phase 0 版本矩阵。
 
-未测：全量生产索引、源字节范围、增量刷新、IPC/UI 性能、生产构建、macOS 两架构与签名/公证。它们不是已完成能力；测量口径见 [PERFORMANCE](PERFORMANCE.md)。
+| Target | Dev | Package | Utility | better-sqlite3 | SQLite smoke |
+| --- | --- | --- | --- | --- | --- |
+| Windows x64 | 通过 | ASAR 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
+| macOS x64 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 |
+| macOS arm64 | 未验证 | 未验证 | 未验证 | 未验证 | 未验证 |
+
+后续尚未设计／实现：正式 Query API、原始记录与身份模型、源字节范围、Dataset Contract、索引 schema、全量索引、增量刷新、中文短词/FTS 策略。真实数据负载、可见窗口帧率、macOS 两架构与签名/公证未测；基础 IPC 测量见 [PERFORMANCE](PERFORMANCE.md)。
 
 ## 下一步
 
-本次收尾结束后停止。Phase 1A 属于后续独立实施任务；签名凭据、发布配置和正式性能预算在对应阶段处理。文档与应用使用同一 Git 仓库，不再维护外层项目文档。
+本轮只实施用户授权的 Phase 1A；签名凭据、发布配置和正式性能预算在对应阶段处理。文档与应用使用同一 Git 仓库，不再维护外层项目文档。

@@ -1,0 +1,39 @@
+{
+  "name": "refatlas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "RefAtlas Phase 1A 桌面基础验证",
+  "author": "RefAtlas contributors",
+  "license": "MIT",
+  "main": "out/main/index.cjs",
+  "engines": { "node": ">=24.0.0 <25" },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "install:electron": "node scripts/install-electron.mjs",
+    "typecheck": "tsc --noEmit && svelte-check --tsconfig ./tsconfig.renderer.json",
+    "test": "vitest run",
+    "build": "electron-vite build",
+    "smoke:built": "node scripts/smoke.mjs built",
+    "smoke:dev": "node scripts/smoke.mjs dev",
+    "package:win:x64": "node scripts/package.mjs win32 x64",
+    "package:mac:x64": "node scripts/package.mjs darwin x64",
+    "package:mac:arm64": "node scripts/package.mjs darwin arm64",
+    "smoke:packaged": "node scripts/smoke.mjs packaged",
+    "docs:check": "node scripts/check-docs.mjs"
+  },
+  "dependencies": { "better-sqlite3": "13.0.3" },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "6.2.4",
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "24.19.1",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3",
+    "electron-vite": "5.0.0",
+    "svelte": "5.57.1",
+    "svelte-check": "4.7.6",
+    "typescript": "6.0.3",
+    "vite": "7.3.6",
+    "vitest": "5.0.3"
+  }
+}
