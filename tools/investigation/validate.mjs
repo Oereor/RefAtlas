@@ -35,7 +35,7 @@ function visit(directory) {
     else if (entry.name.endsWith('.md')) markdownFiles.push(filename);
   }
 }
-visit(path.join(workspaceRoot, 'docs')); visit(path.join(workspaceRoot, 'RefAtlas'));
+visit(path.join(workspaceRoot, 'RefAtlas'));
 let checkedLinks = 0;
 for (const filename of markdownFiles) {
   const text = fs.readFileSync(filename, 'utf8');

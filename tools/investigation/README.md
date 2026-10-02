@@ -41,4 +41,4 @@ Electron 包可能延迟下载二进制；在允许联网时执行 `node node_mo
 
 测试覆盖计数、嵌套、精度、非法 JSON、长记录/背压、路径边界、超时与 RSS 保护。数据库正常运行后自动移除；被强制终止可能留下自身产物，应只在确认绝对路径位于本目录 artifacts 后用 PowerShell LiteralPath 清理。
 
-文档保存紧凑证据；原始 artifacts 可复现但不提交。报告与当前状态见 [项目文档](../../../docs/README.md)。
+文档保存紧凑证据；原始 artifacts 可复现但不提交。报告与当前状态见 [仓库内项目文档](../../docs/README.md)。Phase 0 已关闭，工具保留为非生产实验，不升级成应用模块。
