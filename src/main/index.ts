@@ -3,7 +3,7 @@ import type { IpcMainInvokeEvent } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { mkdir, writeFile, unlink } from 'node:fs/promises'
 import { mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { cpus, release, totalmem } from 'node:os'
 import { once } from 'node:events'
 import {
@@ -96,6 +96,8 @@ function requireDiagnostics(): void {
 }
 
 let choosingWorkspace = false
+// Native picker substitution is confined to explicit smoke mode, never exposed through IPC.
+let smokeWorkspaceSelections: (string | null)[] = []
 function registerRaw(
   channel: string,
   action: (event: IpcMainInvokeEvent, input: unknown) => Promise<unknown>,
@@ -121,9 +123,17 @@ registerRaw(RAW_CHANNELS.open, async (event, input) => {
   if (choosingWorkspace) throw new RawError('BUSY')
   choosingWorkspace = true
   try {
+    const fixtureSelection = smokeWorkspaceSelections.length
+      ? smokeWorkspaceSelections.shift()
+      : reportPath
+        ? join(dirname(reportPath), 'raw-fixtures')
+        : null
     const selection =
       smoke && !guardSmoke && reportPath
-        ? { canceled: false, filePaths: [join(dirname(reportPath), 'raw-fixtures')] }
+        ? {
+            canceled: fixtureSelection === null,
+            filePaths: fixtureSelection ? [fixtureSelection] : [],
+          }
         : await dialog.showOpenDialog(window!, { properties: ['openDirectory'] })
     if (selection.canceled) return { status: 'cancelled' }
     if (!trusted(event)) throw new RawError('CANCELLED')
@@ -223,6 +233,19 @@ async function launch(): Promise<void> {
     await writeFile(join(root, 'cancel.json'), '[' + '0,'.repeat(1_000_000) + '0]', 'utf8')
     await writeFile(join(root, 'huge.json'), JSON.stringify('x'.repeat(512 * 1024)), 'utf8')
     await writeFile(join(root, 'bad.json'), '{"a":1,}', 'utf8')
+    await writeFile(join(root, 'other.json'), '{"kind":"fixture"}', 'utf8')
+    await writeFile(join(root, '说明🙂' + '长名称'.repeat(35) + '.json'), 'null', 'utf8')
+    const large = join(root, 'large')
+    await mkdir(large, { recursive: true })
+    for (let offset = 0; offset < 5000; offset += 100)
+      await Promise.all(
+        Array.from({ length: 100 }, (_, index) =>
+          writeFile(join(large, String(offset + index).padStart(5, '0') + '.json'), '0', 'utf8'),
+        ),
+      )
+    const secondRoot = join(dirname(reportPath), 'explorer-second')
+    await mkdir(secondRoot, { recursive: true })
+    await writeFile(join(secondRoot, 'switched.json'), '{}', 'utf8')
   }
   await service.start()
   let initialLocale = normalizeSystemLocale(undefined)
@@ -230,8 +253,10 @@ async function launch(): Promise<void> {
     initialLocale = normalizeSystemLocale(app.getSystemLocale())
   } catch {}
   window = new BrowserWindow({
-    width: 860,
-    height: 640,
+    width: 1280,
+    height: 800,
+    minWidth: 900,
+    minHeight: 600,
     show: !smoke,
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
@@ -239,6 +264,10 @@ async function launch(): Promise<void> {
       backgroundThrottling: false,
       additionalArguments: [UI_LOCALE_ARGUMENT + initialLocale],
     },
+  })
+  const rendererErrors: string[] = []
+  window.webContents.on('console-message', (event) => {
+    if (event.level === 'error') rendererErrors.push(event.message.slice(0, 1000))
   })
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
   window.webContents.on('will-navigate', (event) => event.preventDefault())
@@ -303,6 +332,78 @@ async function launch(): Promise<void> {
       runtimeNavigations: 0,
       fixtureReloads: navigationCount,
     }
+    smokeWorkspaceSelections = [
+      null,
+      join(dirname(reportPath), 'raw-fixtures'),
+      null,
+      join(dirname(reportPath), 'explorer-second'),
+    ]
+    const explorerReports: unknown[] = []
+    const explorerStage = async (stage: string) => {
+      try {
+        explorerReports.push(
+          await window!.webContents.executeJavaScript(
+            'window.runExplorerSmoke(' + JSON.stringify(stage) + ')',
+          ),
+        )
+      } catch (error) {
+        throw new Error(
+          'Explorer stage ' +
+            stage +
+            ': ' +
+            (error instanceof Error ? error.message : String(error)),
+        )
+      }
+    }
+    window.show()
+    window.focus()
+    window.webContents.focus()
+    const key = (keyCode: string) => {
+      window!.webContents.sendInputEvent({ type: 'keyDown', keyCode })
+      window!.webContents.sendInputEvent({ type: 'keyUp', keyCode })
+    }
+    await explorerStage('initial')
+    key('Right')
+    await explorerStage('expanded')
+    key('Right')
+    await explorerStage('entered')
+    key('Space')
+    await explorerStage('selected')
+    key('Return')
+    await explorerStage('activated')
+    key('Up')
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    key('Down')
+    await explorerStage('up-down')
+    key('Left')
+    await explorerStage('parent')
+    key('Left')
+    await explorerStage('collapsed')
+    key('End')
+    await explorerStage('end')
+    key('Home')
+    await explorerStage('home')
+    await explorerStage('component-boundaries')
+    await mkdir(resolve(process.cwd(), 'artifacts'), { recursive: true })
+    await writeFile(
+      resolve(
+        process.cwd(),
+        'artifacts/source-explorer-' +
+          (process.env.ELECTRON_RENDERER_URL ? 'dev' : app.isPackaged ? 'packaged' : 'built') +
+          '.png',
+      ),
+      (await window.webContents.capturePage()).toPNG(),
+    )
+    await explorerStage('switched')
+    if (process.argv.includes('--explorer-real-data')) {
+      smokeWorkspaceSelections = [resolve(process.cwd(), '../TurnBasedGameData')]
+      await explorerStage('real-data')
+    }
+    window.hide()
+    rendererReport.explorer = explorerReports
+    rendererReport.consoleErrors = rendererErrors
+    if (rendererErrors.length)
+      throw new Error('Renderer console errors: ' + rendererErrors.join('\n'))
   }
   if (
     !object(preloadSecurity) ||

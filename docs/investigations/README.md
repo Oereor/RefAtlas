@@ -1,5 +1,7 @@
 # 调查与证据
 
+- [Source Browser Slice C](phase-2-source-browser-slice-c-source-explorer.md)：正式 shell、Workspace flow、Zag managed tree、TanStack virtualization、source activation、Windows UI/真实数据/打包验收；macOS 累计验收 deferred。
+
 - [Source Browser Slice B](phase-2-source-browser-slice-b-localization-foundation.md)：Renderer-only localization、窄 bootstrap、持久化/no-reload、生成/离线与 Windows 三态验收；macOS 累计验收 deferred。
 
 - [Source Browser Slice A](phase-2-source-browser-slice-a-directory-lifecycle.md)：DirectoryPath、snapshot/分页、metadata 调度、显式 acquire/release、race regression 与 Windows 验收；macOS 新实现 gate 待验证。

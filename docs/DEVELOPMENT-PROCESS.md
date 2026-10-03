@@ -13,7 +13,7 @@
 
 Phase 2A 接受范围见 [评审收尾](investigations/phase-2a-review-closeout.md) 和 ADR-0007–0010。后续实现区分 Node 地址、Structural Record 浏览角色和显式契约实体；source workspace 只读，外部变化使旧范围/索引/视图失效。parser 各路径统一 raw semantics；搜索 coverage 与 accelerator coverage 分开，进度、部分结果和取消必须可观察。
 
-从第一批 Phase 2 production UI 起，用户消息通过集中、类型化 localization layer；内部稳定 code 由 presentation 翻译，locale 不传入 Data Service。raw 字段/值/数值词法/路径/地址不翻译或按 locale 改写；APP 自有格式通过共享 `Intl.*` formatter。message sources 为权威，generated artifact 不手工维护；具体库与 locale 集合留待实现。[ADR-0010](decisions/ADR-0010-ui-localization-boundary.md)
+从第一批 Phase 2 production UI 起，用户消息通过集中、类型化 localization layer；内部稳定 code 由 presentation 翻译，locale 不传入 Data Service。raw 字段/值/数值词法/路径/地址不翻译或按 locale 改写；APP 自有格式通过共享 `Intl.*` formatter。message sources 为权威，generated artifact 不手工维护；当前采用 Renderer-only Paraglide 与 en/zh-CN，配置和边界见 ARCHITECTURE。[ADR-0010](decisions/ADR-0010-ui-localization-boundary.md)
 
 ## 桌面基础验证流程
 
@@ -21,7 +21,7 @@ Phase 2A 接受范围见 [评审收尾](investigations/phase-2a-review-closeout.
 
 完整验收在应用仓库根目录执行 `npm run validate:foundation`：format:check → typecheck → test → docs:check → smoke:dev → production build → smoke:built → builder → smoke:packaged。命令和安装说明见应用 README；每个目标在对应原生机器运行，不用交叉产物或 Rosetta 成功冒充另一架构的原生验收。
 
-smoke 通过真实隐藏窗口/Preload bridge 运行，120 秒总超时；父 runner 清理自身进程树和已核实边界的临时目录。报告含目标身份、安全配置、运行时、SQLite 清理与 ASAR native 证据；打包态另验普通模式拒绝故障注入。失败须报告非零退出码，不以残留旧成功报告替代当前结果。
+smoke 通过真实窗口/Preload bridge（UI keyboard 阶段显示并聚焦，其余保持隐藏） 运行，120 秒总超时；父 runner 清理自身进程树和已核实边界的临时目录。报告含目标身份、安全配置、运行时、SQLite 清理与 ASAR native 证据；打包态另验普通模式拒绝故障注入。失败须报告非零退出码，不以残留旧成功报告替代当前结果。
 
 macOS arm64 的脚本路径必须在原生 Apple Silicon 环境验证；macOS x64 不属于正式 gate。electron-vite + electron-builder 路线已由 [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 接受；版本升级按该 ADR 与现有 Validation Cadence 选择必要的兼容性和平台验证，不要求每次 patch/minor 无条件完整跨平台重验。正式发布、签名、公证和 release workflow 仍需后续独立授权。
 
@@ -81,3 +81,9 @@ message-format 4.4.0 固定 URL 与 SHA-256，`i18n:prepare` 仅缺缓存时经�
 完整 runner 在 format/typecheck 前加入 offline compile gate，其余保留 cheap checks → 可选只读 real-data → dev → 单次 production build → built → builder → packaged，任何失败停止。三态 smoke 验证 readonly bootstrap、locale DOM/ARIA/title、无 runtime navigation、状态/raw 保真与三次明确的 persistence reload；显式 reload fixture 不计为 runtime switch。普通打包模式不暴露 localization smoke。macOS 新行为统一留累计原生验收，不以旧 gate 替代。
 
 完整 runner 的三个 smoke 阶段直接调用现有 scripts/smoke.mjs，准备/生成由此前 gate 保证；独立 npm smoke 入口保持原功能。这减少 npm wrapper，不提供跳过 build 的独立参数，不新增 retry。原生启动异常按事件/最小进程探针调查，无法确定根因时在报告如实记录。
+
+## Source Explorer 验收
+
+Slice C 在既有 smoke 内验证正式 Svelte shell、实际 Electron key events、5000-row fixture、loading collapse/late result、retry、双击/Enter、locale continuity 和 workspace switch。`validate:foundation -- --real-data` 将真实 Explorer gate 传入三态 smoke，使用同级只读数据、实际 Controller 与虚拟化；每态前后核对 HEAD/status 与六样本 streaming 指纹。普通 smoke 不依赖外部数据。
+
+所有 picker substitution、目录延迟/错误组件 fixture 和可调用 smoke harness 仅用于明确 smoke mode；普通 packaged guard 确认不暴露。UI 依赖在 Renderer 打包，ASAR 实际清单检查排除 unbundled Zag/TanStack/Svelte，保留 SQLite native gate。最终状态与 known limitations 见 Slice C 报告；macOS A/B/C gate deferred 到 Slice D 后累计验收。

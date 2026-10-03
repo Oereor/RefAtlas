@@ -1,0 +1,52 @@
+:root {
+  --surface: #fff;
+  --surface-alt: #f7f8fa;
+  --border: #dde1e6;
+  --text: #29313b;
+  --muted: #687381;
+  --accent: #2862a4;
+  --selection: #dce9f7;
+  --focus: #3574b8;
+  --hover: #edf0f4;
+  --error: #a73737;
+  --mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 4px 9px;
+}
+button {
+  cursor: pointer;
+}
+button:hover {
+  background: var(--hover);
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.diagnostic-harness {
+  position: fixed;
+  left: -10000px;
+  width: 780px;
+}

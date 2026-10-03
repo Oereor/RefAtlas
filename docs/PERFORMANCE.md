@@ -122,3 +122,7 @@ Windows x64 首次真实目录 gate：root 6 项 / 1 页 / 532 bytes，ExcelOutp
 2026-10-03 Windows x64，沿用现有 electron-vite production 配置，不改 minify 策略。相同应用 Slice A 最后产物与本片单次生产构建比较：Renderer JS 114,052 → 152,262 bytes（+38,210），Node gzipSync 26,494 → 34,107 bytes（+7,613）；ASAR 1,063,759 → 1,104,278 bytes（+40,519）。包含本片消息/runtime、formatter/error/bootstrap 与诊断 harness，不能解释为单纯 compiler/runtime 增量。
 
 新增 61 个 dev lock entries（含非本机 optional variants）均未进入 ASAR，compiler/SDK/plugin cache 和 catalog source 排除。三态 runtime navigation=0，另有各三次显式 persistence reload；不等同可见窗口帧率/切换延迟测量。缓存、背景负载未控制，无启动/响应 SLA。实际 gate、检查脚本修正及 macOS deferred 见 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。
+
+## Source Browser Slice C：Explorer 观察口径
+
+固定行高 24px、overscan 5，额外保留至多一个 focused item；数据缓存起点 10,000 entries / 8 MiB 序列化 metadata，不是硬 JS heap/RSS 上限。最终 dev/built/packaged 均为 5008 logical rows / 34 mounted treeitems，End 后 33；真实目录累计 5258 logical rows / 33 mounted。Renderer JS 424497 bytes / gzip 89572 bytes，相对 Slice B +272235 / +55465；ASAR 1385891 bytes，+281613。未控制 OS cache，仅作 DOM 有界和流程观察，不建立 render/scroll/activation SLA。最终三态观察、Renderer JS/gzip/ASAR delta 见 [Slice C 报告](investigations/phase-2-source-browser-slice-c-source-explorer.md)。

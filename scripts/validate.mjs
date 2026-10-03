@@ -36,5 +36,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     process.arch,
     process.argv.includes('--real-data'),
   )
-  await executeSteps(steps, await packagingEnvironment(process.platform, process.arch))
+  await executeSteps(steps, {
+    ...(await packagingEnvironment(process.platform, process.arch)),
+    REFATLAS_SOURCE_EXPLORER_REAL_DATA: process.argv.includes('--real-data') ? '1' : '0',
+  })
 }

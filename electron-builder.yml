@@ -5,6 +5,7 @@ directories:
 files:
   - out/**
   - package.json
+  - '!node_modules/{@zag-js,@tanstack,svelte,@jridgewell,@sveltejs,@types,acorn,aria-query,axobject-query,clsx,csstype,devalue,esm-env,esrap,is-reference,locate-character,magic-string,zimmerframe}/**'
 asar: true
 asarUnpack:
   - node_modules/better-sqlite3/prebuilds/*.node

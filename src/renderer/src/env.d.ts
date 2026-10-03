@@ -10,6 +10,7 @@ declare global {
     runFoundationGuardSmoke?: () => Promise<unknown>
     runRawSmoke?: (stage: string) => Promise<unknown>
     runLocalizationSmoke?: (stage: string) => Promise<unknown>
+    runExplorerSmoke?: (stage: string) => Promise<unknown>
   }
 }
 export {}

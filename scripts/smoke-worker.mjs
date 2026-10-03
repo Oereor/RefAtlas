@@ -5,6 +5,7 @@ import { createRequire } from 'node:module'
 import { runProcess } from './process.mjs'
 import { readdir } from 'node:fs/promises'
 import { gzipSync } from 'node:zlib'
+import { realDataSnapshot } from './source-explorer-data.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const mode = process.argv[2] ?? 'built'
@@ -18,6 +19,8 @@ if (!reportDirectory) throw new Error('smoke worker 需要父进程提供临时�
 const report = join(reportDirectory, 'report.json')
 let server
 try {
+  const realBefore =
+    process.env.REFATLAS_SOURCE_EXPLORER_REAL_DATA === '1' ? await realDataSnapshot(root) : null
   const env = {
     ...process.env,
     TEMP: reportDirectory,
@@ -53,6 +56,7 @@ try {
           )
     args = ['--smoke', '--smoke-report', report]
   }
+  if (process.env.REFATLAS_SOURCE_EXPLORER_REAL_DATA === '1') args.push('--explorer-real-data')
   if (!existsSync(command)) throw new Error('未找到 Electron 应用：' + command)
   await runProcess(command, args, {
     cwd: root,
@@ -62,6 +66,12 @@ try {
     timeoutMs: 90000,
   })
   const content = JSON.parse(await readFile(report, 'utf8'))
+  if (realBefore) {
+    const realAfter = await realDataSnapshot(root)
+    if (JSON.stringify(realBefore) !== JSON.stringify(realAfter))
+      throw new Error('外部仓库 HEAD/status/source fingerprint 发生变化')
+    content.externalDataSafety = { unchanged: true, ...realAfter }
+  }
   if (
     content.ok !== true ||
     content.platform !== process.platform ||
@@ -83,8 +93,19 @@ try {
     content.renderer.localization.fixtureReloads !== 3
   )
     throw new Error('localization 无 reload / persistence fixture 证明缺失')
+  if (
+    !Array.isArray(content.renderer.explorer) ||
+    !content.renderer.explorer.some((stage) => stage.stage === 'end') ||
+    content.renderer.consoleErrors?.length !== 0
+  )
+    throw new Error('Source Explorer UI/keyboard/console 证明缺失')
+  if (
+    process.env.REFATLAS_SOURCE_EXPLORER_REAL_DATA === '1' &&
+    !content.renderer.explorer.some((stage) => stage.stage === 'real-data')
+  )
+    throw new Error('真实 Source Explorer/controller/virtualization gate 缺失')
   const forbiddenRuntime =
-    /@inlang|@lix-js|unplugin-paraglide-js|Fallback ready|源文件已发生变化，请重新加载。/
+    /@inlang|@lix-js|unplugin-paraglide-js|Fallback ready|源文件已发生变化，请重新加载。|@zag-js|@tanstack|TREE\.TYPEAHEAD|BRANCH_NODE\.ARROW/
   if (mode !== 'dev') {
     for (const folder of ['main', 'preload']) {
       const files = await readdir(resolve(root, 'out', folder), { recursive: true })
@@ -133,7 +154,9 @@ try {
       throw new Error('ASAR 包含非运行时文件或外部数据')
     if (
       entries.some((entry) =>
-        /(^|\/)(@inlang|@lix-js|project\.inlang|\.cache|messages)(\/|$)/.test(entry),
+        /(^|\/)(@inlang|@lix-js|@zag-js|@tanstack|svelte|@sveltejs|project\.inlang|\.cache|messages)(\/|$)/.test(
+          entry,
+        ),
       )
     )
       throw new Error('ASAR 包含 compiler SDK、catalog 源文件或插件缓存')
@@ -168,6 +191,7 @@ try {
       compilerExcluded: true,
       pluginCacheExcluded: true,
       catalogsRendererOnly: true,
+      explorerRendererOnly: true,
     }
     const guardReport = join(reportDirectory, 'guard-report.json')
     await runProcess(command, ['--guard-smoke', '--smoke-report', guardReport], {

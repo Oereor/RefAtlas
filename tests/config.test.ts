@@ -57,6 +57,10 @@ describe('foundation build boundaries', () => {
         ?.trim()
         .split(/\r?\n/)
         .map((line) => line.trim()),
-    ).toEqual(['- out/**', '- package.json'])
+    ).toEqual([
+      '- out/**',
+      '- package.json',
+      "- '!node_modules/{@zag-js,@tanstack,svelte,@jridgewell,@sveltejs,@types,acorn,aria-query,axobject-query,clsx,csstype,devalue,esm-env,esrap,is-reference,locate-character,magic-string,zimmerframe}/**'",
+    ])
   })
 })

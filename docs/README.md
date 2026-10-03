@@ -26,3 +26,5 @@ Source Browser Slice A 历史实现与 Windows 验收见 [报告](investigations
 2026-10-02 Phase 0 收尾时，文档整体从工作区外层迁入本仓库 `docs/`，保留调查与证据，不另建文档仓库。迁移、四份已接受 ADR 和文档更新已纳入 `809a4a5 Closeout Phase 0`；后续实现与相关文档继续一起审查。
 
 影响架构、状态、路线图或性能事实的代码与权威文档在同一审查变更中演进；不影响文档事实的琐碎实现不要求无意义文档修改。迁移前的版本管理情况是历史事实，保留于 [Phase 0 调查](investigations/phase-0-feasibility.md)，不代表当前布局。
+
+Source Browser Slice C 已建立正式 shell、工作区、managed/virtualized Explorer 和最小 source activation，Node Browser/Inspector 留待 Slice D；验收与平台状态见 [Slice C 报告](investigations/phase-2-source-browser-slice-c-source-explorer.md)及 STATUS。

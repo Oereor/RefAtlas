@@ -37,6 +37,9 @@
   },
   "dependencies": {
     "@streamparser/json": "0.0.26",
+    "@tanstack/svelte-virtual": "3.13.39",
+    "@zag-js/svelte": "1.44.0",
+    "@zag-js/tree-view": "1.44.0",
     "better-sqlite3": "13.0.3"
   },
   "devDependencies": {

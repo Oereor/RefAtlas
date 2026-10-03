@@ -2,11 +2,11 @@
 
 面向开发者、逆向研究者和配置维护者的桌面原始配置与显式引用调查工作台。
 
-**Phase 0、Phase 1、Phase 1A 均已关闭；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** Phase 2A 已确认原则写入 ADR-0007–0010，见 [评审收尾报告](docs/investigations/phase-2a-review-closeout.md)；[原调查](docs/investigations/phase-2a-data-access-architecture.md) 保留历史候选与实测。Windows x64 与 macOS arm64 的 native/package gate 均已通过，electron-vite + electron-builder 长期路线已接受，当前版本不永久冻结；macOS x64 不属于支持范围。见 [Phase 1A 收尾](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。本轮已实现只读 raw Data Service、revision、统一 parser 和有界 query primitives，见 [实现与验收报告](docs/investigations/phase-2-raw-access-foundation.md)。`tools/investigation/` 保持独立非生产；后续 Source Browser 等仍需单独授权。
+**Phase 0、Phase 1、Phase 1A 均已关闭；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** Phase 2A 已确认原则写入 ADR-0007–0010，见 [评审收尾报告](docs/investigations/phase-2a-review-closeout.md)；[原调查](docs/investigations/phase-2a-data-access-architecture.md) 保留历史候选与实测。Windows x64 与 macOS arm64 的 native/package gate 均已通过，electron-vite + electron-builder 长期路线已接受，当前版本不永久冻结；macOS x64 不属于支持范围。见 [Phase 1A 收尾](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。本轮已实现只读 raw Data Service、revision、统一 parser 和有界 query primitives，见 [实现与验收报告](docs/investigations/phase-2-raw-access-foundation.md)。`tools/investigation/` 保持独立非生产；后续 Node Browser、Inspector 等仍需单独授权。
 
 ## 开始阅读
 
-Source Browser Slice A 已评审，可继续开发；其新实现 macOS arm64 验收延后至累计 Source Browser gate。Slice B 已实现 Renderer-only localization foundation，Windows 完整验收结果见 [Slice B 报告](docs/investigations/phase-2-source-browser-slice-b-localization-foundation.md) 和 [STATUS](docs/STATUS.md)。正式 Source Browser UI 留给后续独立授权。
+Source Browser Slice A 已评审，可继续开发；其新实现 macOS arm64 验收延后至累计 Source Browser gate。Slice B 已实现 Renderer-only localization foundation，Windows 完整验收结果见 [Slice B 报告](docs/investigations/phase-2-source-browser-slice-b-localization-foundation.md) 和 [STATUS](docs/STATUS.md)。Slice C 已实现正式 Source Explorer shell，Windows 11 阶段单次完整验收 exit 0，见 [Slice C 报告](docs/investigations/phase-2-source-browser-slice-c-source-explorer.md)。
 
 - [文档入口](docs/README.md)：职责与阅读顺序。
 - [产品定义](docs/PROJECT.md)、[当前状态](docs/STATUS.md)、[已接受架构](docs/ARCHITECTURE.md)、[ADR](docs/decisions/README.md)。
@@ -53,7 +53,7 @@ npm.cmd run validate:foundation
 
 独立使用 `npm.cmd run package:win:x64` 仍会先重新 build，再打包，不信任已有产物；`smoke:built` 和 `smoke:packaged` 单独执行时要求已有对应最新产物。日常按变更选择最小验证层级，不为每次局部修改运行完整链路，详见 [开发流程](docs/DEVELOPMENT-PROCESS.md)。
 
-目录包位于 `dist/win-unpacked/RefAtlas.exe`；`--dir` 保留 ASAR，不生成安装器、不发布、不签名。开发／诊断页面保持基础设施 UI；raw production bridge 已建立，smoke 通过应用自己的临时 fixture 验证 raw 访问，不增加产品 UI。smoke 使用隐藏窗口、120 秒总超时、明确退出码和自动清理；可重复报告保存于被忽略的 `artifacts/`。
+目录包位于 `dist/win-unpacked/RefAtlas.exe`；`--dir` 保留 ASAR，不生成安装器、不发布、不签名。正式启动显示 Source Explorer；Foundation 诊断保留在受保护 harness。smoke 通过应用自己的临时 fixture 验证 raw 与 UI，键盘阶段短暂显示聚焦窗口，保持 120 秒总超时、明确退出码和自动清理；可重复报告保存于被忽略的 `artifacts/`。
 
 macOS arm64 在对应原生 Apple Silicon 机器使用相同安装步骤（确认当地系统 7890 代理后设置当前 shell 的 HTTP_PROXY、HTTPS_PROXY、NO_PROXY），执行 `npm run package:mac:arm64`，再执行 `npm run smoke:packaged`。脚本要求 OS 和 Node 架构与目标一致；macOS x64 不提供正式打包入口，不新增远程 workflow。
 
@@ -80,7 +80,7 @@ Mac 目录包位于 `dist/mac-arm64/RefAtlas.app`，本轮不签名、不公证�
 
 ## Raw Access Foundation 验证
 
-`window.raw` 是正式窄桥，提供 workspace open/close + displayName、单目录 listDirectory、source info/reload/release、Node read、children page、scalar segment 和取消。workspace root 由 Main 原生对话框选择；客户端不得提交绝对路径。info/reload 显式 acquire，Node 请求带 expectedRevision，release 后不隐式重新注册；source 变化后先 stale，再显式 reload。不添加浏览或编辑产品 UI。
+`window.raw` 是正式窄桥，提供 workspace open/close + displayName、单目录 listDirectory、source info/reload/release、Node read、children page、scalar segment 和取消。workspace root 由 Main 原生对话框选择；客户端不得提交绝对路径。info/reload 显式 acquire，Node 请求带 expectedRevision，release 后不隐式重新注册；source 变化后先 stale，再显式 reload。Raw Access 不提供文件编辑。正式 Explorer 由 Renderer Controller 接入。
 
 普通 `npm test` 验证临时 fixture，并跳过外部来源 gate。明确验证六个真实只读样本时执行：
 
@@ -90,7 +90,7 @@ npm.cmd run test:raw-data
 
 该命令按固定六样本及 root、ExcelOutput、Config/Level/Mission 目录运行 production service，验证分页/排序/response bounds、零自动注册、取消与 release/reacquire。前后 streaming hash/size/mtime 与外部 HEAD/status 必须一致，报告写入被忽略的 `artifacts/raw-real-data.json`。没有全工作区扫描；需要本机同级 TurnBasedGameData。需要将此 gate 纳入完整原生平台验收时执行 `npm run validate:foundation -- --real-data`，保持单次 production build，真实 gate 失败阻止 smoke/打包。
 
-Source Browser Slice A 的实现与平台状态见 [报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。macOS arm64 新目录/lifecycle/localization gate 为 cumulative validation deferred，未豁免；不使用既有 Raw Foundation gate 冒充通过，不自动开始正式 UI。
+Source Browser Slice A 的实现与平台状态见 [报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。macOS arm64 新目录/lifecycle/localization/Explorer gate 为 cumulative validation deferred，未豁免；不使用既有 Raw Foundation gate 冒充通过，Slice C 已接入正式 UI，Node Browser 留待 Slice D。
 
 现有 dev/built/packaged smoke 和 `validate:foundation` 已包含 raw 进程链路验收；fixture 由 Main/runner 在自身临时目录管理。Raw Access Foundation 已在 Windows x64 与 macOS arm64 验证，Mac 的 filesystem/watcher/stat 回退、真实数据与 ASAR runtime 证据见 [原生验证报告](docs/investigations/phase-2-raw-access-macos-arm64-validation.md)。接口、资源上限和边界见 [实现报告](docs/investigations/phase-2-raw-access-foundation.md)；首片仍待 review，整个 Phase 2 未完成。
 
@@ -108,4 +108,10 @@ npm.cmd run i18n:compile -- --offline
 
 dev/typecheck/test/build 和 dev smoke 有自动生成前置步骤；独立 package 与完整 validation 自动准备插件。新 checkout 安装依赖后可直接运行，不需要记住手工生成步骤。generated modules/declarations 与 SDK project metadata ignored，不手改、不格式化。`--offline` 禁止 fetch，并确认零可解析网络地址请求；SDK 对相对模块路径的无效 fetch 探测不会发出 HTTP 请求。
 
-组件只消费统一 `src/renderer/src/i18n` 入口及 reactive locale。`formatUiCount` / `formatByteSize` 仅用于应用 metadata，`formatRawError` 将稳定 code 映射成 presentation，不翻译或重写 raw field/string/lexeme/path/Pointer/revision。现有 Foundation 中文诊断页保持历史范围；本轮通过隐藏 Svelte harness 验证，无正式 selector/settings UI。macOS arm64 待累计验收。
+组件只消费统一 `src/renderer/src/i18n` 入口及 reactive locale。`formatUiCount` / `formatByteSize` 仅用于应用 metadata，`formatRawError` 将稳定 code 映射成 presentation，不翻译或重写 raw field/string/lexeme/path/Pointer/revision。Foundation 中文诊断页保持历史范围并隔离；Slice C 工具栏提供正式语言 selector，无 settings 系统。macOS arm64 待累计验收。
+
+## Source Explorer
+
+打开工作区后仅显示普通目录和精确 `.json` 来源；不特别隐藏 `.git`，不跟随链接。单击 JSON 选择，双击或 Enter 激活；方向键、Home/End 和 Space 可浏览和选择。目录按需分页，尾部自动加载，也可显式加载更多；失败可重试，过期 cursor 必须刷新。刷新 Explorer 保留 active source。
+
+Zag 管理交互/ARIA，ExplorerController 管理异步/缓存，TanStack Virtual 管理固定 24px 行和 overscan 5；缓存起点 10,000 entries / 8 MiB metadata。中央只显示已获取来源和根摘要，Node Browser/Inspector 尚未实现。`--real-data` 完整验收同时覆盖真实 Electron Explorer/controller/virtualization，前后核对外部仓库与样本指纹。Slice A/B/C macOS arm64 验收 deferred，未豁免，留待 Slice D 后累计 gate。
