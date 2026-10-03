@@ -87,3 +87,9 @@ message-format 4.4.0 固定 URL 与 SHA-256，`i18n:prepare` 仅缺缓存时经�
 Slice C 在既有 smoke 内验证正式 Svelte shell、实际 Electron key events、5000-row fixture、loading collapse/late result、retry、双击/Enter、locale continuity 和 workspace switch。`validate:foundation -- --real-data` 将真实 Explorer gate 传入三态 smoke，使用同级只读数据、实际 Controller 与虚拟化；每态前后核对 HEAD/status 与六样本 streaming 指纹。普通 smoke 不依赖外部数据。
 
 所有 picker substitution、目录延迟/错误组件 fixture 和可调用 smoke harness 仅用于明确 smoke mode；普通 packaged guard 确认不暴露。UI 依赖在 Renderer 打包，ASAR 实际清单检查排除 unbundled Zag/TanStack/Svelte，保留 SQLite native gate。最终状态与 known limitations 见 Slice C 报告；macOS A/B/C gate deferred 到 Slice D 后累计验收。
+
+## Node Browser / Inspector 验收
+
+Slice D 扩展现有三态 smoke：真实 Controller/桥、六种 root、特殊 key/Pointer、精确数值、children/segment Previous/Next、Inspector/折叠、stale 与窄窗。键盘使用 Electron sendInputEvent，检查等待实际 focus/selection/navigation 可观察状态；tick 不等于原生事件已送达。真实请求等待 Controller 完成，保留原有 work/IPC/runner deadline，不用任意 5 秒 UI polling 判定大来源超时。
+
+--real-data 在三态 UI 内浏览六代表来源，外部仍全程只读；stale mutation 仅在 app runner 临时 fixture。正常 packaged guard 不暴露 Node Browser harness。Copy Pointer 在 Windows 真实点击下权限拒绝，按可选范围延期，不扩大现有 permissions/IPC。macOS A/B/C/D 累计 gate 为下一节点、未执行且未豁免；既有 Raw Foundation 结果不能替代。

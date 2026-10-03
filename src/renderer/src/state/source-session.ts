@@ -4,13 +4,20 @@ import type {
   JsonPointer,
   NodeSummary,
   RawBridge,
+  RawScalar,
   SourceAddress,
   SourceInfo,
+  SourceRevision,
 } from '../../../shared/raw'
 import { errorOf, request } from './requests'
 import type { UiError } from './requests'
 
-export type ActiveSource = { source: SourceAddress; info: SourceInfo; root: NodeSummary }
+export type ActiveSource = {
+  source: SourceAddress
+  info: SourceInfo
+  root: NodeSummary
+  rootScalar: RawScalar | null
+}
 export type SourceSessionState = {
   active: ActiveSource | null
   pending: SourceAddress | null
@@ -29,6 +36,12 @@ export class SourceSession {
   constructor(private readonly bridge: RawBridge) {}
   get snapshot(): SourceSessionState {
     return this.state
+  }
+  markStale(source: SourceAddress, revision: SourceRevision): void {
+    const active = this.state.active
+    if (!active || !sameSource(active.source, source) || active.info.revision !== revision) return
+    if (active.info.state === 'stale') return
+    this.publish({ active: { ...active, info: { ...active.info, state: 'stale' } } })
   }
   private publish(change: Partial<SourceSessionState>): void {
     this.state = { ...this.state, ...change }
@@ -105,7 +118,18 @@ export class SourceSession {
         if (current()) {
           const previous = this.state.active
           this.publish({
-            active: { source: intent.source, info, root: result.node },
+            active: {
+              source: intent.source,
+              // Successful root read completes syntax validation in RawDataService.
+              info: { ...info, validated: true },
+              root: result.node,
+              rootScalar:
+                result.mode === 'complete' &&
+                result.value.kind !== 'object' &&
+                result.value.kind !== 'array'
+                  ? result.value
+                  : null,
+            },
             pending: null,
             requestId: null,
             error: null,

@@ -2,7 +2,9 @@
 
 更新日期：2026-10-03（UTC+8）。
 
-**Source Browser Slice C：IMPLEMENTED；Windows x64 VALIDATED；AWAITING REVIEW。** 正式 App Shell、Workspace flow、Zag managed Source Explorer、TanStack virtualization、分页/取消/retry/refresh、有界缓存和 SourceSession 最小 activation 已实现。172 项普通测试、独立真实数据与 dev/built/packaged UI/data gate 均通过；11 阶段完整 runner 在单次 invocation exit 0，production build 恰一次，见 [Slice C 报告](investigations/phase-2-source-browser-slice-c-source-explorer.md)。Slice A/B/C macOS arm64 cumulative validation DEFERRED（未豁免）。
+**Source Browser Slice D：IMPLEMENTED；Windows x64 VALIDATED；AWAITING REVIEW。** NodeBrowserController、Source Header、Breadcrumb、direct children 表格、scalar/segment、Previous/Next、Inspector 和唯一 SourceSession stale 边界已实现。201 项普通测试、独立真实数据、dev/built/packaged 均通过；单次 11 阶段完整 runner exit 0，production build 恰一次，见 [Slice D 报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。Copy Pointer 因现有 Renderer 权限策略实测拒绝而延期；没有新增权限或 IPC。Slice A/B/C/D 的 macOS arm64 累计验收为下一节点，尚未执行、未豁免；不自动进入 Slice E。
+
+**Source Browser Slice C：IMPLEMENTED；Windows x64 VALIDATED；本轮已获 Slice D 独立授权。** 正式 App Shell、Workspace flow、Zag managed Source Explorer、TanStack virtualization、分页/取消/retry/refresh、有界缓存和 SourceSession 最小 activation 已实现。172 项普通测试、独立真实数据与 dev/built/packaged UI/data gate 均通过；11 阶段完整 runner 在单次 invocation exit 0，production build 恰一次，见 [Slice C 报告](investigations/phase-2-source-browser-slice-c-source-explorer.md)。Slice A/B/C macOS arm64 cumulative validation DEFERRED（未豁免）。
 
 **Phase 0：CLOSED；Phase 1：CLOSED；Phase 1A：CLOSED；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** 首个 production slice 已通过 Windows x64 的完整验收，见 [实现报告](investigations/phase-2-raw-access-foundation.md)；2026-10-03 的原生 [macOS arm64 验证](investigations/phase-2-raw-access-macos-arm64-validation.md)也已通过。**Raw Access Foundation validated on Windows x64 and macOS arm64.** Phase 1A 的平台 gate 和 ADR-0006 仍有效；Phase 2A 原则由 ADR-0007–0010 约束，历史调查保持原样。
 
@@ -66,7 +68,7 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 | Windows x64 | 通过 | ASAR 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 | macOS arm64 | 通过 | ASAR .app 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 
-Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则已接受；本轮已实现 raw types、窄 Query API、固定版 parser adapter、工程预算、source revision 与内存范围缓存。SQLite schema、搜索和 accelerator coverage 仍未实现。Dataset Contract、全量生产索引、增量刷新和完整 Node Browser/Inspector 尚未实现；Source Explorer shell 已实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，真实采样与隔离传输实验保留在原调查报告。
+Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则已接受；本轮已实现 raw types、窄 Query API、固定版 parser adapter、工程预算、source revision 与内存范围缓存。SQLite schema、搜索和 accelerator coverage 仍未实现。Dataset Contract、全量生产索引、增量刷新尚未实现；Source Explorer shell 与当前 revision 的 Node Browser/Inspector 已实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，真实采样与隔离传输实验保留在原调查报告。
 
 ## Phase 1 最终收尾与 Phase 2A 调查历史
 
@@ -94,6 +96,6 @@ Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则
 
 ## 下一步
 
-Slice A 已评审，Slice B localization 已获授权并实现；最终 Windows gate 与评审状态见本页顶部及 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。Slice A/B/C 新实现的 macOS arm64 验收 deferred 到累计 Source Browser 原生 gate，未豁免，不借用旧 Raw Foundation 结果。
+Slice A 已评审，Slice B localization 已获授权并实现；最终 Windows gate 与评审状态见本页顶部及 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。Slice A/B/C/D 新实现的 macOS arm64 验收 deferred 到累计 Source Browser 原生 gate，未豁免，不借用旧 Raw Foundation 结果。
 
-Slice C 完成后等待用户与 ChatGPT review，不自动开始 Slice D 的 Node Browser/Inspector、搜索或 Dataset Contract。签名、发布与正式性能预算留在对应阶段。
+Slice D 完成后等待用户与 ChatGPT review，下一节点是 Apple Silicon 原生 Slice A/B/C/D 累计 Source Browser 验收；尚未执行、未豁免，不以旧 Raw Foundation gate 替代。不得直接进入 Slice E；搜索、Reload、LOCATION_MISSING、History、Dataset Contract 和发布工作均未获本轮授权。

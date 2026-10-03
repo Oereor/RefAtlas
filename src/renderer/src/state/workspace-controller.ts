@@ -2,6 +2,7 @@ import { readonly, writable } from 'svelte/store'
 import type { RawBridge, WorkspaceId } from '../../../shared/raw'
 import { ExplorerController } from '../explorer/explorer-controller'
 import { SourceSession } from './source-session'
+import { NodeBrowserController } from '../browser/node-browser-controller'
 import { errorOf, RequestFailure } from './requests'
 import type { UiError } from './requests'
 
@@ -24,9 +25,11 @@ export class WorkspaceController {
   readonly changes = readonly(this.store)
   readonly explorer: ExplorerController
   readonly session: SourceSession
+  readonly browser: NodeBrowserController
   constructor(private readonly bridge: RawBridge) {
     this.explorer = new ExplorerController(bridge)
     this.session = new SourceSession(bridge)
+    this.browser = new NodeBrowserController(bridge, this.session)
   }
   get snapshot(): WorkspaceState {
     return this.state

@@ -73,7 +73,7 @@ export async function runExplorerSmoke(stage: string): Promise<unknown> {
     return { stage, checks: ['arrow-right-enter', 'focus'] }
   }
   if (stage === 'selected') {
-    await tick()
+    await waitFor(() => workspace.explorer.snapshot.selectedId !== null)
     selectedBeforeKeyboard = workspace.explorer.snapshot.selectedId
     assert(selectedBeforeKeyboard && !workspace.session.snapshot.active, 'SELECTION_NOT_ACTIVATION')
     assert(document.activeElement?.getAttribute('aria-selected') === 'true', 'ARIA_SELECTED')

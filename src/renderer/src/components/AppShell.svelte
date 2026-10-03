@@ -1,22 +1,25 @@
 <script lang="ts">
   import type { WorkspaceController } from '../state/workspace-controller'
   import WorkspaceToolbar from './WorkspaceToolbar.svelte'
-  import SourcePlaceholder from './SourcePlaceholder.svelte'
+  import NodeBrowser from '../browser/NodeBrowser.svelte'
+  import Inspector from '../browser/Inspector.svelte'
   import SourceExplorer from '../explorer/SourceExplorer.svelte'
   import { messages, uiLocale, formatRawError } from '../i18n'
   let { workspace }: { workspace: WorkspaceController } = $props()
   const view = $derived(workspace.changes)
+  let inspectorOpen = $state(true)
 </script>
 
 <div class="app-shell" data-workspace-state={$view.status}>
   <WorkspaceToolbar {workspace} />
   {#if $view.workspaceId}
-    <div class="workspace-layout">
+    <div
+      class="workspace-layout"
+      style:grid-template-columns={`280px minmax(0, 1fr) ${inspectorOpen ? 280 : 32}px`}
+    >
       <SourceExplorer explorer={workspace.explorer} session={workspace.session} />
-      <SourcePlaceholder session={workspace.session} />
-      <aside class="inspector" aria-label={messages.inspector_title({}, { locale: $uiLocale })}>
-        <span aria-hidden="true">ⓘ</span>
-      </aside>
+      <NodeBrowser browser={workspace.browser} />
+      <Inspector browser={workspace.browser} bind:open={inspectorOpen} />
     </div>
   {:else}
     <main class="workspace-empty">
@@ -50,14 +53,6 @@
     min-height: 0;
     display: grid;
     grid-template-columns: 280px minmax(0, 1fr) 32px;
-  }
-  .inspector {
-    border-left: 1px solid var(--border);
-    display: flex;
-    justify-content: center;
-    padding-top: 12px;
-    color: var(--muted);
-    background: var(--surface-alt);
   }
   .workspace-empty {
     flex: 1;

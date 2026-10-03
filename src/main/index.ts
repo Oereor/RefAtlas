@@ -234,6 +234,26 @@ async function launch(): Promise<void> {
     await writeFile(join(root, 'huge.json'), JSON.stringify('x'.repeat(512 * 1024)), 'utf8')
     await writeFile(join(root, 'bad.json'), '{"a":1,}', 'utf8')
     await writeFile(join(root, 'other.json'), '{"kind":"fixture"}', 'utf8')
+    await writeFile(
+      join(root, 'node-browser.json'),
+      '{"n":16752756560315677817,"z":-0,"d":1.00,"a~b/c":{"":{"0":1e+3}},"entries":[' +
+        Array.from({ length: 205 }, (_, i) => String(i)).join(',') +
+        '],"long":' +
+        JSON.stringify('🙂中文'.repeat(20000)) +
+        ',"boolean":true,"null":null,"empty":{}}',
+      'utf8',
+    )
+    const scalarRoots = join(root, 'node-browser-roots')
+    await mkdir(scalarRoots)
+    for (const [kind, text] of [
+      ['object', '{}'],
+      ['array', '[]'],
+      ['number', '1.00'],
+      ['string', '"中文🙂"'],
+      ['boolean', 'true'],
+      ['null', 'null'],
+    ])
+      await writeFile(join(scalarRoots, kind + '.json'), text, 'utf8')
     await writeFile(join(root, '说明🙂' + '长名称'.repeat(35) + '.json'), 'null', 'utf8')
     const large = join(root, 'large')
     await mkdir(large, { recursive: true })
@@ -399,6 +419,69 @@ async function launch(): Promise<void> {
       smokeWorkspaceSelections = [resolve(process.cwd(), '../TurnBasedGameData')]
       await explorerStage('real-data')
     }
+    smokeWorkspaceSelections = [join(dirname(reportPath), 'raw-fixtures')]
+    const nodeReports: unknown[] = []
+    const nodeStage = async (stage: string) => {
+      try {
+        const result: unknown = await window!.webContents.executeJavaScript(
+          'window.runNodeBrowserSmoke(' + JSON.stringify(stage) + ')',
+        )
+        nodeReports.push(result)
+        return result
+      } catch (error) {
+        throw new Error(
+          'NodeBrowser stage ' +
+            stage +
+            ': ' +
+            (error instanceof Error ? error.message : String(error)),
+        )
+      }
+    }
+    await nodeStage('initial')
+    key('End')
+    await nodeStage('table-end')
+    key('Home')
+    await nodeStage('table-home')
+    key('Down')
+    await nodeStage('selected')
+    key('Up')
+    await nodeStage('table-home')
+    key('Down')
+    await nodeStage('selected')
+    key('Return')
+    await nodeStage('scalar')
+    window.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Left', modifiers: ['alt'] })
+    window.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Left', modifiers: ['alt'] })
+    await nodeStage('parent')
+    await nodeStage('flow')
+    const screenshot = async (suffix: string) => {
+      await window!.webContents.executeJavaScript(
+        'new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))',
+      )
+      return writeFile(
+        resolve(
+          process.cwd(),
+          'artifacts/node-browser-' +
+            (process.env.ELECTRON_RENDERER_URL ? 'dev' : app.isPackaged ? 'packaged' : 'built') +
+            suffix +
+            '.png',
+        ),
+        (await window!.webContents.capturePage()).toPNG(),
+      )
+    }
+    await screenshot('')
+    window.setSize(900, 600)
+    await nodeStage('narrow')
+    await screenshot('-narrow')
+    window.setSize(1280, 800)
+    await nodeStage('root-kinds')
+    await writeFile(join(dirname(reportPath), 'raw-fixtures/node-browser.json'), '{}', 'utf8')
+    await nodeStage('stale')
+    if (process.argv.includes('--explorer-real-data')) {
+      smokeWorkspaceSelections = [resolve(process.cwd(), '../TurnBasedGameData')]
+      await nodeStage('real-data')
+    }
+    rendererReport.nodeBrowser = nodeReports
     window.hide()
     rendererReport.explorer = explorerReports
     rendererReport.consoleErrors = rendererErrors

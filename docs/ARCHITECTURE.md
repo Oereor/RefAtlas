@@ -1,6 +1,6 @@
 # 已接受架构与约束
 
-2026-10-03 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer 产品 UI；Node Browser/Inspector、搜索和契约仍未实现。
+2026-10-03 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；搜索、契约和 Reload 未实现，A/B/C/D macOS arm64 累计 gate 尚未执行、未豁免。
 
 ## 1. 桌面栈与进程所有权
 
@@ -99,18 +99,30 @@ Main ready 后读取 `app.getSystemLocale()` 并缩减为 UiLocale，只经可�
 
 Slice C 采用 Renderer-only Zag.js tree-view/Svelte adapter 与 TanStack Svelte Virtual。Zag 控制交互、expanded/selected/focus 和 ARIA；ExplorerController 持有目录状态、取消、request ID、epoch、分页、重试和缓存，禁用 Zag 原生 loadChildren 生命周期；TanStack 只负责可见 DOM、滚动和固定行高。UI ID 与 DirectoryPath/SourceAddress 分离。
 
-WorkspaceController 保留 picker cancel 前的树/session，成功后基于已有 Utility reset 切换 Renderer epoch。SourceSession 只有 active/pending、SourceInfo 和 root NodeSummary；info + root read 成功后提交 B，再释放 A，失败保持 A。候选串行、最新意图优先，旧请求 settled 后 cleanup，避免同地址旧 release 清理新会话。
+WorkspaceController 保留 picker cancel 前的树/session，成功后基于已有 Utility reset 切换 Renderer epoch。SourceSession 管理 active/pending、SourceInfo、root NodeSummary 和可选 complete root RawScalar；complete container value 不进入 session state；info + root read 成功后提交 B，再释放 A，失败保持 A。候选串行、最新意图优先，旧请求 settled 后 cleanup，避免同地址旧 release 清理新会话。
 
 目录页上限 200、Renderer metadata cache 起点 10,000 entries / 8 MiB，折叠子树 LRU 优先，展开分支/选择焦点祖先/加载中目录受保护；无法容纳时明确资源限制。STALE_CURSOR 保留已有页并要求显式刷新，整树刷新不释放 active source。固定 24px 行、overscan 5，焦点行可额外挂载一项；未知完整兄弟数量使用 aria-setsize=-1。
 
-工具栏有工作区与 locale selector，紧凑浅色 shell、280px Explorer、中央最小 source 占位和默认折叠 Inspector。单击选择，Enter/双击激活；所有正式文案经过 Slice B。没有 Node Browser 内容、任意 Pointer 导航或文件写入。Renderer 依赖及其 Svelte compiler 闭包不复制到 ASAR node_modules，Main/Preload/Utility 不导入 UI 库。
+工具栏有工作区与 locale selector，紧凑浅色 shell、280px Explorer、中央 Node Browser 和默认展开 280px / 折叠 32px Inspector。单击选择，Enter/双击激活；所有正式文案经过 Slice B。Slice D 提供当前 revision 内 Node/ancestor 导航，不写入 source。Renderer 依赖及其 Svelte compiler 闭包不复制到 ASAR node_modules，Main/Preload/Utility 不导入 UI 库。
 
-## 7. 尚未接受或产品验证
+## 7. Node Browser / Inspector
+
+SourceSession 是 source acquire/release 和 stale 的唯一所有者；markStale 按 SourceAddress + revision 验证，迟到旧源错误不能标记新源。成功 root read 完成语法验证后同步 validated；失败不把尚未验证当 invalid JSON。NodeBrowserController 只消费 active source，不注册或释放 source。
+
+Controller 保存 current address/summary、已知 parent context、可选 complete RawScalar、selected child、一页 children 或一段 scalar、cursor metadata、局部 pending/error 和 epoch。单执行通道取消旧意图，等待旧请求 settled 后执行最新意图；提交同时验证 source/revision/epoch。readNode 成功先提交 current，随后加载第一页；失败保留旧 current/view。返回当前 Node 取消其他 pending navigation，不重新 read/acquire。workspace/source/revision 切换清空 Node 状态；picker cancel、Explorer refresh 和 locale switch 保持状态。
+
+Container 一律 listNodeChildren，page 上限 RAW_LIMITS.page=100，不遍历 complete container value、不额外 read 每行。Scalar complete number 显示 exact lexeme、string 显示 semantic value；summary string/number 用 readScalarSegment，limit=4096。Previous/Next 替换 payload，最多 128 项 opaque cursor/page metadata，窗口边界提供 Restart；STALE_CURSOR 保留原页并要求 null cursor Restart，不解析 cursor。
+
+SOURCE_CHANGED 标记唯一 session stale，取消其他读取并保留缓存内容；Header/中央/Inspector 显示 stale，Controller 和按钮双重禁止新的结构读取。无 Reload、LOCATION_MISSING、History 或跨 revision 位置恢复。Breadcrumb 使用 splitPointer/joinPointer/parentPointer，显示 decoded raw token，不将 numeric-looking object key 猜为 Index。Inspector 优先 selected child，否则 current，只有已知父 kind 才标 Index；展开状态只在 App UI memory。
+
+表格使用 semantic table 和 roving tabindex，Up/Down/Home/End 选择并移动 focus，Enter/双击进入，Escape 清选择，区域内 Alt+Left 返回父；不引入虚拟化或新表格库。UI message 沿用 Slice B，raw key/value/lexeme/path/Pointer/revision 原样保留。Copy Pointer 真实用户手势在现有 deny-all permission handler 下失败，作为可选功能延期；没有新增 clipboard IPC 或扩大权限。Windows 验收与限制见 [Slice D 报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。
+
+## 8. 尚未接受或产品验证
 
 - 正式发布配置、CI/release workflow、签名、公证、安装器/DMG、自动更新与发布节奏。工具链路线已接受，但这些发布事项不属于 ADR-0006；具体版本由 package/lockfile 管理并按风险升级验证。
 - full search、Dataset Contract 和完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。
 - SQLite schema、持久 cache、child index 和更大 scalar streaming 策略仍未实现；当前 RawValue、范围/检测和工程预算见本轮报告。Dataset Contract 仍留在 Phase 3。
 - Exact 具体相等规则、BINARY/case/normalization、分页参数，trigram 启用与文件/语言覆盖、完整数据集容量及性能。
-- 完整 Node Browser/Inspector、macOS 新 UI gate、真实屏幕阅读器和正式签名/公证验证；Windows Source Explorer gate 见 Slice C 报告。
+- macOS A/B/C/D 新 UI 累计 gate、真实屏幕阅读器和正式签名/公证验证；Windows 当前 revision Node Browser/Inspector gate 见 Slice D 报告。
 
 [Phase 2A 调查](investigations/phase-2a-data-access-architecture.md)保留历史候选与实测；本次接受范围及候选区别见 [评审收尾](investigations/phase-2a-review-closeout.md)。实验表、合成边、采样、具体阈值和库不自动成为生产架构。Phase 0 的版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。

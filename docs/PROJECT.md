@@ -27,3 +27,5 @@ Windows x64 与 macOS arm64 桌面，GitHub Releases 分发。macOS x64 不属�
 当前产品是 raw source 的只读 viewer / investigation tool，不提供 raw file editing、save、merge、conflict resolution、undo/redo、transactional source writes 或 source-format rewrite。[Node 与来源边界](decisions/ADR-0007-node-addressing-and-source-lifecycle.md)、[搜索完整性](decisions/ADR-0009-search-completeness-and-optional-acceleration.md)、[UI 本地化](decisions/ADR-0010-ui-localization-boundary.md)
 
 阶段见 [ROADMAP](ROADMAP.md)，约束见 [ARCHITECTURE](ARCHITECTURE.md)。
+
+当前已实现 Source Explorer 和当前 revision 内的 generic raw Node Browser/Inspector。选择 child 只更新 Inspector，Enter/双击才进入 Node；精确 numeric lexeme 和 semantic string 保持原文，一页/一段有界浏览。检测到来源变化后保留旧内容并标 stale，禁止新结构读取；Reload、跨 revision location 恢复、搜索和 History 未实现。Slice D 结果见 [报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)，下一节点是尚未执行、未豁免的 Apple Silicon A/B/C/D 累计验收。

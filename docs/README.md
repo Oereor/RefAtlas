@@ -27,4 +27,6 @@ Source Browser Slice A 历史实现与 Windows 验收见 [报告](investigations
 
 影响架构、状态、路线图或性能事实的代码与权威文档在同一审查变更中演进；不影响文档事实的琐碎实现不要求无意义文档修改。迁移前的版本管理情况是历史事实，保留于 [Phase 0 调查](investigations/phase-0-feasibility.md)，不代表当前布局。
 
-Source Browser Slice C 已建立正式 shell、工作区、managed/virtualized Explorer 和最小 source activation，Node Browser/Inspector 留待 Slice D；验收与平台状态见 [Slice C 报告](investigations/phase-2-source-browser-slice-c-source-explorer.md)及 STATUS。
+Source Browser Slice C 已建立正式 shell、工作区、managed/virtualized Explorer 和最小 source activation，Node Browser/Inspector 已由 Slice D 接入；验收与平台状态见 [Slice C 报告](investigations/phase-2-source-browser-slice-c-source-explorer.md)及 STATUS。
+
+Source Browser Slice D 已实现当前 revision 的 Node Browser 与 Inspector；完整 Windows runner 与可选 Copy Pointer 延期证据见 [报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。下一节点为 Slice A/B/C/D macOS arm64 累计原生验收，尚未执行、未豁免，不自动进入 Slice E。

@@ -104,6 +104,18 @@ try {
     !content.renderer.explorer.some((stage) => stage.stage === 'real-data')
   )
     throw new Error('真实 Source Explorer/controller/virtualization gate 缺失')
+  if (
+    !Array.isArray(content.renderer.nodeBrowser) ||
+    !['flow', 'stale', 'narrow', 'root-kinds'].every((stage) =>
+      content.renderer.nodeBrowser.some((result) => result.stage === stage),
+    )
+  )
+    throw new Error('NodeBrowser UI/stale/layout 证明缺失')
+  if (
+    process.env.REFATLAS_SOURCE_EXPLORER_REAL_DATA === '1' &&
+    !content.renderer.nodeBrowser.some((result) => result.stage === 'real-data')
+  )
+    throw new Error('真实 NodeBrowser/controller/UI gate 缺失')
   const forbiddenRuntime =
     /@inlang|@lix-js|unplugin-paraglide-js|Fallback ready|源文件已发生变化，请重新加载。|@zag-js|@tanstack|TREE\.TYPEAHEAD|BRANCH_NODE\.ARROW/
   if (mode !== 'dev') {

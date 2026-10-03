@@ -126,3 +126,9 @@ Windows x64 首次真实目录 gate：root 6 项 / 1 页 / 532 bytes，ExcelOutp
 ## Source Browser Slice C：Explorer 观察口径
 
 固定行高 24px、overscan 5，额外保留至多一个 focused item；数据缓存起点 10,000 entries / 8 MiB 序列化 metadata，不是硬 JS heap/RSS 上限。最终 dev/built/packaged 均为 5008 logical rows / 34 mounted treeitems，End 后 33；真实目录累计 5258 logical rows / 33 mounted。Renderer JS 424497 bytes / gzip 89572 bytes，相对 Slice B +272235 / +55465；ASAR 1385891 bytes，+281613。未控制 OS cache，仅作 DOM 有界和流程观察，不建立 render/scroll/activation SLA。最终三态观察、Renderer JS/gzip/ASAR delta 见 [Slice C 报告](investigations/phase-2-source-browser-slice-c-source-explorer.md)。
+
+## Source Browser Slice D：Node 浏览观察口径
+
+每次只保留最多 100 个 direct children 或 4096 个 Unicode scalar code points，以及最多 128 项 opaque cursor/page metadata；不累积 payload，不遍历 complete container。表格不需要虚拟化；Explorer 仍使用既有虚拟化路径。Windows dev 真实 UI 已测 Avatar/Equipment/AvatarSkill container→scalar、Previous/Next 与六代表来源；最终三态 root/首 children/导航/分页/segment/Inspector 和 Renderer JS/gzip、包体增量见 [Slice D 报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。计时包含 IPC、parser、缓存与 DOM，不控制 OS cache、不建立 SLA。macOS 新 UI 性能/原生验收尚未执行。
+
+最终 Slice D Windows 单次 11 阶段 real-data runner exit 0；Renderer JS 518830 / gzip 103813 bytes，相对 C +94333 / +14241；app.asar 1487748、win-unpacked 413719714 bytes，均增 101857。三态 synthetic root+children 23.4/30.5/24.7ms、next page 28.5/43.6/18.4ms、segment 12.2/15.4/10.1ms、Inspector update 0.7/0.6/0.4ms（dev/built/packaged）；真实 root/children/scalar 分时口径与失败调查见报告，不作为 SLA。

@@ -11,6 +11,7 @@ declare global {
     runRawSmoke?: (stage: string) => Promise<unknown>
     runLocalizationSmoke?: (stage: string) => Promise<unknown>
     runExplorerSmoke?: (stage: string) => Promise<unknown>
+    runNodeBrowserSmoke?: (stage: string) => Promise<unknown>
   }
 }
 export {}
