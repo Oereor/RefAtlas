@@ -21,6 +21,8 @@ Phase 1 与 Phase 1A 均已完成并关闭，见 [收尾记录](investigations/p
 
 ## 版本管理
 
+Source Browser Slice A 当前实现、Windows 验收、待 macOS gate 和 review 见 [报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)及 [STATUS](STATUS.md)；本轮没有正式 UI 或自动推进 Slice B。
+
 2026-10-02 Phase 0 收尾时，文档整体从工作区外层迁入本仓库 `docs/`，保留调查与证据，不另建文档仓库。迁移、四份已接受 ADR 和文档更新已纳入 `809a4a5 Closeout Phase 0`；后续实现与相关文档继续一起审查。
 
 影响架构、状态、路线图或性能事实的代码与权威文档在同一审查变更中演进；不影响文档事实的琐碎实现不要求无意义文档修改。迁移前的版本管理情况是历史事实，保留于 [Phase 0 调查](investigations/phase-0-feasibility.md)，不代表当前布局。

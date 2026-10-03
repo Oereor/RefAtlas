@@ -1,5 +1,6 @@
 import type {
   ChildrenResult,
+  DirectoryPath,
   NodeAddress,
   NodeResult,
   RelativePath,
@@ -43,6 +44,8 @@ export async function runRawSmoke(stage: string): Promise<unknown> {
           'closeWorkspace',
           'getSourceInfo',
           'reloadSource',
+          'listDirectory',
+          'releaseSource',
           'readNode',
           'listNodeChildren',
           'readScalarSegment',
@@ -55,6 +58,56 @@ export async function runRawSmoke(stage: string): Promise<unknown> {
     const opened = value(await bridge.openWorkspace({ requestId: requestId() }))
     assert(opened.status === 'opened', 'WORKSPACE_OPEN')
     workspaceId = opened.workspaceId
+    assert(opened.displayName === 'raw-fixtures', 'WORKSPACE_DISPLAY_NAME')
+    const directoryInput = {
+      requestId: requestId(),
+      workspaceId,
+      directory: '' as DirectoryPath,
+      limit: 2,
+      cursor: null,
+    }
+    const directoryPage = value(await bridge.listDirectory(directoryInput))
+    assert(directoryPage.items.length === 2 && directoryPage.truncated, 'DIRECTORY_FIRST_PAGE')
+    const directoryNext = value(
+      await bridge.listDirectory({
+        ...directoryInput,
+        requestId: requestId(),
+        cursor: directoryPage.nextCursor,
+      }),
+    )
+    assert(
+      directoryNext.items.length === 2 &&
+        directoryNext.items[0].name !== directoryPage.items[0].name,
+      'DIRECTORY_NEXT_PAGE',
+    )
+    const nested = value(
+      await bridge.listDirectory({
+        ...directoryInput,
+        requestId: requestId(),
+        directory: 'nested' as DirectoryPath,
+      }),
+    )
+    assert(
+      nested.items.length === 1 &&
+        nested.items[0].kind === 'source' &&
+        nested.items[0].name === 'child.json',
+      'DIRECTORY_NESTED',
+    )
+    const directoryCancelId = requestId()
+    const directoryPending = bridge.listDirectory({
+      ...directoryInput,
+      requestId: directoryCancelId,
+      directory: 'directory-cancel' as DirectoryPath,
+    })
+    assert(
+      value(await bridge.cancelRequest(directoryCancelId)).accepted,
+      'DIRECTORY_CANCEL_ACCEPTED',
+    )
+    const directoryCancelled = await directoryPending
+    assert(
+      !directoryCancelled.ok && directoryCancelled.error.code === 'CANCELLED',
+      'DIRECTORY_CANCELLED',
+    )
     original = await info()
     for (const [pointer, lexeme] of [
       ['/n', '16752756560315677817'],
@@ -190,6 +243,37 @@ export async function runRawSmoke(stage: string): Promise<unknown> {
       !operationOverride.ok && operationOverride.error.code === 'INVALID_INPUT',
       'OPERATION_OVERRIDE',
     )
+    assert(
+      value(await bridge.releaseSource({ requestId: requestId(), source: source() })).released,
+      'SOURCE_RELEASE',
+    )
+    const releasedRead = await bridge.readNode({
+      requestId: requestId(),
+      address: address(),
+      expectedRevision: original.revision,
+    })
+    assert(!releasedRead.ok && releasedRead.error.code === 'SOURCE_CHANGED', 'RELEASED_READ')
+    assert(
+      !value(await bridge.releaseSource({ requestId: requestId(), source: source() })).released,
+      'SOURCE_RELEASE_REPEAT',
+    )
+    const oldRevision = original.revision
+    original = await info()
+    assert(original.revision !== oldRevision, 'SOURCE_REACQUIRE')
+    value(
+      await bridge.readNode({
+        requestId: requestId(),
+        address: address(),
+        expectedRevision: original.revision,
+      }),
+    )
+    value(
+      await bridge.listDirectory({
+        ...directoryInput,
+        requestId: requestId(),
+        cursor: directoryPage.nextCursor,
+      }),
+    )
     return {
       stage,
       checks: [
@@ -204,6 +288,13 @@ export async function runRawSmoke(stage: string): Promise<unknown> {
         'invalid-json',
         'cancellation',
         'path',
+        'display-name',
+        'directory-pages',
+        'directory-nested',
+        'directory-cancel',
+        'release',
+        'released-read',
+        'reacquire',
       ],
       cancelMs: performance.now() - begin,
       responseBytes: byteSize(large),

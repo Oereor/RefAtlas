@@ -1,9 +1,13 @@
 import { randomUUID } from 'node:crypto'
 import { watch } from 'node:fs'
-import type { FSWatcher, BigIntStats } from 'node:fs'
-import { lstat, open, realpath, stat } from 'node:fs/promises'
-import { basename, dirname, isAbsolute, join, relative, sep } from 'node:path'
-import { byteSize, RAW_LIMITS, RawError, validCommand } from '../shared/raw'
+import type { FSWatcher } from 'node:fs'
+import { open, realpath, stat } from 'node:fs/promises'
+import { basename, dirname, isAbsolute, parse } from 'node:path'
+import { byteSize, DIRECTORY_LIMITS, RAW_LIMITS, RawError, validCommand } from '../shared/raw'
+import { LIMITS } from '../shared/protocol'
+import { filesystemError, resolveRawPath, statStamp as stamp } from './raw-filesystem'
+import { RawDirectory } from './raw-directory'
+import { RawScheduler } from './raw-scheduler'
 import type {
   ChildrenResult,
   NodeAddress,
@@ -19,6 +23,9 @@ import { scanJson, WorkBudget } from './raw-parser'
 import type { ParsedNode, ScanResult } from './raw-parser'
 
 type Source = {
+  token: symbol
+  retiring: boolean
+  delivered: boolean
   address: SourceAddress
   path: string
   revision: SourceRevision
@@ -34,9 +41,20 @@ type Cursor = {
   kind: 'children' | 'segment'
   after: number
 }
-type CacheEntry = { node: ParsedNode; bytes: number }
-const stamp = (value: BigIntStats): string =>
-  [value.dev, value.ino, value.size, value.mtimeNs, value.ctimeNs].join(':')
+type CacheEntry = { node: ParsedNode; bytes: number; sourceKey: string; token: symbol }
+type Workspace = { id: WorkspaceId; root: string; generation: number }
+type Task = {
+  kind: RawCommand['kind']
+  workspace: Workspace
+  controller: AbortController
+  sourceKey: string | null
+  source?: Source
+  created?: Source
+  budget?: WorkBudget
+  done: Promise<void>
+  finish: () => void
+}
+type Watcher = { handle: FSWatcher; owners: Set<Source> }
 const keyOf = (source: SourceAddress): string =>
   JSON.stringify([source.workspaceId, source.relativePath])
 const addressKey = (address: NodeAddress, revision: SourceRevision): string =>
@@ -48,14 +66,18 @@ const addressKey = (address: NodeAddress, revision: SourceRevision): string =>
   ])
 
 export class RawDataService {
-  private workspace: { id: WorkspaceId; root: string } | null = null
+  private workspace: Workspace | null = null
+  private generation = 0
   private sources = new Map<string, Source>()
-  private watchers = new Map<string, FSWatcher>()
+  private watchers = new Map<string, Watcher>()
   private ranges = new Map<string, CacheEntry>()
   private rangeBytes = 0
   private cursors = new Map<string, Cursor>()
-  private tasks = new Set<AbortController>()
-  private queue: Promise<unknown> = Promise.resolve()
+  private tasks = new Set<Task>()
+  private parserQueue = new RawScheduler(1)
+  private metadataQueue = new RawScheduler(DIRECTORY_LIMITS.concurrency)
+  private controls = new Map<string, Promise<unknown>>()
+  private directories = new RawDirectory()
   private polling = false
   private opening = false
   private timer: ReturnType<typeof setInterval>
@@ -69,13 +91,15 @@ export class RawDataService {
     if (this.polling) return
     this.polling = true
     try {
-      for (const source of this.sources.values())
-        if (!source.stale) await this.verify(source).catch(() => {})
+      for (const source of [...this.sources.values()])
+        if (this.current(source) && source.delivered && !source.stale)
+          await this.verify(source).catch(() => {})
     } finally {
       this.polling = false
     }
   }
   private invalidate(source: Source): void {
+    if (!this.current(source)) return
     source.stale = true
     source.validated = false
     source.hash = null
@@ -85,128 +109,260 @@ export class RawDataService {
     for (const [id, cursor] of this.cursors)
       if (keyOf(cursor.address.source) === keyOf(source.address)) this.cursors.delete(id)
   }
-  private reset(): void {
-    for (const task of this.tasks) task.abort()
-    for (const watcher of this.watchers.values()) watcher.close()
+  private reset(): Promise<void> {
+    ++this.generation
+    this.workspace = null
+    const tasks = [...this.tasks]
+    for (const task of tasks) task.controller.abort()
+    for (const source of this.sources.values()) source.retiring = true
+    for (const watcher of this.watchers.values()) watcher.handle.close()
     this.watchers.clear()
     this.sources.clear()
     this.ranges.clear()
     this.rangeBytes = 0
     this.cursors.clear()
-    this.workspace = null
+    this.directories.clear()
+    return Promise.all(tasks.map((task) => task.done)).then(() => {})
   }
   dispose(): void {
     clearInterval(this.timer)
-    this.reset()
+    void this.reset()
   }
-  async execute(command: RawCommand, signal: AbortSignal): Promise<RawOutput> {
+  // publish 同步完成 Utility 的最后取消检查与成功 reply，避免交付前取消留下 candidate。
+  async execute(
+    command: RawCommand,
+    signal: AbortSignal,
+    publish?: (value: RawOutput) => void,
+  ): Promise<RawOutput> {
     if (!validCommand(command)) throw new RawError('INVALID_INPUT')
     if (signal.aborted) throw new RawError('CANCELLED')
     if (command.kind === 'close') {
       this.requireWorkspace(command.workspaceId)
-      this.reset()
-      return { closed: true }
+      await this.reset()
+      if (signal.aborted) throw new RawError('CANCELLED')
+      const value = { closed: true as const }
+      publish?.(value)
+      return value
     }
     if (command.kind === 'open') {
       if (this.opening) throw new RawError('BUSY')
       this.opening = true
-      this.reset()
       try {
+        await this.reset()
+        const generation = this.generation
         if (!isAbsolute(command.root)) throw new RawError('INVALID_INPUT')
         const root = await realpath(command.root)
         if (!(await stat(root)).isDirectory()) throw new RawError('INVALID_INPUT')
-        if (signal.aborted) throw new RawError('CANCELLED')
+        if (signal.aborted || generation !== this.generation) throw new RawError('CANCELLED')
+        const displayName = root === parse(root).root ? '' : basename(root)
+        if (byteSize(displayName) > RAW_LIMITS.addressBytes)
+          throw new RawError('RESOURCE_LIMIT', { limit: 'ADDRESS_BYTES' })
         const id = randomUUID() as WorkspaceId
-        this.workspace = { id, root }
-        return { status: 'opened', workspaceId: id }
+        this.workspace = { id, root, generation }
+        const value = { status: 'opened' as const, workspaceId: id, displayName }
+        publish?.(value)
+        return value
       } catch (error) {
-        throw this.filesystemError(error)
+        throw filesystemError(error)
       } finally {
         this.opening = false
       }
     }
+    const workspace = this.requireWorkspace(
+      command.kind === 'directory'
+        ? command.workspaceId
+        : 'source' in command
+          ? command.source.workspaceId
+          : command.address.source.workspaceId,
+    )
+    if (this.tasks.size >= LIMITS.pending) throw new RawError('BUSY')
     const controller = new AbortController()
     const abort = (): void => controller.abort()
     signal.addEventListener('abort', abort, { once: true })
-    this.tasks.add(controller)
-    const workspace = this.workspace
-    const work = this.queue
-      .catch(() => {})
-      .then(async () => {
-        if (controller.signal.aborted) throw new RawError('CANCELLED')
-        if (!workspace || this.workspace !== workspace) throw new RawError('WORKSPACE_NOT_OPEN')
-        return this.query(command, controller.signal)
-      })
-    this.queue = work
+    let finish!: () => void
+    const task: Task = {
+      kind: command.kind,
+      workspace,
+      controller,
+      sourceKey:
+        command.kind === 'directory'
+          ? null
+          : keyOf('source' in command ? command.source : command.address.source),
+      done: new Promise<void>((resolve) => {
+        finish = resolve
+      }),
+      finish: () => finish(),
+    }
+    this.tasks.add(task)
     try {
-      return await work
+      let value: RawOutput
+      if (command.kind === 'directory')
+        value = await this.metadataQueue.run(controller.signal, () =>
+          this.directories.list(command, workspace, () => this.check(task)),
+        )
+      else if (command.kind === 'release') {
+        const source = this.sources.get(task.sourceKey!)
+        const released = Boolean(source && !source.retiring && source.delivered)
+        if (source) source.retiring = true
+        const oldTasks = this.abortSource(task.sourceKey!, task)
+        value = await this.control(task, async () => {
+          await Promise.all(oldTasks.map((old) => old.done))
+          if (source) this.drop(source)
+          return { released }
+        })
+      } else if (command.kind === 'info' || command.kind === 'reload')
+        value = await this.control(task, () =>
+          this.metadataQueue.run(controller.signal, async () => {
+            task.budget = new WorkBudget(controller.signal)
+            this.check(task)
+            if (command.kind === 'reload') {
+              const previous = this.sources.get(task.sourceKey!)
+              if (previous) {
+                previous.retiring = true
+                const oldTasks = this.abortSource(task.sourceKey!, task, previous)
+                await Promise.all(oldTasks.map((old) => old.done))
+                this.drop(previous)
+              }
+            }
+            this.check(task)
+            const source = await this.acquire(command.source, task)
+            task.source = source
+            return this.info(source)
+          }),
+        )
+      else {
+        const source = this.sources.get(task.sourceKey!)
+        if (!source || !source.delivered || !this.current(source))
+          throw new RawError('SOURCE_CHANGED')
+        task.source = source
+        value = await this.parserQueue.run(controller.signal, () => this.query(command, task))
+      }
+      this.check(task)
+      if (task.source && !this.current(task.source)) throw new RawError('SOURCE_CHANGED')
+      publish?.(value)
+      if (task.created) task.created.delivered = true
+      return value
+    } catch (error) {
+      if (task.created && !task.created.delivered) this.drop(task.created)
+      throw filesystemError(error)
     } finally {
-      this.tasks.delete(controller)
+      this.tasks.delete(task)
+      task.finish()
       signal.removeEventListener('abort', abort)
     }
   }
-  private requireWorkspace(id: WorkspaceId): { id: WorkspaceId; root: string } {
+  private requireWorkspace(id: WorkspaceId): Workspace {
     if (!this.workspace || this.workspace.id !== id) throw new RawError('WORKSPACE_NOT_OPEN')
     return this.workspace
   }
-  private filesystemError(error: unknown): RawError {
-    if (error instanceof RawError) return error
-    const code = (error as NodeJS.ErrnoException)?.code
-    return new RawError(
-      code === 'ENOENT' || code === 'ENOTDIR'
-        ? 'NOT_FOUND'
-        : code === 'EACCES' || code === 'EPERM'
-          ? 'ACCESS_DENIED'
-          : 'INTERNAL',
+  private check(task: Task): void {
+    task.budget?.check()
+    if (
+      task.controller.signal.aborted ||
+      this.workspace !== task.workspace ||
+      task.workspace.generation !== this.generation
+    )
+      throw new RawError('CANCELLED')
+    if (task.source && !this.current(task.source)) throw new RawError('SOURCE_CHANGED')
+    if (task.source?.stale && ['read', 'children', 'segment'].includes(task.kind))
+      throw new RawError('SOURCE_CHANGED')
+  }
+  private current(source: Source): boolean {
+    return (
+      !source.retiring &&
+      this.workspace?.id === source.address.workspaceId &&
+      this.sources.get(keyOf(source.address)) === source
     )
   }
-  private async resolve(source: SourceAddress): Promise<string> {
-    const workspace = this.requireWorkspace(source.workspaceId)
-    let path = workspace.root
-    for (const component of source.relativePath.split('/')) {
-      path = join(path, component)
-      if ((await lstat(path)).isSymbolicLink()) throw new RawError('ACCESS_DENIED')
-    }
-    const resolved = await realpath(path)
-    const contained = relative(workspace.root, resolved)
-    if (
-      contained === '' ||
-      contained === '..' ||
-      contained.startsWith('..' + sep) ||
-      isAbsolute(contained)
+  private abortSource(key: string, except: Task, source?: Source): Task[] {
+    const tasks = [...this.tasks].filter(
+      (task) =>
+        task !== except &&
+        task.sourceKey === key &&
+        task.kind !== 'release' &&
+        (!source || task.source === source),
     )
-      throw new RawError('ACCESS_DENIED')
-    if (!(await stat(resolved)).isFile()) throw new RawError('ACCESS_DENIED')
-    return resolved
+    for (const task of tasks) task.controller.abort()
+    return tasks
+  }
+  private control<T>(task: Task, action: () => Promise<T>): Promise<T> {
+    const key = task.sourceKey!
+    const previous = this.controls.get(key) ?? Promise.resolve()
+    const work = previous.catch(() => {}).then(action)
+    // 下一个控制操作等待 execute 的 commit/rollback/finally，而不仅是 metadata action。
+    const tail = work.then(
+      () => task.done,
+      () => task.done,
+    )
+    this.controls.set(key, tail)
+    void tail
+      .finally(() => {
+        if (this.controls.get(key) === tail) this.controls.delete(key)
+      })
+      .catch(() => {})
+    return work
+  }
+  private drop(source: Source): void {
+    source.retiring = true
+    const key = keyOf(source.address)
+    if (this.sources.get(key) === source) this.sources.delete(key)
+    for (const [cacheKey, entry] of this.ranges)
+      if (entry.sourceKey === key && entry.token === source.token) {
+        this.ranges.delete(cacheKey)
+        this.rangeBytes -= entry.bytes
+      }
+    for (const [id, cursor] of this.cursors)
+      if (keyOf(cursor.address.source) === key && cursor.revision === source.revision)
+        this.cursors.delete(id)
+    const directory = dirname(source.path)
+    const watcher = this.watchers.get(directory)
+    watcher?.owners.delete(source)
+    if (watcher && !watcher.owners.size) {
+      watcher.handle.close()
+      if (this.watchers.get(directory) === watcher) this.watchers.delete(directory)
+    }
   }
   private async verify(source: Source): Promise<void> {
+    const check = (): void => {
+      if (!this.current(source) || source.stale) throw new RawError('SOURCE_CHANGED')
+    }
+    check()
     if (source.stale) throw new RawError('SOURCE_CHANGED')
     try {
-      const path = await this.resolve(source.address)
+      const workspace = this.requireWorkspace(source.address.workspaceId)
+      const path = await resolveRawPath(workspace.root, source.address.relativePath, false, check)
       if (path !== source.path || stamp(await stat(path, { bigint: true })) !== source.stamp)
         throw new RawError('SOURCE_CHANGED')
+      check()
     } catch {
       this.invalidate(source)
       throw new RawError('SOURCE_CHANGED')
     }
   }
-  private async source(address: SourceAddress, reload = false): Promise<Source> {
-    this.requireWorkspace(address.workspaceId)
+  private async acquire(address: SourceAddress, task: Task): Promise<Source> {
     const key = keyOf(address)
     const previous = this.sources.get(key)
-    if (previous && !reload) {
+    if (previous && this.current(previous)) {
       if (!previous.stale) await this.verify(previous).catch(() => {})
       return previous
     }
     if (!previous && this.sources.size >= RAW_LIMITS.sources)
       throw new RawError('RESOURCE_LIMIT', { limit: 'SOURCES' })
-    if (previous) this.invalidate(previous)
     try {
-      const path = await this.resolve(address)
+      const path = await resolveRawPath(task.workspace.root, address.relativePath, false, () =>
+        this.check(task),
+      )
       const meta = await stat(path, { bigint: true })
+      this.check(task)
+      // 两个 metadata 槽可能同时通过初始检查；发布 registration 前重新核实容量。
+      if (!this.sources.has(key) && this.sources.size >= RAW_LIMITS.sources)
+        throw new RawError('RESOURCE_LIMIT', { limit: 'SOURCES' })
       if (meta.size > BigInt(Number.MAX_SAFE_INTEGER))
         throw new RawError('RESOURCE_LIMIT', { limit: 'SOURCE_SIZE' })
       const source: Source = {
+        token: Symbol(),
+        retiring: false,
+        delivered: false,
         address,
         path,
         revision: randomUUID() as SourceRevision,
@@ -217,29 +373,35 @@ export class RawDataService {
         hash: null,
       }
       this.sources.set(key, source)
+      task.created = source
       const directory = dirname(path)
       if (!this.watchers.has(directory)) {
         try {
-          const watcher = watch(directory, (_event, file) => {
-            for (const known of this.sources.values())
-              if (
-                dirname(known.path) === directory &&
-                (file === null || String(file) === basename(known.path))
-              )
-                this.invalidate(known)
-          })
-          watcher.on('error', () => {
-            watcher.close()
-            this.watchers.delete(directory)
+          const watcher: Watcher = {
+            handle: watch(directory, (_event, file) => {
+              if (this.watchers.get(directory) !== watcher) return
+              for (const known of watcher.owners)
+                if (
+                  dirname(known.path) === directory &&
+                  (file === null || String(file) === basename(known.path))
+                )
+                  this.invalidate(known)
+            }),
+            owners: new Set(),
+          }
+          watcher.handle.on('error', () => {
+            watcher.handle.close()
+            if (this.watchers.get(directory) === watcher) this.watchers.delete(directory)
           })
           this.watchers.set(directory, watcher)
         } catch {
           /* stat 验证与轮询仍保留。 */
         }
       }
+      this.watchers.get(directory)?.owners.add(source)
       return source
     } catch (error) {
-      throw this.filesystemError(error)
+      throw filesystemError(error)
     }
   }
   private info(source: Source): SourceInfo {
@@ -263,6 +425,7 @@ export class RawDataService {
     }
   }
   private remember(node: ParsedNode, source: Source): void {
+    if (!this.current(source)) throw new RawError('SOURCE_CHANGED')
     const key = addressKey({ source: source.address, pointer: node.pointer }, source.revision)
     const bytes = byteSize([key, node])
     const previous = this.ranges.get(key)
@@ -276,7 +439,7 @@ export class RawDataService {
       this.ranges.delete(oldest)
     }
     if (bytes <= RAW_LIMITS.cacheBytes) {
-      this.ranges.set(key, { node, bytes })
+      this.ranges.set(key, { node, bytes, sourceKey: keyOf(source.address), token: source.token })
       this.rangeBytes += bytes
     }
   }
@@ -301,25 +464,24 @@ export class RawDataService {
     return cursor.after
   }
   private async query(
-    command: Exclude<RawCommand, { kind: 'open' } | { kind: 'close' }>,
-    signal: AbortSignal,
+    command: Extract<RawCommand, { kind: 'read' } | { kind: 'children' | 'segment' }>,
+    task: Task,
   ): Promise<RawOutput> {
-    const budget = new WorkBudget(signal)
-    const source = await this.source(
-      'source' in command ? command.source : command.address.source,
-      command.kind === 'reload',
-    )
+    this.check(task)
+    const budget = new WorkBudget(task.controller.signal)
+    const source = task.source!
     budget.check()
-    if (command.kind === 'info' || command.kind === 'reload') return this.info(source)
     if (command.expectedRevision !== source.revision || source.stale)
       throw new RawError('SOURCE_CHANGED')
     const after = command.kind === 'read' ? -1 : this.after(command)
     await this.verify(source)
+    this.check(task)
     const handle = await open(source.path, 'r').catch((error) => {
       this.invalidate(source)
-      throw this.filesystemError(error)
+      throw filesystemError(error)
     })
     try {
+      this.check(task)
       if (stamp(await handle.stat({ bigint: true })) !== source.stamp) {
         this.invalidate(source)
         throw new RawError('SOURCE_CHANGED')
@@ -357,6 +519,7 @@ export class RawDataService {
         this.invalidate(source)
         throw new RawError('SOURCE_CHANGED')
       }
+      this.check(task)
       if (!source.validated) {
         source.validated = true
         source.hash = scan.hash
@@ -443,13 +606,15 @@ export class RawDataService {
     } catch (error) {
       // 即使 parser 失败，也优先表达已经发现的 revision 变化。
       budget.check()
+      this.check(task)
       await this.verify(source)
       if (error instanceof RawError) throw error
-      throw this.filesystemError(error)
+      throw filesystemError(error)
     } finally {
       await handle.close()
       this.observe?.({ bytesRead: budget.bytes, tokens: budget.tokens })
       budget.check()
+      this.check(task)
       await this.verify(source)
       budget.check()
     }

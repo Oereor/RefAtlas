@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { createHash, randomUUID } from 'node:crypto'
 import { createReadStream } from 'node:fs'
-import { mkdir, stat, writeFile } from 'node:fs/promises'
+import { mkdir, opendir, stat, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import { RawDataService } from '../src/utility/raw-service'
 import { byteSize, RAW_LIMITS } from '../src/shared/raw'
 import type {
   ChildrenResult,
+  DirectoryPath,
+  DirectoryResult,
   JsonPointer,
   NodeAddress,
   NodeResult,
@@ -26,6 +30,14 @@ async function fingerprint(path: string): Promise<{ hash: string; size: number; 
 describe.skipIf(!enabled)('read-only production real-data gate', () => {
   it('validates six representative sources with lossless reads and bounded large-node access', async () => {
     const root = resolve(import.meta.dirname, '../../TurnBasedGameData')
+    const git = async (args: string[]) =>
+      (
+        await promisify(execFile)('git', ['-c', 'safe.directory=' + root, '-C', root, ...args])
+      ).stdout.trim()
+    const repositoryBefore = {
+      head: await git(['rev-parse', 'HEAD']),
+      status: await git(['status', '--porcelain']),
+    }
     let work = { bytesRead: 0, tokens: 0 }
     const service = new RawDataService((metrics) => {
         work = metrics
@@ -45,10 +57,89 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
       ['Config/SoundBankLookUp.json', '/Events', '/Events/10000', null],
     ] as const
     const measurements = []
+    const directories = []
     try {
       const { workspaceId } = (await service.execute({ kind: 'open', root }, signal)) as {
         workspaceId: WorkspaceId
       }
+      for (const directory of ['', 'ExcelOutput', 'Config/Level/Mission']) {
+        const expected = new Set<string>()
+        const handle = await opendir(resolve(root, directory))
+        for await (const entry of handle)
+          if (entry.isDirectory() || (entry.isFile() && entry.name.endsWith('.json')))
+            expected.add(entry.name)
+        const started = performance.now(),
+          pageBytes: number[] = [],
+          discovered = new Set<string>()
+        let cursor: string | null = null
+        let previous: DirectoryResult['items'][number] | null = null
+        let sources = 0
+        do {
+          const page = (await service.execute(
+            {
+              kind: 'directory',
+              workspaceId,
+              directory: directory as DirectoryPath,
+              limit: 200,
+              cursor,
+            },
+            signal,
+          )) as DirectoryResult
+          const bytes = byteSize({
+            type: 'response',
+            id: randomUUID(),
+            result: { ok: true, value: page },
+          })
+          expect(bytes).toBeLessThanOrEqual(RAW_LIMITS.responseBytes)
+          pageBytes.push(bytes)
+          for (const item of page.items) {
+            expect(discovered.has(item.name)).toBe(false)
+            if (previous)
+              expect(
+                previous.kind === item.kind
+                  ? previous.name < item.name
+                  : previous.kind === 'directory' && item.kind === 'source',
+              ).toBe(true)
+            previous = item
+            discovered.add(item.name)
+            if (item.kind === 'source') {
+              expect(item.name.endsWith('.json')).toBe(true)
+              expect(
+                await service.execute({ kind: 'release', source: item.source }, signal),
+              ).toEqual({ released: false })
+              sources++
+            }
+          }
+          cursor = page.nextCursor
+          expect(page.truncated).toBe(cursor !== null)
+          if (cursor) expect(page.items.length).toBeGreaterThan(0)
+        } while (cursor)
+        expect(discovered).toEqual(expected)
+        directories.push({
+          directory,
+          entries: discovered.size,
+          sources,
+          pages: pageBytes.length,
+          pageBytes,
+          elapsedMs: performance.now() - started,
+          automaticallyRegistered: 0,
+        })
+      }
+      const cancellation = new AbortController()
+      const cancelled = service
+        .execute(
+          {
+            kind: 'directory',
+            workspaceId,
+            directory: 'ExcelOutput' as DirectoryPath,
+            limit: 200,
+            cursor: null,
+          },
+          cancellation.signal,
+        )
+        .catch((error) => error.code)
+      setImmediate(() => cancellation.abort())
+      expect(await cancelled).toBe('CANCELLED')
       for (const [file, pointer, scalarPointer, lexeme] of samples) {
         const before = await fingerprint(resolve(root, file))
         const source = { workspaceId, relativePath: file as RelativePath }
@@ -105,6 +196,17 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
           expect(byteSize(child)).toBeLessThan(RAW_LIMITS.responseBytes)
         }
         expect(await fingerprint(resolve(root, file))).toEqual(before)
+        expect(await service.execute({ kind: 'release', source }, signal)).toEqual({
+          released: true,
+        })
+        await expect(
+          service.execute({ kind: 'read', address, expectedRevision: metadata.revision }, signal),
+        ).rejects.toMatchObject({ code: 'SOURCE_CHANGED' })
+        const reacquired = (await service.execute({ kind: 'info', source }, signal)) as SourceInfo
+        expect(reacquired.revision).not.toBe(metadata.revision)
+        expect(await service.execute({ kind: 'release', source }, signal)).toEqual({
+          released: true,
+        })
         measurements.push({
           file,
           sourceBytes: before.size,
@@ -118,6 +220,11 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
           memory: process.memoryUsage(),
         })
       }
+      const repositoryAfter = {
+        head: await git(['rev-parse', 'HEAD']),
+        status: await git(['status', '--porcelain']),
+      }
+      expect(repositoryAfter).toEqual(repositoryBefore)
       const output = resolve(import.meta.dirname, '../artifacts/raw-real-data.json')
       await mkdir(resolve(output, '..'), { recursive: true })
       await writeFile(
@@ -130,6 +237,9 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
             arch: process.arch,
             versions: process.versions,
             measurements,
+            directories,
+            repositoryBefore,
+            repositoryAfter,
             maxRssKiB: process.resourceUsage().maxRSS,
           },
           null,

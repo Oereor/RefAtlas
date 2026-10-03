@@ -6,6 +6,8 @@
 
 ## 已完成
 
+**Source Browser Slice A：Windows x64 IMPLEMENTED / VALIDATED；AWAITING macOS arm64 VALIDATION / REVIEW。** 本轮只实现底层目录发现、metadata 调度和 source 生命周期；106 项普通测试、三目录/六样本真实 gate、dev/built/ASAR packaged smoke 与含真实数据的十步完整验收通过。详细范围、stat 检测边界与清理见 [Slice A 报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
+
 - 核实实际目录 TurnBasedGameData，外部仓库初始干净。
 - 项目文档整体迁入应用仓库 `docs/`，外层旧目录已移除，证据保留；收尾已提交为 `809a4a5 Closeout Phase 0`。
 - 建立产品边界、文档权威模型与实验隔离规则。
@@ -87,4 +89,6 @@ Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则
 
 ## 下一步
 
-用户和 ChatGPT review [Raw Access Foundation 实现报告](investigations/phase-2-raw-access-foundation.md)及 [macOS arm64 验证报告](investigations/phase-2-raw-access-macos-arm64-validation.md)。首片已在两个正式平台验证并停止，建议下一块 Source Browser；不自动开始后续 UI、搜索或 Dataset Contract。签名、发布与正式性能预算留在对应阶段，文档与应用使用同一 Git 仓库。
+用户已授权 Source Browser Slice A：Directory Discovery + Active Source Lifecycle。底层 contract、目录 snapshot/分页、metadata 调度及 acquire/release 已实现并通过 Windows x64 本轮 gate；**Slice A：AWAITING macOS arm64 VALIDATION / REVIEW**。macOS 新实现 gate 尚未运行，不借用 Raw Foundation 的历史通过结果。
+
+本轮结束等待用户与 ChatGPT review；不自动开始 Slice B、Source Explorer/Node Browser UI、Paraglide、搜索或 Dataset Contract。签名、发布与正式性能预算留在对应阶段，文档与应用使用同一 Git 仓库。

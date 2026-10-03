@@ -3,6 +3,20 @@ import { executeSteps, packageSteps } from '../scripts/package.mjs'
 import { validationSteps } from '../scripts/validate.mjs'
 
 describe('foundation validation commands', () => {
+  it('explicitly gates real data before smoke and stops packaging if the gate fails', async () => {
+    const steps = validationSteps('npm-cli.js', 'win32', 'x64', true)
+    expect(steps.filter((step) => step.name === 'production build')).toHaveLength(1)
+    const index = steps.findIndex((step) => step.name === 'test:raw-data')
+    expect(steps[index + 1].name).toBe('smoke:dev')
+    const executed = []
+    await expect(
+      executeSteps(steps, {}, async (_command, args) => {
+        executed.push(args)
+        if (args === steps[index].args) throw new Error('read-only gate failed')
+      }),
+    ).rejects.toThrow('read-only gate failed')
+    expect(executed).toEqual(steps.slice(0, index + 1).map((step) => step.args))
+  })
   it.each([
     ['win32', 'x64', '--win'],
     ['darwin', 'arm64', '--mac'],

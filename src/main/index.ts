@@ -138,7 +138,16 @@ registerRaw(RAW_CHANNELS.open, async (event, input) => {
     choosingWorkspace = false
   }
 })
-for (const kind of ['close', 'info', 'reload', 'read', 'children', 'segment'] as const)
+for (const kind of [
+  'close',
+  'info',
+  'reload',
+  'read',
+  'children',
+  'segment',
+  'directory',
+  'release',
+] as const)
   registerRaw(RAW_CHANNELS[kind], async (event, input) => {
     const command = commandFromInput(kind, input)
     if (!command || !object(input)) throw new RawError('INVALID_INPUT')
@@ -195,6 +204,11 @@ async function launch(): Promise<void> {
   if (smoke && !guardSmoke && reportPath) {
     const root = join(dirname(reportPath), 'raw-fixtures')
     await mkdir(root, { recursive: true })
+    await mkdir(join(root, 'nested'), { recursive: true })
+    await writeFile(join(root, 'nested', 'child.json'), '1', 'utf8')
+    const cancelDirectory = join(root, 'directory-cancel')
+    await mkdir(cancelDirectory, { recursive: true })
+    for (let i = 0; i < 400; i++) await mkdir(join(cancelDirectory, String(i)))
     await writeFile(
       join(root, 'sample.json'),
       '\uFEFF{"n":16752756560315677817,"z":-0,"d":1.00,"s":"16752756560315677817","a~b/c":"中文🙂\\uD800","entries":[' +

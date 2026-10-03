@@ -3,6 +3,7 @@ import { exact, object, validId } from './protocol'
 declare const identity: unique symbol
 export type WorkspaceId = string & { readonly [identity]: 'workspace' }
 export type RelativePath = string & { readonly [identity]: 'relative-path' }
+export type DirectoryPath = string & { readonly [identity]: 'directory-path' }
 export type JsonPointer = string & { readonly [identity]: 'json-pointer' }
 export type SourceRevision = string & { readonly [identity]: 'revision' }
 export type SourceAddress = { workspaceId: WorkspaceId; relativePath: RelativePath }
@@ -51,6 +52,20 @@ export const RAW_CHANNELS = Object.freeze({
   children: 'raw:children',
   segment: 'raw:segment',
   cancel: 'raw:cancel',
+  directory: 'raw:directory',
+  release: 'raw:release',
+})
+export const DIRECTORY_LIMITS = Object.freeze({
+  page: 200,
+  scan: 20_000,
+  snapshotBytes: 4 * 1024 * 1024,
+  cacheBytes: 8 * 1024 * 1024,
+  snapshots: 32,
+  cursors: 256,
+  ttlMs: 60_000,
+  workMs: 5000,
+  concurrency: 2,
+  yieldEvery: 64,
 })
 export type RawCode =
   | 'INVALID_INPUT'
@@ -121,6 +136,15 @@ export function validPath(value: unknown): value is RelativePath {
     value.split('/').every((part) => part !== '' && part !== '.' && part !== '..')
   )
 }
+export function validDirectoryPath(value: unknown): value is DirectoryPath {
+  return (
+    typeof value === 'string' &&
+    byteSize(value) <= RAW_LIMITS.addressBytes &&
+    (value === '' ||
+      (!/[\\:\x00]/.test(value) &&
+        value.split('/').every((part) => part !== '' && part !== '.' && part !== '..')))
+  )
+}
 export function validPointer(value: unknown): value is JsonPointer {
   return (
     typeof value === 'string' &&
@@ -148,6 +172,46 @@ export function validAddress(value: unknown): value is NodeAddress {
 export function escapePointer(key: string | number): string {
   return String(key).replaceAll('~', '~0').replaceAll('/', '~1')
 }
+export function splitPointer(pointer: string): string[] {
+  if (!validPointer(pointer)) throw new RawError('INVALID_INPUT')
+  return pointer === ''
+    ? []
+    : pointer
+        .slice(1)
+        .split('/')
+        .map((token) => token.replaceAll('~1', '/').replaceAll('~0', '~'))
+}
+export function joinPointer(tokens: readonly string[]): JsonPointer {
+  if (!Array.isArray(tokens) || ![...tokens].every((token) => typeof token === 'string'))
+    throw new RawError('INVALID_INPUT')
+  const pointer = tokens.length ? '/' + tokens.map(escapePointer).join('/') : ''
+  if (!validPointer(pointer)) throw new RawError('INVALID_INPUT')
+  return pointer
+}
+export function parentPointer(pointer: string): JsonPointer | null {
+  const tokens = splitPointer(pointer)
+  return tokens.length ? joinPointer(tokens.slice(0, -1)) : null
+}
+export type DirectoryEntry =
+  | { kind: 'directory'; name: string; path: DirectoryPath }
+  | { kind: 'source'; name: string; source: SourceAddress }
+export type DirectoryInput = RequestIdInput & {
+  workspaceId: WorkspaceId
+  directory: DirectoryPath
+  limit: number
+  cursor: string | null
+}
+export type DirectoryResult = {
+  workspaceId: WorkspaceId
+  directory: DirectoryPath
+  items: DirectoryEntry[]
+  nextCursor: string | null
+  truncated: boolean
+}
+export function compareDirectoryEntries(left: DirectoryEntry, right: DirectoryEntry): number {
+  if (left.kind !== right.kind) return left.kind === 'directory' ? -1 : 1
+  return left.name < right.name ? -1 : left.name > right.name ? 1 : 0
+}
 export function sameSource(left: SourceAddress, right: SourceAddress): boolean {
   return left.workspaceId === right.workspaceId && left.relativePath === right.relativePath
 }
@@ -163,6 +227,14 @@ export type RawCommand =
   | { kind: 'close'; workspaceId: WorkspaceId }
   | { kind: 'info'; source: SourceAddress }
   | { kind: 'reload'; source: SourceAddress }
+  | { kind: 'release'; source: SourceAddress }
+  | {
+      kind: 'directory'
+      workspaceId: WorkspaceId
+      directory: DirectoryPath
+      limit: number
+      cursor: string | null
+    }
   | { kind: 'read'; address: NodeAddress; expectedRevision: SourceRevision }
   | {
       kind: 'children' | 'segment'
@@ -204,9 +276,17 @@ export type SegmentResult = {
   nextCursor: string | null
   truncated: boolean
 }
-export type OpenResult = { status: 'opened'; workspaceId: WorkspaceId } | { status: 'cancelled' }
+export type OpenResult =
+  { status: 'opened'; workspaceId: WorkspaceId; displayName: string } | { status: 'cancelled' }
 export type RawOutput =
-  OpenResult | { closed: true } | SourceInfo | NodeResult | ChildrenResult | SegmentResult
+  | OpenResult
+  | { closed: true }
+  | SourceInfo
+  | NodeResult
+  | ChildrenResult
+  | SegmentResult
+  | DirectoryResult
+  | { released: boolean }
 export interface RawBridge {
   openWorkspace(input: RequestIdInput): Promise<RawResult<OpenResult>>
   closeWorkspace(
@@ -214,6 +294,8 @@ export interface RawBridge {
   ): Promise<RawResult<{ closed: true }>>
   getSourceInfo(input: SourceInput): Promise<RawResult<SourceInfo>>
   reloadSource(input: SourceInput): Promise<RawResult<SourceInfo>>
+  listDirectory(input: DirectoryInput): Promise<RawResult<DirectoryResult>>
+  releaseSource(input: SourceInput): Promise<RawResult<{ released: boolean }>>
   readNode(input: NodeInput): Promise<RawResult<NodeResult>>
   listNodeChildren(input: PageInput): Promise<RawResult<ChildrenResult>>
   readScalarSegment(input: PageInput): Promise<RawResult<SegmentResult>>
@@ -230,8 +312,18 @@ export function validCommand(value: unknown): value is RawCommand {
     )
   if (value.kind === 'close')
     return exact(value, ['kind', 'workspaceId']) && validId(value.workspaceId)
-  if (value.kind === 'info' || value.kind === 'reload')
+  if (value.kind === 'info' || value.kind === 'reload' || value.kind === 'release')
     return exact(value, ['kind', 'source']) && validSource(value.source)
+  if (value.kind === 'directory')
+    return (
+      exact(value, ['kind', 'workspaceId', 'directory', 'limit', 'cursor']) &&
+      validId(value.workspaceId) &&
+      validDirectoryPath(value.directory) &&
+      Number.isInteger(value.limit) &&
+      Number(value.limit) >= 1 &&
+      Number(value.limit) <= DIRECTORY_LIMITS.page &&
+      cursor(value.cursor)
+    )
   if (value.kind !== 'read' && value.kind !== 'children' && value.kind !== 'segment') return false
   if (!validAddress(value.address) || !validId(value.expectedRevision)) return false
   if (value.kind === 'read') return exact(value, ['kind', 'address', 'expectedRevision'])
@@ -358,11 +450,61 @@ export function validRawResult(value: unknown, command: RawCommand): value is Ra
   const result = value.value
   if (command.kind === 'open')
     return (
-      exact(result, ['status', 'workspaceId']) &&
+      exact(result, ['status', 'workspaceId', 'displayName']) &&
       result.status === 'opened' &&
-      validId(result.workspaceId)
+      validId(result.workspaceId) &&
+      typeof result.displayName === 'string' &&
+      byteSize(result.displayName) <= RAW_LIMITS.addressBytes &&
+      !/[/\x00]/.test(result.displayName)
     )
   if (command.kind === 'close') return exact(result, ['closed']) && result.closed === true
+  if (command.kind === 'release')
+    return exact(result, ['released']) && typeof result.released === 'boolean'
+  if (command.kind === 'directory') {
+    if (
+      !exact(result, ['workspaceId', 'directory', 'items', 'nextCursor', 'truncated']) ||
+      result.workspaceId !== command.workspaceId ||
+      result.directory !== command.directory ||
+      !Array.isArray(result.items) ||
+      result.items.length > command.limit ||
+      !cursor(result.nextCursor) ||
+      result.truncated !== (result.nextCursor !== null) ||
+      (result.truncated && !result.items.length)
+    )
+      return false
+    const names = new Set<string>()
+    return result.items.every((entry, index, items) => {
+      if (
+        !object(entry) ||
+        typeof entry.name !== 'string' ||
+        !entry.name ||
+        /[\\/:\x00]/.test(entry.name) ||
+        entry.name === '.' ||
+        entry.name === '..' ||
+        names.has(entry.name)
+      )
+        return false
+      const path = command.directory ? command.directory + '/' + entry.name : entry.name
+      const valid =
+        entry.kind === 'directory'
+          ? exact(entry, ['kind', 'name', 'path']) &&
+            validDirectoryPath(entry.path) &&
+            entry.path === path
+          : entry.kind === 'source' &&
+            exact(entry, ['kind', 'name', 'source']) &&
+            validSource(entry.source) &&
+            entry.source.workspaceId === command.workspaceId &&
+            entry.source.relativePath === path
+      if (
+        !valid ||
+        (index &&
+          compareDirectoryEntries(items[index - 1] as DirectoryEntry, entry as DirectoryEntry) >= 0)
+      )
+        return false
+      names.add(entry.name)
+      return true
+    })
+  }
   if (command.kind === 'info' || command.kind === 'reload')
     return (
       exact(result, ['source', 'revision', 'state', 'sizeBytes', 'validated']) &&

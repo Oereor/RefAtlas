@@ -61,7 +61,11 @@ JSON Node ≠ Structural Record ≠ Logical Entity。在显式选中 collection/
 
 ### 已实现的 Raw Access Foundation
 
-`window.raw` 提供受控 workspace open/close、source info/reload、Node read、children page、scalar segment 和 owner cancellation。Main 原生选择根目录，Utility 拒绝路径逃逸和根下 symlink/junction；不做全库 discovery。小值返回完整六类型 union，大值返回独立 summary，object 使用有序 entries。
+`window.raw` 提供受控 workspace open/close、source info/reload/release、单目录 discovery、Node read、children page、scalar segment 和 owner cancellation。Main 原生选择根目录，Utility 生成有界 displayName，拒绝路径逃逸和根下 symlink/junction；不做全库 discovery。小值返回完整六类型 union，大值返回独立 summary，object 使用有序 entries。
+
+Source Browser Slice A 的 `DirectoryPath` 与 `.json` RelativePath 分离，根为 `""`。单目录 listing 仅返回普通目录与精确 `.json` 普通文件，不解析或注册 source；按目录优先、组内 `<`/`>` 排序。分页使用绑定 workspace generation、目录与 snapshot 的 opaque UUID cursor；目录 stat 变化、TTL/淘汰使 cursor 失效。snapshot、扫描、执行、并发和完整 64 KiB response 均有界，长路径页自动缩减，不截断地址。详见 [实现报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
+
+只有 info/reload 显式 acquire；Node 请求绑定已注册 source，release 后返回 SOURCE_CHANGED。解析保留 single queue；directory/info/reload 走并发 2 的 metadata 槽，release/close 直接进入控制屏障。registration token、source-scoped task、同地址控制链及 workspace generation 防止旧任务发布/清理新状态；release 等待 handle finally 后清 metadata/range/cursor，watcher 按明确 source owner 共享。Utility 同步成功 reply 与 acquisition 最终提交，取消的未交付 candidate 回滚。没有公开 lease/ref-count API，仍是单窗口使用范围。
 
 首次 Node 请求按预算完整校验一个 source 后才能发布范围；之后可用 revision-bound range。工作预算为 128 MiB read、800 万 token、深度 128、256 KiB token/window 和 15 秒；4 KiB 块之间让出执行。完整值初始 48 KiB/1,000 Node/深度 8，raw response envelope 64 KiB，foundation 控制限制保持 16 KiB。source/range/cursor 均为有限内存状态，不使用 SQLite 持久化；所有数值保留 lexeme。来源变化失效旧缓存，旧 workspace/revision/cursor 不自动恢复。
 

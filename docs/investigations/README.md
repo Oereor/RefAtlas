@@ -1,5 +1,8 @@
 # 调查与证据
 
+- [Source Browser Slice A](phase-2-source-browser-slice-a-directory-lifecycle.md)：DirectoryPath、snapshot/分页、metadata 调度、显式 acquire/release、race regression 与 Windows 验收；macOS 新实现 gate 待验证。
+- [Source Browser preflight](phase-2-source-browser-preflight.md)：已评审的接入调查与 Slice A–E 建议，保持历史证据。
+
 - [Raw Access Foundation macOS arm64 验证](phase-2-raw-access-macos-arm64-validation.md)：Apple M2 原生 filesystem/symlink、watcher/stat 回退、真实数据及 dev/built/ASAR packaged raw 链路验收；两个正式平台已验证，等待评审。
 - [Phase 2 Raw Access Foundation](phase-2-raw-access-foundation.md)：生产类型、parser、只读来源、revision、有界 query、真实数据与 Windows 进程/ASAR 验收；首片完成，等待评审。
 - [Phase 2A 评审收尾](phase-2a-review-closeout.md)：已确认原则、ADR-0007–0010、接受与候选边界、文档验证；Phase 2A CLOSED / REVIEWED，产品实现 NOT STARTED。

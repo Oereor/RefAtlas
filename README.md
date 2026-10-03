@@ -6,6 +6,8 @@
 
 ## 开始阅读
 
+Source Browser Slice A 已按用户授权实现并通过 Windows x64 的十步验收（106 项普通测试、真实目录/Raw gate、dev/built/packaged smoke）；**awaiting macOS arm64 validation / review**。本轮新增的是底层目录发现与 source 生命周期，正式 Source Browser UI 及后续 slices 仍需独立授权，见 [实现报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
+
 - [文档入口](docs/README.md)：职责与阅读顺序。
 - [产品定义](docs/PROJECT.md)、[当前状态](docs/STATUS.md)、[已接受架构](docs/ARCHITECTURE.md)、[ADR](docs/decisions/README.md)。
 - [调查工具](tools/investigation/README.md)：实验复现。
@@ -78,7 +80,7 @@ Mac 目录包位于 `dist/mac-arm64/RefAtlas.app`，本轮不签名、不公证�
 
 ## Raw Access Foundation 验证
 
-`window.raw` 是正式窄桥，提供 workspace open/close、source info/reload、Node read、children page、scalar segment 和取消。workspace root 由 Main 原生对话框选择；客户端不得提交绝对路径。Node 请求带 expectedRevision，source 变化后先 stale，再显式 reload。不添加浏览或编辑产品 UI。
+`window.raw` 是正式窄桥，提供 workspace open/close + displayName、单目录 listDirectory、source info/reload/release、Node read、children page、scalar segment 和取消。workspace root 由 Main 原生对话框选择；客户端不得提交绝对路径。info/reload 显式 acquire，Node 请求带 expectedRevision，release 后不隐式重新注册；source 变化后先 stale，再显式 reload。不添加浏览或编辑产品 UI。
 
 普通 `npm test` 验证临时 fixture，并跳过外部来源 gate。明确验证六个真实只读样本时执行：
 
@@ -86,6 +88,8 @@ Mac 目录包位于 `dist/mac-arm64/RefAtlas.app`，本轮不签名、不公证�
 npm.cmd run test:raw-data
 ```
 
-该命令按固定样本运行 production service，前后 streaming hash/size/mtime 一致性验证，报告写入被忽略的 `artifacts/raw-real-data.json`。没有全工作区扫描；需要本机同级 TurnBasedGameData。
+该命令按固定六样本及 root、ExcelOutput、Config/Level/Mission 目录运行 production service，验证分页/排序/response bounds、零自动注册、取消与 release/reacquire。前后 streaming hash/size/mtime 与外部 HEAD/status 必须一致，报告写入被忽略的 `artifacts/raw-real-data.json`。没有全工作区扫描；需要本机同级 TurnBasedGameData。需要将此 gate 纳入完整原生平台验收时执行 `npm run validate:foundation -- --real-data`，保持单次 production build，真实 gate 失败阻止 smoke/打包。
+
+Source Browser Slice A 的实现与平台状态见 [报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。macOS arm64 新目录/lifecycle gate 待原生验证；不使用既有 Raw Foundation gate 冒充通过，不自动开始正式 UI。
 
 现有 dev/built/packaged smoke 和 `validate:foundation` 已包含 raw 进程链路验收；fixture 由 Main/runner 在自身临时目录管理。Raw Access Foundation 已在 Windows x64 与 macOS arm64 验证，Mac 的 filesystem/watcher/stat 回退、真实数据与 ASAR runtime 证据见 [原生验证报告](docs/investigations/phase-2-raw-access-macos-arm64-validation.md)。接口、资源上限和边界见 [实现报告](docs/investigations/phase-2-raw-access-foundation.md)；首片仍待 review，整个 Phase 2 未完成。

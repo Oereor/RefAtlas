@@ -64,9 +64,9 @@ process.parentPort.once('message', (event) => {
     tasks.set(request.id, controller)
     if (request.operation === 'raw') {
       try {
-        const value = await raw.execute(request.input, controller.signal)
-        if (controller.signal.aborted) throw new RawError('CANCELLED')
-        reply({ type: 'response', id: request.id, result: { ok: true, value } })
+        await raw.execute(request.input, controller.signal, (value) => {
+          reply({ type: 'response', id: request.id, result: { ok: true, value } })
+        })
       } catch (error) {
         reply({
           type: 'response',

@@ -8,6 +8,8 @@ import type {
   RelativePath,
   SourceRevision,
   WorkspaceId,
+  DirectoryPath,
+  DirectoryResult,
 } from '../src/shared/raw'
 import type { Request } from '../src/shared/protocol'
 const command = () => ({
@@ -19,6 +21,68 @@ const command = () => ({
   expectedRevision: randomUUID() as SourceRevision,
 })
 describe('raw query broker boundary', () => {
+  it('accepts bounded directory/release outputs and rejects inconsistent discovered addresses', async () => {
+    const sent: Request[] = [],
+      broker = new RequestBroker((request) => sent.push(request))
+    const workspaceId = randomUUID() as WorkspaceId
+    const input = {
+      kind: 'directory' as const,
+      workspaceId,
+      directory: '' as DirectoryPath,
+      limit: 200,
+      cursor: null,
+    }
+    const first = broker.request<DirectoryResult>({
+      type: 'request',
+      id: randomUUID(),
+      operation: 'raw',
+      input,
+    })
+    const value: DirectoryResult = {
+      workspaceId,
+      directory: '' as DirectoryPath,
+      items: [
+        {
+          kind: 'source',
+          name: 'a.json',
+          source: { workspaceId, relativePath: 'a.json' as RelativePath },
+        },
+      ],
+      nextCursor: null,
+      truncated: false,
+    }
+    broker.accept({ type: 'response', id: sent[0].id, result: { ok: true, value } })
+    expect(await first).toEqual(value)
+    const released = broker.request({
+      type: 'request',
+      id: randomUUID(),
+      operation: 'raw',
+      input: { kind: 'release', source: { workspaceId, relativePath: 'a.json' as RelativePath } },
+    })
+    broker.accept({
+      type: 'response',
+      id: sent[1].id,
+      result: { ok: true, value: { released: false } },
+    })
+    expect(await released).toEqual({ released: false })
+    const invalid = broker
+      .request({ type: 'request', id: randomUUID(), operation: 'raw', input })
+      .catch((error) => error.code)
+    broker.accept({
+      type: 'response',
+      id: sent[2].id,
+      result: {
+        ok: true,
+        value: {
+          ...value,
+          items: [
+            { kind: 'source', name: 'a.json', source: { workspaceId, relativePath: 'wrong.json' } },
+          ],
+        },
+      },
+    })
+    expect(await invalid).toBe('PROTOCOL_ERROR')
+  })
   it('uses independent response limits and owner-scoped cancellation without changing control limits', async () => {
     const sent: Request[] = [],
       broker = new RequestBroker((request) => sent.push(request))
