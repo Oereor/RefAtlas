@@ -11,6 +11,10 @@ function value<Value>(result: Result<Value>): Value {
 }
 
 export async function runFoundationGuardSmoke(): Promise<unknown> {
+  assert(
+    typeof window.runLocalizationSmoke === 'undefined',
+    '普通打包态不得暴露 localization smoke',
+  )
   for (const name of ['require', 'process', 'Buffer'])
     assert(
       typeof (window as unknown as Record<string, unknown>)[name] === 'undefined',

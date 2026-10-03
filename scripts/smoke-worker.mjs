@@ -3,6 +3,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { createRequire } from 'node:module'
 import { runProcess } from './process.mjs'
+import { readdir } from 'node:fs/promises'
+import { gzipSync } from 'node:zlib'
 
 const root = resolve(import.meta.dirname, '..')
 const mode = process.argv[2] ?? 'built'
@@ -75,6 +77,34 @@ try {
     throw new Error('实际 BrowserWindow 安全配置验证失败')
   if (mode === 'packaged' && !content.renderer.sqlite.every((result) => result.nativeUnpacked))
     throw new Error('native addon 未验证在 ASAR 外加载')
+  if (
+    !content.renderer.localization ||
+    content.renderer.localization.runtimeNavigations !== 0 ||
+    content.renderer.localization.fixtureReloads !== 3
+  )
+    throw new Error('localization 无 reload / persistence fixture 证明缺失')
+  const forbiddenRuntime =
+    /@inlang|@lix-js|unplugin-paraglide-js|Fallback ready|源文件已发生变化，请重新加载。/
+  if (mode !== 'dev') {
+    for (const folder of ['main', 'preload']) {
+      const files = await readdir(resolve(root, 'out', folder), { recursive: true })
+      for (const file of files.filter((entry) => entry.endsWith('.cjs')))
+        if (forbiddenRuntime.test(await readFile(resolve(root, 'out', folder, file), 'utf8')))
+          throw new Error('非 Renderer bundle 包含 localization runtime/compiler：' + file)
+    }
+    const assets = await readdir(resolve(root, 'out/renderer/assets'))
+    content.localizationBundle = {
+      rendererOnly: true,
+      assets: await Promise.all(
+        assets
+          .filter((file) => file.endsWith('.js'))
+          .map(async (name) => {
+            const bytes = await readFile(resolve(root, 'out/renderer/assets', name))
+            return { name, bytes: bytes.length, gzipBytes: gzipSync(bytes).length }
+          }),
+      ),
+    }
+  }
   if (mode === 'packaged') {
     const resources =
       process.platform === 'win32'
@@ -101,6 +131,18 @@ try {
       entries.some((entry) => /(^|\/)TurnBasedGameData(\/|$)/.test(entry))
     )
       throw new Error('ASAR 包含非运行时文件或外部数据')
+    if (
+      entries.some((entry) =>
+        /(^|\/)(@inlang|@lix-js|project\.inlang|\.cache|messages)(\/|$)/.test(entry),
+      )
+    )
+      throw new Error('ASAR 包含 compiler SDK、catalog 源文件或插件缓存')
+    for (const entry of entries.filter((entry) => /^out\/(main|preload)\/.+\.cjs$/.test(entry))) {
+      if (
+        forbiddenRuntime.test(asar.extractFile(archive, join(...entry.split('/'))).toString('utf8'))
+      )
+        throw new Error('ASAR 非 Renderer 入口包含 localization runtime：' + entry)
+    }
     for (const entry of [
       'out/main/index.cjs',
       'out/preload/index.cjs',
@@ -123,6 +165,9 @@ try {
       runtimeOnly: true,
       externalDataExcluded: true,
       nativeUnpacked: true,
+      compilerExcluded: true,
+      pluginCacheExcluded: true,
+      catalogsRendererOnly: true,
     }
     const guardReport = join(reportDirectory, 'guard-report.json')
     await runProcess(command, ['--guard-smoke', '--smoke-report', guardReport], {

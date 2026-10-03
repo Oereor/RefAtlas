@@ -15,3 +15,6 @@ artifacts/
 *.sqlite-wal
 .DS_Store
 Thumbs.db
+src/renderer/src/i18n/generated/
+project.inlang/*
+!project.inlang/settings.json

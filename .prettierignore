@@ -10,3 +10,6 @@ out/
 dist/
 artifacts/
 coverage/
+src/renderer/src/i18n/generated/
+project.inlang/*
+!project.inlang/settings.json

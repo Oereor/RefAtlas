@@ -5,15 +5,25 @@ import { executeSteps, packageSteps, packagingEnvironment } from './package.mjs'
 export function validationSteps(npmCli, platform, arch, realData = false) {
   if (!npmCli) throw new Error('请通过 npm run validate:foundation 执行')
   const npmStep = (name) => ({ name, args: [npmCli, 'run', name], timeoutMs: 150000 })
+  const smokeStep = (mode) => ({
+    name: 'smoke:' + mode,
+    args: [resolve(import.meta.dirname, 'smoke.mjs'), mode],
+    timeoutMs: 150000,
+  })
   const [build, builder] = packageSteps(platform, arch)
   return [
+    {
+      name: 'i18n offline compile',
+      args: [resolve(import.meta.dirname, 'i18n-compile.mjs'), '--offline'],
+      timeoutMs: 60000,
+    },
     ...['format:check', 'typecheck', 'test', 'docs:check'].map(npmStep),
     ...(realData ? [npmStep('test:raw-data')] : []),
-    npmStep('smoke:dev'),
+    smokeStep('dev'),
     build,
-    npmStep('smoke:built'),
+    smokeStep('built'),
     builder,
-    npmStep('smoke:packaged'),
+    smokeStep('packaged'),
   ]
 }
 

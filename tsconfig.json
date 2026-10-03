@@ -16,6 +16,7 @@
     "src/utility/**/*.ts",
     "src/shared/**/*.ts",
     "tests/**/*.ts",
+    "src/renderer/src/env.d.ts",
     "electron.vite.config.ts",
     "vitest.config.ts"
   ]

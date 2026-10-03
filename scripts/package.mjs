@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url'
 import { readFile, access } from 'node:fs/promises'
 import { runProcess } from './process.mjs'
 import { proxyEnvironment } from './proxy.mjs'
+import { preparePlugin } from './i18n-prepare.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 export function packageSteps(platform, arch) {
@@ -34,6 +35,7 @@ export async function packagingEnvironment(platform, arch) {
   packageSteps(platform, arch)
   if (platform !== process.platform || arch !== process.arch)
     throw new Error('平台 gate 必须在对应原生 OS/架构上构建和运行')
+  await preparePlugin()
   const env = {
     ...(await proxyEnvironment()),
     CSC_IDENTITY_AUTO_DISCOVERY: 'false',

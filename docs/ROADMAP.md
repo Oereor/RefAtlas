@@ -6,7 +6,7 @@
 | --- | --- |
 | Phase 0 | 引导、规范、勘察、性能实验、生态调查；已完成评审并关闭 |
 | Phase 1：CLOSED（Phase 1A：CLOSED） | 桌面基础、两个正式平台 gate 与工具链决定齐备，无剩余 Phase 1 子阶段 |
-| Phase 2：production implementation STARTED | Phase 2A CLOSED / REVIEWED；Raw Access Foundation COMPLETE；Source Browser Slice A Windows validated / awaiting macOS validation and review；后续 UI、搜索、标签页/历史需单独授权 |
+| Phase 2：production implementation STARTED | Phase 2A CLOSED / REVIEWED；Raw Access Foundation COMPLETE；Source Browser Slice A Windows validated / reviewed；Slice B localization 已实现，最终 Windows gate 见 STATUS；macOS cumulative validation deferred；后续 UI、搜索、标签页/历史需单独授权 |
 | Phase 3 | Dataset Contract、出入引用、导航、局部图 |
 | Phase 4 | 固定/比较、diff、高级搜索、性能与体验 |
 | Phase 5 | 可选 Agent，作为 Query API 客户端，先读与调查 |
@@ -32,4 +32,4 @@ Phase 1 整体已关闭，无剩余 Phase 1B 或其他子阶段。用户已授�
 
 用户已授权 Source Browser Slice A：Directory Discovery + Active Source Lifecycle；本轮实现底层目录发现与显式 source 生命周期，验收/评审状态见 [STATUS](STATUS.md)及 [报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。没有正式 Source Browser UI。
 
-后续 Slice B localization → Source Explorer shell → Node Browser/Inspector → change/integration 仍需独立授权；第一批正式 UI 必须建立 UI-only localization 基础。完整搜索、tabs/history 留后续 Phase 2 slices，Dataset Contract、显式引用和 graph 留在 Phase 3。
+Slice B localization 已获独立授权并实现 UI-only 基础，验收/评审以 STATUS 为准；后续 Source Explorer shell → Node Browser/Inspector → change/integration 仍需独立授权。Slice B/C/D 后计划累计 macOS arm64 Source Browser 验收，本轮不切换平台或豁免。完整搜索、tabs/history 留后续 Phase 2 slices，Dataset Contract、显式引用和 graph 留在 Phase 3。

@@ -116,3 +116,9 @@ Windows dev/built/ASAR packaged raw 功能链路均通过，但本轮没有可�
 2026-10-03：directory/info/reload 已从重型 parser queue 分离为并发 2 的 metadata 槽；解析仍为单任务。同步 fixture 验证 B info 与 directory 在 A scan 尚未结束时完成，不设精确毫秒 SLA。目录 cache、扫描及时间预算是工程起点，不是硬 RSS 或磁盘延迟保证。
 
 Windows x64 首次真实目录 gate：root 6 项 / 1 页 / 532 bytes，ExcelOutput 2,253 项 / 12 页 / 最大完整 envelope 35,496 bytes，Config/Level/Mission 2,845 项 / 15 页 / 最大 15,477 bytes。完整 listing（含页和零自动注册验证）的单次观察分别约 3.18 / 212.91 / 171.60 ms，不含 Electron IPC；未控制 OS cache，不作平台排名。最终验收观察与边界见 [Slice A 报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
+
+## Source Browser Slice B：bundle 口径
+
+2026-10-03 Windows x64，沿用现有 electron-vite production 配置，不改 minify 策略。相同应用 Slice A 最后产物与本片单次生产构建比较：Renderer JS 114,052 → 152,262 bytes（+38,210），Node gzipSync 26,494 → 34,107 bytes（+7,613）；ASAR 1,063,759 → 1,104,278 bytes（+40,519）。包含本片消息/runtime、formatter/error/bootstrap 与诊断 harness，不能解释为单纯 compiler/runtime 增量。
+
+新增 61 个 dev lock entries（含非本机 optional variants）均未进入 ASAR，compiler/SDK/plugin cache 和 catalog source 排除。三态 runtime navigation=0，另有各三次显式 persistence reload；不等同可见窗口帧率/切换延迟测量。缓存、背景负载未控制，无启动/响应 SLA。实际 gate、检查脚本修正及 macOS deferred 见 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。

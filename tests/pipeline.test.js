@@ -41,7 +41,13 @@ describe('foundation validation commands', () => {
       executed.push(args)
     })
     expect(executed).toEqual(steps.map((step) => step.args))
+    for (const mode of ['dev', 'built', 'packaged']) {
+      const step = steps.find((step) => step.name === 'smoke:' + mode)
+      expect(step.args[0].replaceAll('\\', '/')).toMatch(/\/scripts\/smoke\.mjs$/)
+      expect(step.args[1]).toBe(mode)
+    }
     expect(steps.map((step) => step.name)).toEqual([
+      'i18n offline compile',
       'format:check',
       'typecheck',
       'test',

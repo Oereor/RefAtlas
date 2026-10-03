@@ -89,7 +89,11 @@ Query/UI 必须能表达 searching/progress/coverage/partial results/cancellatio
 
 raw field/string/numeric lexeme/path/Pointer/NodeAddress 保持原事实，`AvatarID`、`DamageType`、`Ice` 不翻译；`1.00`、`-0`、`1e3` 不走 locale number formatter。APP 自有日期/时间/计数/大小/普通 UI 数字使用共享 `Intl.*` formatting layer。
 
-内部协议使用稳定 locale-independent identifier/code，presentation 将 code 与参数映射为用户消息，locale 无需传到 Data Service。Paraglide JS 是候选，初始 locale 集合未锁定；集中 message sources 为权威，generated artifact 不人工维护。功能测试不以具体译文断言行为，专项 localization tests 验证消息、参数、切换、fallback/formatter 和 raw 边界。[ADR-0010](decisions/ADR-0010-ui-localization-boundary.md)
+内部协议使用稳定 locale-independent identifier/code，presentation 将 code 与参数映射为用户消息，locale 无需传到 Data Service。Slice B 正式采用 Paraglide JS（当前 compiler 2.25.4 devDependency），支持 `en` / `zh-CN`，英文为 base/fallback；集中 catalog 为权威，generated modules/declarations ignored、不人工维护。功能测试不以具体译文断言行为，专项 localization tests 验证消息、参数、切换、fallback/formatter 和 raw 边界。[ADR-0010](decisions/ADR-0010-ui-localization-boundary.md)
+
+Main ready 后读取 `app.getSystemLocale()` 并缩减为 UiLocale，只经可信 additionalArguments → sandboxed Preload readonly `appPresentationConfig` 传值；不传原始系统语言、不增加 raw command 或 unrestricted IPC。Renderer 挂载前按有效 localStorage `refatlas.locale` → system bootstrap → en 初始化。统一 i18n 入口管理 readonly Svelte store、Paraglide globalVariable/baseLocale strategy、存储、messages、formatters 和 error mapper；切换 `{ reload:false }` 并明确驱动 reactive 文案与 html lang/dir，不导航、不重置其他 state。
+
+`project.inlang/settings.json` / `messages/en.json` / `messages/zh-CN.json` 为 tracked source；固定版 message-format 插件准备到 ignored 本地缓存，避免 SDK URL cache 的 network-first 请求。CLI 与 Renderer Vite plugin 共享编译配置、在 typecheck 前生成声明；Main/Preload/Utility 没有翻译 runtime 或 catalog。metadata formatter 只接收非负安全整数，byte size 使用十进制单位；error mapper 不修改协议，未知 code 映射通用错误，不回显任意 details。实现与验证边界见 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。
 
 ## 6. 尚未接受或产品验证
 
@@ -97,6 +101,6 @@ raw field/string/numeric lexeme/path/Pointer/NodeAddress 保持原事实，`Avat
 - full search、Dataset Contract 和完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。
 - SQLite schema、持久 cache、child index 和更大 scalar streaming 策略仍未实现；当前 RawValue、范围/检测和工程预算见本轮报告。Dataset Contract 仍留在 Phase 3。
 - Exact 具体相等规则、BINARY/case/normalization、分页参数，trigram 启用与文件/语言覆盖、完整数据集容量及性能。
-- parser/i18n/UI 库最终选择、初始 locale、真实数据端到端性能和正式签名/公证验证。
+- 后续 UI 库组合、真实产品 UI 端到端性能和正式签名/公证验证。
 
 [Phase 2A 调查](investigations/phase-2a-data-access-architecture.md)保留历史候选与实测；本次接受范围及候选区别见 [评审收尾](investigations/phase-2a-review-closeout.md)。实验表、合成边、采样、具体阈值和库不自动成为生产架构。Phase 0 的版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。

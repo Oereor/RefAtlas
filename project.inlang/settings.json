@@ -1,0 +1,8 @@
+{
+  "baseLocale": "en",
+  "locales": ["en", "zh-CN"],
+  "modules": ["./.cache/i18n/message-format-4.4.0.js"],
+  "plugin.inlang.messageFormat": {
+    "pathPattern": "./messages/{locale}.json"
+  }
+}

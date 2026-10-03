@@ -11,9 +11,17 @@
     "node": ">=24.0.0 <25"
   },
   "scripts": {
-    "format": "prettier --write \"src/**/*.{ts,js,svelte,html,css}\" \"tests/**/*.{ts,js}\" \"scripts/**/*.mjs\" package.json electron.vite.config.ts electron-builder.yml vitest.config.ts svelte.config.js tsconfig.json tsconfig.renderer.json .prettierrc.json",
-    "format:check": "prettier --check \"src/**/*.{ts,js,svelte,html,css}\" \"tests/**/*.{ts,js}\" \"scripts/**/*.mjs\" package.json electron.vite.config.ts electron-builder.yml vitest.config.ts svelte.config.js tsconfig.json tsconfig.renderer.json .prettierrc.json",
+    "format": "prettier --write \"src/**/*.{ts,js,svelte,html,css}\" \"tests/**/*.{ts,js}\" \"scripts/**/*.mjs\" \"messages/*.json\" project.inlang/settings.json i18n.config.ts package.json electron.vite.config.ts electron-builder.yml vitest.config.ts svelte.config.js tsconfig.json tsconfig.renderer.json .prettierrc.json",
+    "format:check": "prettier --check \"src/**/*.{ts,js,svelte,html,css}\" \"tests/**/*.{ts,js}\" \"scripts/**/*.mjs\" \"messages/*.json\" project.inlang/settings.json i18n.config.ts package.json electron.vite.config.ts electron-builder.yml vitest.config.ts svelte.config.js tsconfig.json tsconfig.renderer.json .prettierrc.json",
     "validate:foundation": "node scripts/validate.mjs",
+    "i18n:prepare": "node scripts/i18n-prepare.mjs",
+    "i18n:compile": "node scripts/i18n-compile.mjs",
+    "predev": "npm run i18n:compile",
+    "pretypecheck": "npm run i18n:compile",
+    "pretest": "npm run i18n:compile",
+    "pretest:raw-data": "npm run i18n:compile",
+    "prebuild": "npm run i18n:compile",
+    "presmoke:dev": "npm run i18n:compile",
     "dev": "electron-vite dev",
     "install:electron": "node scripts/install-electron.mjs",
     "typecheck": "tsc --noEmit && svelte-check --tsconfig ./tsconfig.renderer.json",
@@ -32,6 +40,7 @@
     "better-sqlite3": "13.0.3"
   },
   "devDependencies": {
+    "@inlang/paraglide-js": "2.25.4",
     "@sveltejs/vite-plugin-svelte": "6.2.4",
     "@types/better-sqlite3": "9.6.0",
     "@types/node": "24.19.1",

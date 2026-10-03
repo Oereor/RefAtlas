@@ -5,6 +5,7 @@ import { mkdir, writeFile, unlink } from 'node:fs/promises'
 import { mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { cpus, release, totalmem } from 'node:os'
+import { once } from 'node:events'
 import {
   bounded,
   CHANNELS,
@@ -27,6 +28,7 @@ import {
   rawBounded,
 } from '../shared/raw'
 import type { RawCode, RawResult } from '../shared/raw'
+import { normalizeSystemLocale, UI_LOCALE_ARGUMENT } from '../shared/presentation'
 
 const guardSmoke = process.argv.includes('--guard-smoke')
 const smoke = process.argv.includes('--smoke') || guardSmoke
@@ -223,6 +225,10 @@ async function launch(): Promise<void> {
     await writeFile(join(root, 'bad.json'), '{"a":1,}', 'utf8')
   }
   await service.start()
+  let initialLocale = normalizeSystemLocale(undefined)
+  try {
+    initialLocale = normalizeSystemLocale(app.getSystemLocale())
+  } catch {}
   window = new BrowserWindow({
     width: 860,
     height: 640,
@@ -231,6 +237,7 @@ async function launch(): Promise<void> {
       preload: join(__dirname, '../preload/index.cjs'),
       ...security,
       backgroundThrottling: false,
+      additionalArguments: [UI_LOCALE_ARGUMENT + initialLocale],
     },
   })
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
@@ -263,6 +270,39 @@ async function launch(): Promise<void> {
     rawReports.push(await window.webContents.executeJavaScript('window.runRawSmoke("deleted")'))
     rawReports.push(await window.webContents.executeJavaScript('window.runRawSmoke("restart")'))
     rendererReport.raw = rawReports
+    let navigationCount = 0
+    const countNavigation = (): void => {
+      navigationCount += 1
+    }
+    window.webContents.on('did-start-navigation', countNavigation)
+    const localization: unknown[] = []
+    const initial = await window.webContents.executeJavaScript(
+      'window.runLocalizationSmoke("initial")',
+    )
+    if (!object(initial) || initial.bootstrap !== initialLocale || navigationCount !== 0)
+      throw new Error('locale bootstrap 或无 reload 验证失败')
+    localization.push(initial)
+    for (const stage of ['stored-zh', 'stored-en', 'stored-invalid']) {
+      const loaded = once(window.webContents, 'did-finish-load')
+      window.webContents.reload()
+      await loaded
+      const restored: unknown = await window.webContents.executeJavaScript(
+        'window.runLocalizationSmoke(' + JSON.stringify(stage) + ')',
+      )
+      if (
+        !object(restored) ||
+        restored.bootstrap !== initialLocale ||
+        restored.bootToken === initial.bootToken
+      )
+        throw new Error('locale persistence reload fixture 验证失败')
+      localization.push(restored)
+    }
+    window.webContents.removeListener('did-start-navigation', countNavigation)
+    rendererReport.localization = {
+      stages: localization,
+      runtimeNavigations: 0,
+      fixtureReloads: navigationCount,
+    }
   }
   if (
     !object(preloadSecurity) ||

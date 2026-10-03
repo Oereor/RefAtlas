@@ -1,5 +1,9 @@
 import { defineConfig } from 'electron-vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
+import { paraglideOptions, requirePlugin } from './i18n.config'
+
+requirePlugin()
 
 export default defineConfig({
   main: {
@@ -21,5 +25,5 @@ export default defineConfig({
       },
     },
   },
-  renderer: { plugins: [svelte()] },
+  renderer: { plugins: [paraglideVitePlugin(paraglideOptions), svelte()] },
 })

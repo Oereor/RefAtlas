@@ -60,7 +60,7 @@ macOS arm64 的脚本路径必须在原生 Apple Silicon 环境验证；macOS x6
 
 ## 结束规则（文档与仓库）
 
-Source Browser Slice A 扩展 `test:raw-data`，仅枚举 root、ExcelOutput、Config/Level/Mission 并复用六个 Raw 样本，前后核对外部 HEAD/status 和文件指纹。`npm run validate:foundation -- --real-data` 显式把此 gate 放在 docs check 后、dev smoke 前；缺少同级数据或真实 gate 失败阻止后续打包。无参数仍保持原九阶段流程、单次 production build，不隐式依赖外部数据。
+Source Browser Slice A 扩展 `test:raw-data`，仅枚举 root、ExcelOutput、Config/Level/Mission 并复用六个 Raw 样本，前后核对外部 HEAD/status 和文件指纹。`npm run validate:foundation -- --real-data` 显式把此 gate 放在 docs check 后、dev smoke 前；缺少同级数据或真实 gate 失败阻止后续打包。无参数仍保持增加 i18n offline compile 的十阶段流程、单次 production build，不隐式依赖外部数据。
 
 Raw Access Foundation 的普通风险测试使用可写临时 fixture；`npm run test:raw-data` 明确启用六个外部只读来源的 production gate，普通 `npm test` 不隐式访问真实数据。前后 streaming SHA-256/size/mtime 需要一致，测量只写被忽略的 artifacts。冷 service cache 不代表磁盘冷读；统计 actual read/token 与 IPC 序列化成本分开。
 
@@ -71,3 +71,13 @@ Raw Access Foundation 的普通风险测试使用可写临时 fixture；`npm run
 影响架构、状态、路线图或性能事实的实现，应与相应权威文档在同一审查变更中更新。不影响文档事实的琐碎实现无需强制改文档。调查报告保留当时事实与结论；之后的接受/替代决定记录 ADR 和当前架构，可添加日期明确的历史补记，但不改写历史。
 
 汇报实测、局限、未决事项与文件；未经请求不提交、不建分支、不推进下一阶段。阶段授权以用户明确请求为准，当前进度只在 STATUS 维护；所有公网操作遵守 AGENTS 的 7890 代理规则。
+
+## Localization 生成与验收
+
+Paraglide compiler 为 devDependency，仅 Renderer Vite plugin 使用。tracked settings/catalog 与 ignored generated output 分离；格式化只纳入 catalog/settings/编译配置，显式排除 generated 与 SDK metadata。dev/typecheck/test/build/dev smoke 前自动 compile；package/完整 runner 自动准备固定插件，不隐藏 fresh checkout 手工步骤。生成目录为空后 typecheck 必须仍可执行。
+
+message-format 4.4.0 固定 URL 与 SHA-256，`i18n:prepare` 仅缺缓存时经现有 proxyEnvironment + Node env proxy 下载；校验失败停止，不静默使用或升级。缓存准备后编译读取本地 module。`i18n:compile -- --offline` 拒绝 fetch，忽略无法解析为 URL 的 SDK 本地 module 探测，要求零网络地址请求。SDK metadata、插件/cache 和 generated 不进入 runtime ASAR。
+
+完整 runner 在 format/typecheck 前加入 offline compile gate，其余保留 cheap checks → 可选只读 real-data → dev → 单次 production build → built → builder → packaged，任何失败停止。三态 smoke 验证 readonly bootstrap、locale DOM/ARIA/title、无 runtime navigation、状态/raw 保真与三次明确的 persistence reload；显式 reload fixture 不计为 runtime switch。普通打包模式不暴露 localization smoke。macOS 新行为统一留累计原生验收，不以旧 gate 替代。
+
+完整 runner 的三个 smoke 阶段直接调用现有 scripts/smoke.mjs，准备/生成由此前 gate 保证；独立 npm smoke 入口保持原功能。这减少 npm wrapper，不提供跳过 build 的独立参数，不新增 retry。原生启动异常按事件/最小进程探针调查，无法确定根因时在报告如实记录。

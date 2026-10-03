@@ -6,7 +6,7 @@
 
 ## 开始阅读
 
-Source Browser Slice A 已按用户授权实现并通过 Windows x64 的十步验收（106 项普通测试、真实目录/Raw gate、dev/built/packaged smoke）；**awaiting macOS arm64 validation / review**。本轮新增的是底层目录发现与 source 生命周期，正式 Source Browser UI 及后续 slices 仍需独立授权，见 [实现报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
+Source Browser Slice A 已评审，可继续开发；其新实现 macOS arm64 验收延后至累计 Source Browser gate。Slice B 已实现 Renderer-only localization foundation，Windows 完整验收结果见 [Slice B 报告](docs/investigations/phase-2-source-browser-slice-b-localization-foundation.md) 和 [STATUS](docs/STATUS.md)。正式 Source Browser UI 留给后续独立授权。
 
 - [文档入口](docs/README.md)：职责与阅读顺序。
 - [产品定义](docs/PROJECT.md)、[当前状态](docs/STATUS.md)、[已接受架构](docs/ARCHITECTURE.md)、[ADR](docs/decisions/README.md)。
@@ -49,7 +49,7 @@ npm.cmd run docs:check
 npm.cmd run validate:foundation
 ```
 
-该命令按当前 OS/Node 架构顺序执行 format:check → typecheck → test → docs:check → smoke:dev → 一次生产 build → smoke:built → builder → smoke:packaged，任何失败都停止。开发态构建不能复用为生产产物，因此仍保留。运行期间不要修改源码，也不要并行运行会覆盖 `out/` 或 `dist/` 的命令。
+该命令按当前 OS/Node 架构顺序执行 i18n offline compile → format:check → typecheck → test → docs:check → smoke:dev → 一次生产 build → smoke:built → builder → smoke:packaged，任何失败都停止。开发态构建不能复用为生产产物，因此仍保留。运行期间不要修改源码，也不要并行运行会覆盖 `out/` 或 `dist/` 的命令。
 
 独立使用 `npm.cmd run package:win:x64` 仍会先重新 build，再打包，不信任已有产物；`smoke:built` 和 `smoke:packaged` 单独执行时要求已有对应最新产物。日常按变更选择最小验证层级，不为每次局部修改运行完整链路，详见 [开发流程](docs/DEVELOPMENT-PROCESS.md)。
 
@@ -90,6 +90,22 @@ npm.cmd run test:raw-data
 
 该命令按固定六样本及 root、ExcelOutput、Config/Level/Mission 目录运行 production service，验证分页/排序/response bounds、零自动注册、取消与 release/reacquire。前后 streaming hash/size/mtime 与外部 HEAD/status 必须一致，报告写入被忽略的 `artifacts/raw-real-data.json`。没有全工作区扫描；需要本机同级 TurnBasedGameData。需要将此 gate 纳入完整原生平台验收时执行 `npm run validate:foundation -- --real-data`，保持单次 production build，真实 gate 失败阻止 smoke/打包。
 
-Source Browser Slice A 的实现与平台状态见 [报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。macOS arm64 新目录/lifecycle gate 待原生验证；不使用既有 Raw Foundation gate 冒充通过，不自动开始正式 UI。
+Source Browser Slice A 的实现与平台状态见 [报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。macOS arm64 新目录/lifecycle/localization gate 为 cumulative validation deferred，未豁免；不使用既有 Raw Foundation gate 冒充通过，不自动开始正式 UI。
 
 现有 dev/built/packaged smoke 和 `validate:foundation` 已包含 raw 进程链路验收；fixture 由 Main/runner 在自身临时目录管理。Raw Access Foundation 已在 Windows x64 与 macOS arm64 验证，Mac 的 filesystem/watcher/stat 回退、真实数据与 ASAR runtime 证据见 [原生验证报告](docs/investigations/phase-2-raw-access-macos-arm64-validation.md)。接口、资源上限和边界见 [实现报告](docs/investigations/phase-2-raw-access-foundation.md)；首片仍待 review，整个 Phase 2 未完成。
+
+## Localization Foundation
+
+支持 `en` / `zh-CN`，英文为 base/fallback。Main `app.getSystemLocale()` 将 `zh*` 归为中文，其余为英文，仅经 readonly `window.appPresentationConfig.initialLocale` bootstrap 传递；Renderer 挂载前选择有效 `refatlas.locale` 存储值 → bootstrap → 英文。切换无 reload，以 Svelte locale store 驱动 messages、ARIA/title 和 html lang/dir；存储不可用不阻断启动。
+
+`project.inlang/settings.json` 与 `messages/*.json` 为 tracked source of truth。Paraglide compiler 2.25.4 是 devDependency，仅 Renderer 构建使用。message-format 4.4.0 插件按固定 URL/哈希准备到 `.cache/i18n`，之后编译读本地文件，不使用 SDK 的 network-first URL cache。准备时需要已核实的 7890 HTTP(S) 代理；未准备且代理不可用会失败，不直连。
+
+```powershell
+npm.cmd run i18n:prepare
+npm.cmd run i18n:compile
+npm.cmd run i18n:compile -- --offline
+```
+
+dev/typecheck/test/build 和 dev smoke 有自动生成前置步骤；独立 package 与完整 validation 自动准备插件。新 checkout 安装依赖后可直接运行，不需要记住手工生成步骤。generated modules/declarations 与 SDK project metadata ignored，不手改、不格式化。`--offline` 禁止 fetch，并确认零可解析网络地址请求；SDK 对相对模块路径的无效 fetch 探测不会发出 HTTP 请求。
+
+组件只消费统一 `src/renderer/src/i18n` 入口及 reactive locale。`formatUiCount` / `formatByteSize` 仅用于应用 metadata，`formatRawError` 将稳定 code 映射成 presentation，不翻译或重写 raw field/string/lexeme/path/Pointer/revision。现有 Foundation 中文诊断页保持历史范围；本轮通过隐藏 Svelte harness 验证，无正式 selector/settings UI。macOS arm64 待累计验收。

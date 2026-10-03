@@ -4,8 +4,13 @@ import type { FoundationBridge, ProbeInput } from '../shared/protocol'
 import { commandFromInput, RAW_CHANNELS, rawFailure } from '../shared/raw'
 import { exact, object } from '../shared/protocol'
 import type { RawBridge, RawCommand } from '../shared/raw'
+import { presentationConfigFromArguments } from '../shared/presentation'
 
 if (!process.sandboxed || !process.contextIsolated) throw new Error('Preload 安全边界未启用')
+contextBridge.exposeInMainWorld(
+  'appPresentationConfig',
+  presentationConfigFromArguments(process.argv),
+)
 
 const bridge: FoundationBridge = Object.freeze({
   getServiceStatus: () => ipcRenderer.invoke(CHANNELS.status),

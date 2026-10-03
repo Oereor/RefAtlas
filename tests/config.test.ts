@@ -2,9 +2,33 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import config from '../electron.vite.config'
+import { paraglideOptions, pluginResource, verifyPlugin } from '../i18n.config'
 const root = resolve(import.meta.dirname, '..')
 const read = (path: string) => readFileSync(resolve(root, path), 'utf8')
 describe('foundation build boundaries', () => {
+  it('keeps the i18n compiler in renderer with a verified local plugin and non-URL strategy', () => {
+    const plugins = (config.renderer?.plugins ?? []).flat().filter(Boolean)
+    expect(
+      plugins.some(
+        (plugin) =>
+          typeof plugin === 'object' &&
+          plugin !== null &&
+          'name' in plugin &&
+          plugin.name === 'unplugin-paraglide-js',
+      ),
+    ).toBe(true)
+    expect(config.main?.plugins ?? []).toEqual([])
+    expect(config.preload?.plugins ?? []).toEqual([])
+    expect(paraglideOptions.strategy).toEqual(['globalVariable', 'baseLocale'])
+    expect(paraglideOptions.emitTsDeclarations).toBe(true)
+    expect(paraglideOptions.disableAsyncLocalStorage).toBe(true)
+    const settings = JSON.parse(read('project.inlang/settings.json'))
+    expect(settings.modules).toEqual(['./.cache/i18n/message-format-4.4.0.js'])
+    expect(settings.locales).toEqual(['en', 'zh-CN'])
+    expect(settings.baseLocale).toBe('en')
+    expect(() => verifyPlugin(readFileSync(pluginResource.path))).not.toThrow()
+    expect(() => verifyPlugin(new Uint8Array([0]))).toThrow()
+  })
   it('bundles sandbox preload, emits CJS and uses the official utility entry', () => {
     expect(config.preload?.build?.externalizeDeps).toBe(false)
     expect(config.preload?.build?.rollupOptions?.output).toMatchObject({

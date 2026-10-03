@@ -4,9 +4,12 @@
 
 **Phase 0：CLOSED；Phase 1：CLOSED；Phase 1A：CLOSED；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** 首个 production slice 已通过 Windows x64 的完整验收，见 [实现报告](investigations/phase-2-raw-access-foundation.md)；2026-10-03 的原生 [macOS arm64 验证](investigations/phase-2-raw-access-macos-arm64-validation.md)也已通过。**Raw Access Foundation validated on Windows x64 and macOS arm64.** Phase 1A 的平台 gate 和 ADR-0006 仍有效；Phase 2A 原则由 ADR-0007–0010 约束，历史调查保持原样。
 
+
+**Source Browser Slice B：IMPLEMENTED；Windows x64 VALIDATED（11 阶段证据齐备，ASAR guard 修正后末阶段单独复验）；AWAITING REVIEW。** Renderer-only Paraglide、en/zh-CN、窄 system bootstrap、持久化/no-reload reactive 切换、错误 presentation 和 metadata formatter 已实现。148 项普通测试、类型检查、生成目录为空后的自动恢复、只读真实数据及 dev/built/packaged smoke 已通过；全程一次 production build；当前验证与平台状态见 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。macOS arm64 为累计 Source Browser validation deferred，不是 waived；不自动推进 Slice C。
+
 ## 已完成
 
-**Source Browser Slice A：Windows x64 IMPLEMENTED / VALIDATED；AWAITING macOS arm64 VALIDATION / REVIEW。** 本轮只实现底层目录发现、metadata 调度和 source 生命周期；106 项普通测试、三目录/六样本真实 gate、dev/built/ASAR packaged smoke 与含真实数据的十步完整验收通过。详细范围、stat 检测边界与清理见 [Slice A 报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
+**Source Browser Slice A：Windows x64 IMPLEMENTED / VALIDATED；REVIEWED，可继续开发；macOS arm64 cumulative validation DEFERRED（未豁免）。** 本轮只实现底层目录发现、metadata 调度和 source 生命周期；106 项普通测试、三目录/六样本真实 gate、dev/built/ASAR packaged smoke 与含真实数据的十步完整验收通过。详细范围、stat 检测边界与清理见 [Slice A 报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
 
 - 核实实际目录 TurnBasedGameData，外部仓库初始干净。
 - 项目文档整体迁入应用仓库 `docs/`，外层旧目录已移除，证据保留；收尾已提交为 `809a4a5 Closeout Phase 0`。
@@ -89,6 +92,6 @@ Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则
 
 ## 下一步
 
-用户已授权 Source Browser Slice A：Directory Discovery + Active Source Lifecycle。底层 contract、目录 snapshot/分页、metadata 调度及 acquire/release 已实现并通过 Windows x64 本轮 gate；**Slice A：AWAITING macOS arm64 VALIDATION / REVIEW**。macOS 新实现 gate 尚未运行，不借用 Raw Foundation 的历史通过结果。
+Slice A 已评审，Slice B localization 已获授权并实现；最终 Windows gate 与评审状态见本页顶部及 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。两片新实现的 macOS arm64 验收 deferred 到累计 Source Browser 原生 gate，未豁免，不借用旧 Raw Foundation 结果。
 
-本轮结束等待用户与 ChatGPT review；不自动开始 Slice B、Source Explorer/Node Browser UI、Paraglide、搜索或 Dataset Contract。签名、发布与正式性能预算留在对应阶段，文档与应用使用同一 Git 仓库。
+本轮结束等待用户与 ChatGPT review，不自动开始 Slice C、Zag/TanStack Virtual、Source Explorer/Node Browser、搜索或 Dataset Contract。签名、发布与正式性能预算留在对应阶段。
