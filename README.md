@@ -88,4 +88,4 @@ npm.cmd run test:raw-data
 
 该命令按固定样本运行 production service，前后 streaming hash/size/mtime 一致性验证，报告写入被忽略的 `artifacts/raw-real-data.json`。没有全工作区扫描；需要本机同级 TurnBasedGameData。
 
-现有 dev/built/packaged smoke 和 `validate:foundation` 已包含 raw 进程链路验收；fixture 由 Main/runner 在自身临时目录管理。当前新增 raw path 已在 Windows x64 验证，本轮没有新增 macOS 原生结果。接口、资源上限和边界见 [实现报告](docs/investigations/phase-2-raw-access-foundation.md)。
+现有 dev/built/packaged smoke 和 `validate:foundation` 已包含 raw 进程链路验收；fixture 由 Main/runner 在自身临时目录管理。Raw Access Foundation 已在 Windows x64 与 macOS arm64 验证，Mac 的 filesystem/watcher/stat 回退、真实数据与 ASAR runtime 证据见 [原生验证报告](docs/investigations/phase-2-raw-access-macos-arm64-validation.md)。接口、资源上限和边界见 [实现报告](docs/investigations/phase-2-raw-access-foundation.md)；首片仍待 review，整个 Phase 2 未完成。

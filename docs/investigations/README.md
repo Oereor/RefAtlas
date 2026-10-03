@@ -1,5 +1,6 @@
 # 调查与证据
 
+- [Raw Access Foundation macOS arm64 验证](phase-2-raw-access-macos-arm64-validation.md)：Apple M2 原生 filesystem/symlink、watcher/stat 回退、真实数据及 dev/built/ASAR packaged raw 链路验收；两个正式平台已验证，等待评审。
 - [Phase 2 Raw Access Foundation](phase-2-raw-access-foundation.md)：生产类型、parser、只读来源、revision、有界 query、真实数据与 Windows 进程/ASAR 验收；首片完成，等待评审。
 - [Phase 2A 评审收尾](phase-2a-review-closeout.md)：已确认原则、ADR-0007–0010、接受与候选边界、文档验证；Phase 2A CLOSED / REVIEWED，产品实现 NOT STARTED。
 - [Phase 2A 原始数据访问与记录模型](phase-2a-data-access-architecture.md)：21 个真实样本、类型／地址／记录边界、Query API、SQLite、搜索与有界访问历史候选；正文保留调查时点，顶部补记链接评审结果，不是规范架构。

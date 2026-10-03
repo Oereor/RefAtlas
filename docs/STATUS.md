@@ -2,7 +2,7 @@
 
 更新日期：2026-10-03（UTC+8）。
 
-**Phase 0：CLOSED；Phase 1：CLOSED；Phase 1A：CLOSED；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** 本轮受用户明确授权，首个 production slice 已通过 Windows x64 的完整验收，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Phase 1A 的 Windows x64/macOS arm64 gate 和 ADR-0006 仍有效；本轮没有新增 Mac 原生 raw-path 验证。Phase 2A 原则由 ADR-0007–0010 约束，历史调查保持原样。
+**Phase 0：CLOSED；Phase 1：CLOSED；Phase 1A：CLOSED；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** 首个 production slice 已通过 Windows x64 的完整验收，见 [实现报告](investigations/phase-2-raw-access-foundation.md)；2026-10-03 的原生 [macOS arm64 验证](investigations/phase-2-raw-access-macos-arm64-validation.md)也已通过。**Raw Access Foundation validated on Windows x64 and macOS arm64.** Phase 1A 的平台 gate 和 ADR-0006 仍有效；Phase 2A 原则由 ADR-0007–0010 约束，历史调查保持原样。
 
 ## 已完成
 
@@ -82,8 +82,9 @@ Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则
 - 受控 NodeAddress、只读 workspace/source、stale/reload、revision-bound range 和单任务可取消扫描已生产实现。
 - `@streamparser/json@0.0.26` 经统一 adapter 保留六类型和 numeric lexeme；完整小值、摘要、children 分页及 scalar segment 有明确工作/IPC 预算。
 - 普通测试 65 项通过，专用六来源只读 gate 通过；Windows x64 dev/built/ASAR packaged raw smoke 和九阶段完整验收通过。
-- 未新增产品 UI、SQLite 持久化、search/trigram、Dataset Contract 或 source writes；Mac 原生 raw-path 验收及更大 scalar/child-index 优化未做。
+- macOS 27.0.1 / Apple M2 原生 arm64：65 项普通测试、临时 filesystem/watcher/stat 回退探针、六来源真实数据 gate、dev/built/ASAR packaged raw smoke 均通过。parser runtime dependency 与 better-sqlite3 native unpack 实际可用；无 production bug 或源码修改，详见 [Mac 验证报告](investigations/phase-2-raw-access-macos-arm64-validation.md)。
+- 未新增产品 UI、SQLite 持久化、search/trigram、Dataset Contract 或 source writes；更大 scalar/child-index 优化未做。两平台 gate 不代表所有文件系统、严格 snapshot isolation、正式性能 SLA 或整个 Phase 2 已完成。
 
 ## 下一步
 
-用户和 ChatGPT review 本轮 [Raw Access Foundation 实现报告](investigations/phase-2-raw-access-foundation.md)。首片已经完成并停止，建议下一块 Source Browser；不自动开始后续 UI、搜索或 Dataset Contract。签名、发布与正式性能预算留在对应阶段，文档与应用使用同一 Git 仓库。
+用户和 ChatGPT review [Raw Access Foundation 实现报告](investigations/phase-2-raw-access-foundation.md)及 [macOS arm64 验证报告](investigations/phase-2-raw-access-macos-arm64-validation.md)。首片已在两个正式平台验证并停止，建议下一块 Source Browser；不自动开始后续 UI、搜索或 Dataset Contract。签名、发布与正式性能预算留在对应阶段，文档与应用使用同一 Git 仓库。
