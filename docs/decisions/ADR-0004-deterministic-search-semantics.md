@@ -4,6 +4,8 @@
 - 日期：2026-10-02（UTC+8）。
 - 适用阶段：搜索产品语义与后续索引评估。
 
+评审补记（2026-10-03，UTC+8）：[ADR-0009](ADR-0009-search-completeness-and-optional-acceleration.md) 补充完整 raw scalar/field/file-path 覆盖、可重建缓存、可观察回退和 optional accelerator 边界。下文确定性搜索方向继续有效，具体相等/匹配选项及最终加速实现仍未锁定。Text 中的“本地化文本”指原始数据集文本，与 APP UI translation 无关；UI 边界见 [ADR-0010](ADR-0010-ui-localization-boundary.md)。原正文保留。
+
 ## 背景
 
 同一中文 TextMap 样本中 unicode61 MATCH 与字面子串查询返回不同结果。数据库 tokenizer 的行为不能取代开发者期待的原始数据检索语义。

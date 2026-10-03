@@ -4,6 +4,8 @@
 - 日期：2026-10-02（UTC+8）。
 - 适用阶段：数据模型与访问路径设计；本记录不定义生产类型或接口。
 
+评审补记（2026-10-03，UTC+8）：物理地址条款现由 [ADR-0007](ADR-0007-node-addressing-and-source-lifecycle.md) 细化为 SourceAddress + JSON Pointer 的 NodeAddress，Structural Record 是浏览角色；parser 能力及 SourceRange 见 [ADR-0008](ADR-0008-parser-capability-contract-and-source-ranges.md)。下文保留原决定与当时推迟事项，无损类型、数值安全和有界混合访问原则继续有效；不因补记锁定生产表示或阈值。
+
 ## 背景
 
 Phase 0 发现 JSON.parse 会舍入真实 ID/哈希，SQLite signed INTEGER 不能覆盖全部数值，且多个物理记录可共享一个 SkillID。大文件与巨大嵌套项还要求记录级资源边界。

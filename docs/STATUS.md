@@ -2,7 +2,7 @@
 
 更新日期：2026-10-03（UTC+8）。
 
-**Phase 0：CLOSED；Phase 1：CLOSED；Phase 1A：CLOSED。Phase 2A：investigation completed / awaiting review；Phase 2 产品实现：NOT STARTED。** 两个正式支持目标 Windows x64 与 macOS arm64 的 native/package gate 均已通过，工具链已由 ADR-0006 接受。Phase 1 无剩余子阶段，本轮按用户授权完成最终 housekeeping 与数据访问架构调查；候选见 [Phase 2A 报告](investigations/phase-2a-data-access-architecture.md)。
+**Phase 0：CLOSED；Phase 1：CLOSED；Phase 1A：CLOSED；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：NOT STARTED。** 两个正式支持目标 Windows x64 与 macOS arm64 的 native/package gate 均已通过，工具链已由 ADR-0006 接受。Phase 2A 用户确认的原则已写入 ADR-0007–0010，本轮仅完成 architecture/documentation closeout，见 [评审收尾报告](investigations/phase-2a-review-closeout.md)；原 [调查报告](investigations/phase-2a-data-access-architecture.md)保留历史推荐与实测。
 
 ## 已完成
 
@@ -14,9 +14,9 @@
 - 完成 Windows x64 Electron 44.5.1 utilityProcess 双驱动/FTS5/BigInt 探针。
 - 完成官方版本/兼容范围、构建工具、UI 候选与跨平台发布文档调查。
 - 交付中文报告、性能基线与紧凑历史证据；针对性测试通过。
-- 评审并接受六项 ADR，更新当前架构、文档路径和维护规则；历史调查只增加收尾补记及必要链接修复。
+- Phase 0 / Phase 1A 已接受 ADR-0001–0006；Phase 2A 评审新增 ADR-0007–0010，更新当前架构和维护规则，历史调查只增加带日期补记。
 
-## 本轮 Phase 1A 已实现与验证
+## Phase 1A 已实现与验证
 
 - 独立生产 package/lockfile、electron-vite + Svelte 5 + TypeScript + electron-builder 工具链；兼容证据见 [报告](investigations/phase-1a-foundation.md)。工具链路线已由 ADR-0006 接受，当前精确版本不成为永久架构要求。
 - sandbox / context isolation 窄 Preload bridge、Main 来源与输入校验、Utility ready handshake、MessagePort 和请求匹配。
@@ -43,6 +43,10 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 - [ADR-0004](decisions/ADR-0004-deterministic-search-semantics.md)：确定性搜索语义独立于 FTS 加速。
 - [ADR-0005](decisions/ADR-0005-macos-platform-scope.md)：正式支持 Windows x64 与 macOS arm64，macOS x64 不属于支持目标。
 - [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md)：接受 electron-vite + electron-builder 为当前长期构建/打包路线，不永久冻结版本或决定正式发布配置。
+- [ADR-0007](decisions/ADR-0007-node-addressing-and-source-lifecycle.md)：Node 物理地址、结构浏览角色、只读来源及 revision 失效。
+- [ADR-0008](decisions/ADR-0008-parser-capability-contract-and-source-ranges.md)：可替换 parser 能力契约、一致 raw semantics 及版本绑定的可重建范围。
+- [ADR-0009](decisions/ADR-0009-search-completeness-and-optional-acceleration.md)：完整搜索覆盖、可重建 SQLite、可观察回退与可选 accelerator。
+- [ADR-0010](decisions/ADR-0010-ui-localization-boundary.md)：UI-only 类型化 localization、稳定协议 code、raw 数据不本地化及测试边界。
 
 ## Phase 1A 收尾与平台验收
 
@@ -55,16 +59,24 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 | Windows x64 | 通过 | ASAR 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 | macOS arm64 | 通过 | ASAR .app 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 
-Phase 2A 已提出 raw value、物理地址、结构记录、有界 Query API、SQLite、搜索及 parser/范围候选，但尚未接受或生产实现。Dataset Contract、全量生产索引、增量刷新和产品 UI 尚未实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，本轮真实采样与隔离传输实验保留在调查报告。
+Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则已接受，具体 RawValue、Query API、schema、库、预算、revision 检测和 accelerator coverage 仍未锁定或生产实现。Dataset Contract、全量生产索引、增量刷新和产品 UI 尚未实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，真实采样与隔离传输实验保留在原调查报告。
 
-## Phase 1 最终收尾与 Phase 2A 调查
+## Phase 1 最终收尾与 Phase 2A 调查历史
 
 - Phase 1 随 Phase 1A 正式关闭；`.gitattributes` 固定自动文本检测与 LF checkout，无 CRLF 例外，不改写历史调查。
 - 21 个真实样本结构／词法与分布调查，15 个 Phase 0 指纹一致；外部 HEAD、工作树及所有采样文件未变。
 - 受限 SQLite/Exact/LIKE/unicode61/trigram、source range／child summary、Node 与 Electron Main↔Utility 实验完成；八组针对性风险检查通过。
 - 中文 [调查报告](investigations/phase-2a-data-access-architecture.md) 与 [紧凑证据](investigations/evidence/phase-2a-measurements.json) 已保存；新增依赖与工具仅在独立 investigation package。
-- 未改生产 src/package/lockfile，未建立生产索引／契约／关系／产品 UI，未新增已接受 ADR，未提交或操作远程仓库。
+- 调查交付时未改生产 src/package/lockfile，未建立生产索引／契约／关系／产品 UI，未新增已接受 ADR 或操作远程仓库；调查随后纳入 `e049ab4 Complete Phase 2A investigation`。
+
+## Phase 2A 评审收尾
+
+- 正式接受用户确认的原则，新增四份职责独立的 ADR；ADR-0002/0004 仅增加补记，历史决定正文保留。
+- 明确 JSON Node ≠ Structural Record ≠ Logical Entity；SourceAddress + Pointer 为物理地址，SourceRange 为失效可重建的访问元数据。
+- 接受 parser capability contract、raw 搜索完整覆盖、只读来源与 revision invalidation；不锁定库、schema、匹配选项、预算或 trigram 默认覆盖。
+- 接受从第一批 Phase 2 production UI 起统一类型化 localization；更新功能测试与专项 localization 测试边界，本轮不实现 runtime。
+- 同步产品、架构、流程和入口，原调查仅追加日期明确的评审补记。报告记录实际文档/格式/diff 验证及最终变更清单；未改生产代码、依赖、配置、工具和证据。
 
 ## 下一步
 
-用户评审 Phase 2A 报告，确认长期候选后再单独授权 Phase 2 产品实现。后续子阶段顺序仅是建议；签名、发布与正式性能预算留在对应阶段。文档与应用使用同一 Git 仓库。
+用户评审本次 [收尾报告](investigations/phase-2a-review-closeout.md)，之后单独授权 Phase 2 产品实现。建议首片为 Data Service / raw access foundation（NodeAddress、revision、parser adapter、只读生命周期及有界查询原语），不含 full search/trigram、Source Browser UI 或 Dataset Contract；名称和拆分仍是建议。签名、发布与正式性能预算留在对应阶段，文档与应用使用同一 Git 仓库。

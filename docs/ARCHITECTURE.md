@@ -1,6 +1,6 @@
 # 已接受架构与约束
 
-2026-10-03 Phase 1 与 Phase 1A 均已完成并关闭；下述方向已接受，Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。关闭基础阶段不代表后续产品功能已实现或获授权。
+2026-10-03 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 仍为 NOT STARTED；接受原则不代表功能已实现或获实施授权。
 
 ## 1. 桌面栈与进程所有权
 
@@ -13,7 +13,7 @@
 | Renderer | Svelte 展示、树/表格/标签、有界视图、未来局部图、交互 | 任意工作区文件读取、SQLite、巨大 JSON 解析与整文件状态 |
 | Preload | 最小类型化桥 | unrestricted IPC、ipcRenderer 或 Node API 暴露 |
 | Main | 生命周期、窗口、对话框、工作区编排、数据进程生命周期 | 重型数据处理引擎 |
-| Utility Process / Data Service | 扫描、解析/流式、索引、SQLite、搜索、记录/引用查询 | 启发式或 AI 关系真相 |
+| Utility Process / Data Service | 扫描、解析/流式、索引、SQLite、搜索、Node/后续契约引用查询 | 启发式或 AI 关系真相、UI 翻译 |
 
 初始不引入 Worker Threads；只有测量证明具体需要时再接受。Phase 1A 的该进程链路、最小请求生命周期与显式恢复已在 Windows x64 和 macOS arm64 验证；不代表表中未来数据功能已实现。
 
@@ -31,32 +31,60 @@
 
 Core 不推断引用、不硬编码玩家实体。相等数值、相似字段、启发式或 AI 不能生成真实边；引用来自显式确定性 Dataset Contract 或等价来源。
 
-原始 JSON 类型、无损数值词法与出处必须保留，123 与 "123" 可区分。数值未经安全性证明不得经过 JavaScript number；signed INTEGER 不保证承载全部 ID/哈希。
+原始 JSON 六类值、无损数值词法与出处必须保留，123 与 "123" 可区分。number lexeme 是事实；解析值只能在证明安全时辅助使用。数值未经安全性证明不得经过 JavaScript number；signed INTEGER 不保证承载全部 ID/哈希。
 
-物理地址（文件 + JSON Pointer/等价位置）不同于契约逻辑身份（单字段、复合字段、对象键或显式选择器），不假设一个 ID 等于一条记录。[ADR-0002](decisions/ADR-0002-lossless-raw-data-and-bounded-access.md)
+接受概念地址 `SourceAddress = { workspaceId, relativePath }`、`NodeAddress = { source, pointer }`；SourceAddress + JSON Pointer 定位原始 Node。根 Pointer 是 `""`，`~`、`/` 分别转义为 `~0`、`~1`。具体生产类型与线格式未实现。
+
+JSON Node ≠ Structural Record ≠ Logical Entity。在显式选中 collection/container 内，直接 child 可以作为 structural record 列出、浏览；这只是浏览角色，不保证整体物化或一次 IPC 返回。根、容器、属性、scalar 都可定位。Core 不根据 ID、名称、metadata、wrapper 或值猜实体/默认 flatten；逻辑身份和数据集知识留给 Phase 3 的显式 Dataset Contract / dataset adapter。[ADR-0002](decisions/ADR-0002-lossless-raw-data-and-bounded-access.md) [ADR-0007](decisions/ADR-0007-node-addressing-and-source-lifecycle.md)
+
+### 只读来源与外部变化
+
+当前 raw source 是只读 viewer / investigation 来源，不设计 raw editing/save/merge/conflict resolution/undo-redo/transactional source writes/source-format rewrite。应用自己的缓存目录可以写，source workspace 保持只读。
+
+外部变化按 old revision → stale → invalidate → reload/reindex → new revision 处理；旧 SourceRange 和相关文件索引失效，打开视图表达 stale。可重新打开仍存在的相同 Pointer，但不意味着同一 logical entity；不存在时表达 location no longer exists。不按 ID、值或 heuristic 迁移，不恢复 array reorder 的原记录。tabs/history 保存物理地址及 revision 上下文，不能把裸 range 当永久身份。目标是可靠检测并响应变化，不要求每次 Node read 重 hash 全文件或数据库级 strict snapshot isolation；具体检测与 race 处理待实现。[ADR-0007](decisions/ADR-0007-node-addressing-and-source-lifecycle.md)
 
 ## 3. 有界与混合访问
 
 - 外部数据只读，不修改、不复制到应用仓库。
-- 渲染进程只收有界查询、记录或片段，不保存整份巨大 JSON。
+- 渲染进程只收有界查询结果、Node 摘要或有界值/片段，不保存整份巨大 JSON。
 - 主进程负责生命周期/编排，不承担重型数据处理。
 - 巨大文件是数据源，通过搜索、记录浏览、外部打开使用，不整体加载编辑器。
 - 大列表使用成熟虚拟化，不堆海量 DOM；解析、数据库、编辑器、图等优先成熟库。
 
 小且安全文件可有界完整解析；大或精度敏感文件采用流式和/或索引访问。无固定大小阈值，不声称流式普遍更快，巨大嵌套记录仍需细化边界。实验 numberAsString 不构成生产类型。[ADR-0002](decisions/ADR-0002-lossless-raw-data-and-bounded-access.md)
 
-## 4. Phase 1 存储与搜索方向
+### Parser adapter 与范围
+
+接受可替换的成熟库 adapter 能力契约：六类型、numeric lexeme、不安全数值不先经过 JS number、大文件 bounded/streaming、巨大 scalar 不无界聚合、产生或恢复 source byte range、取消、资源限制、所有路径一致 raw semantics。indexing/range-read/search 不得各自产生不同 raw truth。
+
+`SourceRange = { startByte, endByteExclusive }` 是源文件字节坐标上的半开区间，nullable、version-bound、rebuildable；Pointer 是地址真值，range 是 cache/acceleration metadata，不参与 identity。无范围时仍可定位和恢复，源变化时失效。UTF-8/BOM/转义/分块及资源边界需在生产适配中验证；`@streamparser/json`、`stream-json` 只是原型候选。[ADR-0008](decisions/ADR-0008-parser-capability-contract-and-source-ranges.md)
+
+## 4. 存储与完整搜索
 
 Phase 1 首选 better-sqlite3，SQLite 属于 Data Service，经窄内部存储边界隔离，不引入 ORM。Windows x64 与 macOS arm64 打包后的原生加载与数据库访问是正式必过门槛；macOS x64 已由 [ADR-0005](decisions/ADR-0005-macos-platform-scope.md) 移出支持范围。存在实质问题可复审驱动而不改高层 Query API 语义。本次不设计存储 API。[ADR-0003](decisions/ADR-0003-phase-1-sqlite-driver.md)
 
-搜索先定义确定性行为：Exact 精确标量/显式 ID，Contains 字面 Unicode 子串，Field 字段名，File 文件/路径，Text 字面本地化文本。名称不固定 UI/API；FTS/tokenizer 只作加速，不能改变语义。最终 FTS、短词与回退策略未定，不引入分词语义、embeddings 或 AI 搜索。[ADR-0004](decisions/ADR-0004-deterministic-search-semantics.md)
+搜索先定义确定性行为：Exact 精确标量/未来显式契约 ID，Contains 字面 Unicode 子串，Field 字段名，File 文件/路径，Text 原始来源文本（可能包含数据集自身的多语言内容）。Text 与 APP UI translation 无关；Phase 2 不提供契约 ID resolver。名称不固定 UI/API；FTS/tokenizer 只作加速，不能改变语义，不引入语义分词、embeddings 或 AI 搜索。[ADR-0004](decisions/ADR-0004-deterministic-search-semantics.md)
 
-## 5. 尚未接受或产品验证
+Search completeness 是正确性要求，latency 是优化问题：完整可搜索范围含 raw scalar、field names、files/relative paths。SQLite 是可重建 cache/index，raw JSON 是 source of truth；可保存来源、NodeAddress/provenance、字段出现、scalar kind、exact lexeme/text、revision 及必要结构 metadata，不等于接受具体 schema。ID-like value、大整数 hash/raw number 不强制存 SQLite INTEGER。
+
+Search coverage ≠ acceleration coverage。Trigram 只为 Contains/Text 的候选，不默认覆盖所有 scalar；启用与文件/语言范围待完整数据集容量和性能测量。未加速、特殊值或未索引来源仍参与 bounded SQLite scan / instr / source streaming fallback。最终 verification 不能补回 candidate omission；完整搜索不能只覆盖索引 preview。
+
+Query/UI 必须能表达 searching/progress/coverage/partial results/cancellation，不能把未完成或失败的覆盖标为全工作区已搜完。回退要有界且可取消；不为 1–2 字符查询提前自研复杂单字/双字倒排索引。具体 planner、匹配选项、schema、分页和 accelerator coverage 未接受。[ADR-0009](decisions/ADR-0009-search-completeness-and-optional-acceleration.md)
+
+## 5. UI 本地化边界
+
+从第一批 Phase 2 production UI 起，所有 APP 用户可见 message（按钮、菜单、标题、对话框、提示、empty/loading/searching、错误、a11y 等）经统一且类型化的 localization message layer，不在组件/业务逻辑/Data Service/IPC/parser/SQLite 散落 locale-specific 文案。
+
+raw field/string/numeric lexeme/path/Pointer/NodeAddress 保持原事实，`AvatarID`、`DamageType`、`Ice` 不翻译；`1.00`、`-0`、`1e3` 不走 locale number formatter。APP 自有日期/时间/计数/大小/普通 UI 数字使用共享 `Intl.*` formatting layer。
+
+内部协议使用稳定 locale-independent identifier/code，presentation 将 code 与参数映射为用户消息，locale 无需传到 Data Service。Paraglide JS 是候选，初始 locale 集合未锁定；集中 message sources 为权威，generated artifact 不人工维护。功能测试不以具体译文断言行为，专项 localization tests 验证消息、参数、切换、fallback/formatter 和 raw 边界。[ADR-0010](decisions/ADR-0010-ui-localization-boundary.md)
+
+## 6. 尚未接受或产品验证
 
 - 正式发布配置、CI/release workflow、签名、公证、安装器/DMG、自动更新与发布节奏。工具链路线已接受，但这些发布事项不属于 ADR-0006；具体版本由 package/lockfile 管理并按风险升级验证。
 - 正式 Query API 与产品级协议／存储接口尚未接受／实现；已有 foundation IPC 只验证基础设施。
-- 原始记录模型、索引 schema、源偏移与具体大小阈值已有 Phase 2A 候选，尚未接受／实现；Dataset Contract 仍留在 Phase 3。
-- 最终 FTS/trigram/确定性回退、1–2 字符查询与索引体积。
-- UI 库最终选择、真实数据端到端性能和正式签名/公证验证。
+- RawValue 具体接口、SQLite schema、range adapter/revision 检测机制、缓存布局及具体大小预算；原始访问原则已接受，生产实现未启动。Dataset Contract 仍留在 Phase 3。
+- Exact 具体相等规则、BINARY/case/normalization、分页参数，trigram 启用与文件/语言覆盖、完整数据集容量及性能。
+- parser/i18n/UI 库最终选择、初始 locale、真实数据端到端性能和正式签名/公证验证。
 
-[Phase 2A 调查](investigations/phase-2a-data-access-architecture.md)已完成，候选待评审，不纳入当前已接受架构。实验表、合成边、采样与保护阈值不是生产架构。Phase 0 的具体版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。
+[Phase 2A 调查](investigations/phase-2a-data-access-architecture.md)保留历史候选与实测；本次接受范围及候选区别见 [评审收尾](investigations/phase-2a-review-closeout.md)。实验表、合成边、采样、具体阈值和库不自动成为生产架构。Phase 0 的版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。

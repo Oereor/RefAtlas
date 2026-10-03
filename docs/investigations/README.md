@@ -1,6 +1,7 @@
 # 调查与证据
 
-- [Phase 2A 原始数据访问与记录模型](phase-2a-data-access-architecture.md)：21 个真实样本、类型／地址／记录边界、Query API、SQLite、搜索与有界访问候选；调查完成／待评审，不是已接受架构。
+- [Phase 2A 评审收尾](phase-2a-review-closeout.md)：已确认原则、ADR-0007–0010、接受与候选边界、文档验证；Phase 2A CLOSED / REVIEWED，产品实现 NOT STARTED。
+- [Phase 2A 原始数据访问与记录模型](phase-2a-data-access-architecture.md)：21 个真实样本、类型／地址／记录边界、Query API、SQLite、搜索与有界访问历史候选；正文保留调查时点，顶部补记链接评审结果，不是规范架构。
 - [Phase 2A 紧凑测量](evidence/phase-2a-measurements.json)：样本指纹、词法／结构分布、搜索完整性、范围与 IPC 实验，非产品 SLA。
 
 本目录为历史证据，非规范架构。接受结论进入 [ARCHITECTURE](../ARCHITECTURE.md) 和 [ADR](../decisions/README.md)，不改写旧报告伪造当时结论。

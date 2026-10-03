@@ -12,6 +12,10 @@
 | [ADR-0004](ADR-0004-deterministic-search-semantics.md) | 确定性检索语义，最终 FTS 加速方案未决 | 已接受 |
 | [ADR-0005](ADR-0005-macos-platform-scope.md) | 正式支持 Windows x64 与 macOS arm64 | 已接受 |
 | [ADR-0006](ADR-0006-electron-build-and-packaging-toolchain.md) | electron-vite + electron-builder 长期构建与打包路线，不永久冻结版本 | 已接受 |
+| [ADR-0007](ADR-0007-node-addressing-and-source-lifecycle.md) | NodeAddress、Structural Record 浏览角色、只读来源与 revision invalidation | 已接受，细化 ADR-0002 地址条款 |
+| [ADR-0008](ADR-0008-parser-capability-contract-and-source-ranges.md) | 可替换 parser 能力契约、一致 raw semantics、版本绑定可重建 SourceRange | 已接受，补充 ADR-0002 |
+| [ADR-0009](ADR-0009-search-completeness-and-optional-acceleration.md) | 搜索完整性、可重建 SQLite、可观察回退与 optional accelerator | 已接受，补充 ADR-0004 |
+| [ADR-0010](ADR-0010-ui-localization-boundary.md) | UI-only 类型化 localization、raw/protocol 边界与测试原则 | 已接受，从首批 Phase 2 production UI 起 |
 
 ## 维护约定
 
@@ -19,4 +23,4 @@
 
 候选不冒充已接受 ADR。变更时新增记录，旧记录标为被替代并链接，不改写历史，不以改写调查报告代替决策。
 
-Phase 1 与 Phase 1A 均已完成并关闭；ADR-0005 决定正式平台范围，ADR-0006 正式接受 electron-vite + electron-builder 长期路线。六项决定与既有平台证据齐备，当前版本组合不成为永久架构要求；见 [收尾记录](../investigations/phase-1a-closeout.md)、[Windows 验证报告](../investigations/phase-1a-foundation.md) 与 [macOS 验证报告](../investigations/phase-1a-macos-arm64-validation.md)。Phase 2A 已形成 [调查候选](../investigations/phase-2a-data-access-architecture.md)，没有新增已接受 ADR；Phase 2 产品实现未启动，需评审后单独授权。
+Phase 1 与 Phase 1A 已关闭；ADR-0005/0006 与 [双平台收尾](../investigations/phase-1a-closeout.md) 证据继续有效。Phase 2A 已评审并关闭，用户确认的原则进入 ADR-0007–0010，见 [评审收尾](../investigations/phase-2a-review-closeout.md)。[历史调查](../investigations/phase-2a-data-access-architecture.md) 中的库、schema、协议、预算和 accelerator 默认范围仍为候选；Phase 2 产品实现未启动，需单独授权。

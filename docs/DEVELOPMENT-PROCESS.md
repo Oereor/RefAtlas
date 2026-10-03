@@ -11,6 +11,10 @@
 - 先小范围测试再扩展，不能因基准便利损坏整数。
 - 新说明中文，必要标识符保留原文。
 
+Phase 2A 接受范围见 [评审收尾](investigations/phase-2a-review-closeout.md) 和 ADR-0007–0010。后续实现区分 Node 地址、Structural Record 浏览角色和显式契约实体；source workspace 只读，外部变化使旧范围/索引/视图失效。parser 各路径统一 raw semantics；搜索 coverage 与 accelerator coverage 分开，进度、部分结果和取消必须可观察。
+
+从第一批 Phase 2 production UI 起，用户消息通过集中、类型化 localization layer；内部稳定 code 由 presentation 翻译，locale 不传入 Data Service。raw 字段/值/数值词法/路径/地址不翻译或按 locale 改写；APP 自有格式通过共享 `Intl.*` formatter。message sources 为权威，generated artifact 不手工维护；具体库与 locale 集合留待实现。[ADR-0010](decisions/ADR-0010-ui-localization-boundary.md)
+
 ## 桌面基础验证流程
 
 先确认系统 7890 代理协议/地址，并仅在当前 shell 配置；包下载、官方查询、Electron 下载和打包工具可能的网络访问均不得直连回退。联网脚本会检查代理配置与本机端口，包版本/ABI/N-API 变化必须重新验证。
@@ -28,6 +32,8 @@ macOS arm64 的脚本路径必须在原生 Apple Silicon 环境验证；macOS x6
 `npm run format` 主动应用仓库 formatter，`npm run format:check` 只检查；两者范围一致且不隐式进入 build。受管范围是生产 src、tests、scripts 与 package/生产配置，`.prettierignore` 排除 Markdown、lockfile、docs、tools、node_modules、缓存、out/dist、artifacts/coverage。不格式化外部数据，不因首次整理重排历史调查或证据。具体版本只维护在 package/lockfile，配置维护在仓库 formatter 配置。
 
 测试按风险、可观察行为、边界和回归价值安排，不按 LOC、函数数、test count 或 coverage quota 分配。相似输入优先 `it.each`；真正 bug 的合理 regression 应能重现问题，typo/文案无需机械补测。普通测试验证逻辑、validation、状态机，不验证私有步骤或第三方库自身能力。
+
+除非测试目标是 localization，不以具体翻译文案作为功能行为的核心 assertion；优先 semantic state、machine-readable error code、role、稳定 DOM/data identifier、可观察行为、控件可用性和 request/result state。例如 source-change 测试验证 stale 状态与 reload 行为，不依赖“重新加载”译文。专门 localization tests 验证 message 存在、参数生成、locale switch、fallback、formatter 和 raw 数据边界。UI wording / 翻译修改不应导致大量无关功能测试失败，仍按风险选测，不新增数量或 coverage quota。
 
 纯逻辑单测与真实边界证据分开：当前 `npm test` 还包含极小的本地 SQLite 和子进程检查，保持离线和有界；它们不等价于 Electron Utility、MessagePort、native/ASAR 的真实 smoke。源码字符串 guard 仅用于必要的安全/build/package 不变量，优先结构化配置或运行时断言；不能通过文本没有出现目录名就声称该目录未打包。
 

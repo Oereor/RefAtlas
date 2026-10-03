@@ -1,5 +1,7 @@
 # Phase 2A：原始数据访问与记录模型架构调查
 
+评审补记（2026-10-03，UTC+8）：用户已确认的 Node 地址/结构浏览/只读 revision 原则进入 [ADR-0007](../decisions/ADR-0007-node-addressing-and-source-lifecycle.md)，parser 能力/范围进入 [ADR-0008](../decisions/ADR-0008-parser-capability-contract-and-source-ranges.md)，搜索完整性/optional accelerator 进入 [ADR-0009](../decisions/ADR-0009-search-completeness-and-optional-acceleration.md)，新增 UI-only localization 决定见 [ADR-0010](../decisions/ADR-0010-ui-localization-boundary.md)。Phase 2A 已 CLOSED / REVIEWED，Phase 2 production implementation 仍 NOT STARTED。下文保留调查时的状态、RecordAddress 命名、推荐和实测；具体库、RawValue/schema/API、匹配选项、预算、revision 检测和 trigram 默认覆盖未因评审自动接受。NodeAddress 是正式底层地址，Structural Record 仅为浏览角色；接受与候选对照、验证及下一步建议见 [评审收尾](phase-2a-review-closeout.md)。
+
 日期：2026-10-03（UTC+8）。应用基线：`ced692a Closeout Phase 1A`，开始工作树干净。外部数据基线：`724b139d8c9c32d12552eb95745a4fee72bfe48b`，起止工作树干净。状态：**调查完成，候选设计待评审；Phase 1 CLOSED；Phase 2 产品实现 NOT STARTED**。
 
 本报告是可评审的候选与证据，不是新增已接受架构。既有约束以 [ARCHITECTURE](../ARCHITECTURE.md)、ADR-0001–0006 为准；当前阶段见 [STATUS](../STATUS.md)。本轮没有生产数据功能、Dataset Contract、引用、产品 UI 或生产数据库。
