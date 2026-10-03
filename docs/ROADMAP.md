@@ -5,8 +5,8 @@
 | 阶段 | 高层范围 |
 | --- | --- |
 | Phase 0 | 引导、规范、勘察、性能实验、生态调查；已完成评审并关闭 |
-| Phase 1（Phase 1A 已关闭） | Phase 1A 桌面基础已完成并关闭；两个正式平台 gate 与工具链决定齐备，不自动关闭整个 Phase 1 |
-| Phase 2 | 源浏览、记录视图、搜索、标签页/历史、有界 JSON |
+| Phase 1：CLOSED（Phase 1A：CLOSED） | 桌面基础、两个正式平台 gate 与工具链决定齐备，无剩余 Phase 1 子阶段 |
+| Phase 2：产品实现 NOT STARTED | Phase 2A 先调查原始数据访问与记录模型；后续源浏览、记录视图、搜索、标签页/历史、有界 JSON 需评审后授权 |
 | Phase 3 | Dataset Contract、出入引用、导航、局部图 |
 | Phase 4 | 固定/比较、diff、高级搜索、性能与体验 |
 | Phase 5 | 可选 Agent，作为 Query API 客户端，先读与调查 |
@@ -22,4 +22,10 @@
 
 ## 下一阶段边界
 
-Phase 2／后续阶段未启动。下一阶段需由用户单独授权；Phase 1A closeout 本身不授权后续数据模型或产品功能实现。保持既有阶段结构，Phase 3–5 仍仅为方向，不设计详细接口。
+Phase 1 整体已关闭，无剩余 Phase 1B 或其他子阶段。Phase 2 产品实现未启动，需要评审与单独授权；Phase 3–5 仍仅为方向。
+
+## Phase 2A — 原始数据访问与记录模型调查
+
+调查已完成／待评审，见 [中文架构报告](investigations/phase-2a-data-access-architecture.md)。覆盖真实结构、raw value、物理地址、结构记录、Query API、SQLite、确定性搜索、parser/源范围与有界访问；实验工具明确非生产。
+
+报告提出后续数据服务／索引基础 → Source Browser → Record View／有界 JSON → 搜索 → tabs/history 的顺序建议，名称与拆分尚未接受。不因此进入 production src，不提前实现 Dataset Contract 或引用。

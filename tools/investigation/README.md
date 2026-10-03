@@ -1,4 +1,16 @@
-# Phase 0 非生产调查工具
+# Phase 0 / Phase 2A 非生产调查工具
+
+## Phase 2A 复现
+
+在本目录执行 `npm run test:phase2a`、`npm run phase2a`；结构与实验串行隔离，复用既有 120 秒／1 GiB heap／2 GiB RSS／3 GiB 可用内存保护。输入固定为 Phase 0 的 15 个样本和源码中明确列出的 6 个结构补充，不是全库词法 census。`node phase-2a.mjs --experiments-only` 仅在已有成功结构产物时更新 search/access，仍复核所有源指纹。`--collections-only` 仅补测六个嵌套集合样本；完整运行已包括这些统计。
+
+`phase-2a-helper.mjs` 是成熟 tokenizer 的结构／指标观察器；实验保留完整只读 raw Buffer，不能当生产 streaming 内存证据。TokenParser 用 `paths: []` 与 `keepStack: false`；parseNumber 返回 lexeme，BOM 显式恢复字节基准。测试聚焦精度、UTF-8 range、surrogate、分页／失效、坏 JSON 和 SQLite Exact。
+
+可选 Electron 探针：使用本目录 `node_modules/electron/dist/electron.exe` 启动 `phase-2a-electron.cjs`，Windows 用 `Start-Process -WindowStyle Hidden`，Main↔Utility MessagePort 无窗口、30 秒内退出，成功结果为 `artifacts/phase-2a-electron.json`。它不测 renderer/Preload 或 packaged 链路；不得关闭 Electron sandbox 或修改 ACL 绕过受限执行问题。
+
+`npm run export:phase2a` 要求成功的 phase-2a.json、Electron 结果与固定版 parser metadata，输出紧凑仓库证据。parser metadata 通过官方 registry 读取保存为 `artifacts/phase-2a-parser-metadata.json`；新增 @streamparser/json 0.0.26 仅用于实验偏移候选。所有公网下载／查询必须先确认系统 7890 协议与地址，并显式给当前命令配置代理，禁止直连 fallback 和永久全局配置；建议安装使用独立缓存、`--ignore-scripts --no-audit --no-fund`。
+
+SQLite 实验 DB 在 finally 中 close/remove，日志、依赖、profile、raw artifacts 不提交。完整结果与方法见 [中文报告](../../docs/investigations/phase-2a-data-access-architecture.md)。
 
 这里不是应用源码。没有正式 Electron 窗口、UI、schema、Dataset Contract 或发布流水线；实验表与合成边不能成为关系真相。
 

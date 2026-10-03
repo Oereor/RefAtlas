@@ -1,6 +1,6 @@
 # 已接受架构与约束
 
-2026-10-02 Phase 1A 已完成并关闭；下述方向已接受，Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。关闭基础阶段不代表后续产品功能已实现或获授权。
+2026-10-03 Phase 1 与 Phase 1A 均已完成并关闭；下述方向已接受，Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。关闭基础阶段不代表后续产品功能已实现或获授权。
 
 ## 1. 桌面栈与进程所有权
 
@@ -51,12 +51,12 @@ Phase 1 首选 better-sqlite3，SQLite 属于 Data Service，经窄内部存储�
 
 搜索先定义确定性行为：Exact 精确标量/显式 ID，Contains 字面 Unicode 子串，Field 字段名，File 文件/路径，Text 字面本地化文本。名称不固定 UI/API；FTS/tokenizer 只作加速，不能改变语义。最终 FTS、短词与回退策略未定，不引入分词语义、embeddings 或 AI 搜索。[ADR-0004](decisions/ADR-0004-deterministic-search-semantics.md)
 
-## 5. 尚未设计或验证
+## 5. 尚未接受或产品验证
 
 - 正式发布配置、CI/release workflow、签名、公证、安装器/DMG、自动更新与发布节奏。工具链路线已接受，但这些发布事项不属于 ADR-0006；具体版本由 package/lockfile 管理并按风险升级验证。
-- 正式 Query API 与产品级协议／存储接口；已有 foundation IPC 只验证基础设施，不预先定义记录、契约或索引模型。
-- 原始记录模型、Dataset Contract schema、索引 schema、源偏移与具体大小阈值。
+- 正式 Query API 与产品级协议／存储接口尚未接受／实现；已有 foundation IPC 只验证基础设施。
+- 原始记录模型、索引 schema、源偏移与具体大小阈值已有 Phase 2A 候选，尚未接受／实现；Dataset Contract 仍留在 Phase 3。
 - 最终 FTS/trigram/确定性回退、1–2 字符查询与索引体积。
 - UI 库最终选择、真实数据端到端性能和正式签名/公证验证。
 
-实验表、合成边、采样与保护阈值不是生产架构。Phase 0 的具体版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。
+[Phase 2A 调查](investigations/phase-2a-data-access-architecture.md)已完成，候选待评审，不纳入当前已接受架构。实验表、合成边、采样与保护阈值不是生产架构。Phase 0 的具体版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。

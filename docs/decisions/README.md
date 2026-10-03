@@ -19,4 +19,4 @@
 
 候选不冒充已接受 ADR。变更时新增记录，旧记录标为被替代并链接，不改写历史，不以改写调查报告代替决策。
 
-Phase 1A 已完成并关闭；ADR-0005 决定正式平台范围，ADR-0006 正式接受 electron-vite + electron-builder 长期路线。六项决定与既有平台证据齐备，当前版本组合不成为永久架构要求；见 [收尾记录](../investigations/phase-1a-closeout.md)、[Windows 验证报告](../investigations/phase-1a-foundation.md) 与 [macOS 验证报告](../investigations/phase-1a-macos-arm64-validation.md)。后续阶段未启动，需单独授权。
+Phase 1 与 Phase 1A 均已完成并关闭；ADR-0005 决定正式平台范围，ADR-0006 正式接受 electron-vite + electron-builder 长期路线。六项决定与既有平台证据齐备，当前版本组合不成为永久架构要求；见 [收尾记录](../investigations/phase-1a-closeout.md)、[Windows 验证报告](../investigations/phase-1a-foundation.md) 与 [macOS 验证报告](../investigations/phase-1a-macos-arm64-validation.md)。Phase 2A 已形成 [调查候选](../investigations/phase-2a-data-access-architecture.md)，没有新增已接受 ADR；Phase 2 产品实现未启动，需评审后单独授权。

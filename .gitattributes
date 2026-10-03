@@ -1,2 +1,2 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Text checkout uses LF on every supported platform; binary detection stays automatic.
+* text=auto eol=lf

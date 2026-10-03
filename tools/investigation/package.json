@@ -3,14 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "RefAtlas Phase 0 非生产调查与基准",
+  "description": "RefAtlas Phase 0 / Phase 2A 非生产调查与基准",
   "scripts": {
     "scan": "node scan.mjs",
     "bench": "node run.mjs",
     "test": "node --test test.mjs",
-    "validate": "node validate.mjs"
+    "validate": "node validate.mjs",
+    "phase2a": "node phase-2a.mjs",
+    "test:phase2a": "node --test phase-2a.test.mjs",
+    "export:phase2a": "node phase-2a-export.mjs"
   },
   "devDependencies": {
+    "@streamparser/json": "0.0.26",
     "better-sqlite3": "13.0.3",
     "electron": "44.5.1",
     "stream-json": "3.7.0"

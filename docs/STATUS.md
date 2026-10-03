@@ -1,8 +1,8 @@
 # 当前状态
 
-更新日期：2026-10-02（UTC+8）。
+更新日期：2026-10-03（UTC+8）。
 
-**Phase 0 已关闭／已接受；Phase 1A 已完成并关闭（CLOSED）。** Windows x64 与 macOS arm64 两个正式支持目标的 native/package gate 均已通过，electron-vite + electron-builder 已通过 [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 正式接受为当前长期工具链路线。macOS x64 由 [ADR-0005](decisions/ADR-0005-macos-platform-scope.md) 移出正式支持范围，不构成未完成 gate。Phase 2／后续阶段未启动（NOT STARTED），本次收尾不自动关闭整个 Phase 1 或授权下一阶段。
+**Phase 0：CLOSED；Phase 1：CLOSED；Phase 1A：CLOSED。Phase 2A：investigation completed / awaiting review；Phase 2 产品实现：NOT STARTED。** 两个正式支持目标 Windows x64 与 macOS arm64 的 native/package gate 均已通过，工具链已由 ADR-0006 接受。Phase 1 无剩余子阶段，本轮按用户授权完成最终 housekeeping 与数据访问架构调查；候选见 [Phase 2A 报告](investigations/phase-2a-data-access-architecture.md)。
 
 ## 已完成
 
@@ -55,8 +55,16 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 | Windows x64 | 通过 | ASAR 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 | macOS arm64 | 通过 | ASAR .app 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 
-后续尚未设计／实现：正式 Query API、原始记录与身份模型、源字节范围、Dataset Contract、索引 schema、全量索引、增量刷新、中文短词/FTS 策略。真实数据负载、可见窗口帧率与正式签名/公证未测；基础 IPC 测量见 [PERFORMANCE](PERFORMANCE.md)。
+Phase 2A 已提出 raw value、物理地址、结构记录、有界 Query API、SQLite、搜索及 parser/范围候选，但尚未接受或生产实现。Dataset Contract、全量生产索引、增量刷新和产品 UI 尚未实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，本轮真实采样与隔离传输实验保留在调查报告。
+
+## Phase 1 最终收尾与 Phase 2A 调查
+
+- Phase 1 随 Phase 1A 正式关闭；`.gitattributes` 固定自动文本检测与 LF checkout，无 CRLF 例外，不改写历史调查。
+- 21 个真实样本结构／词法与分布调查，15 个 Phase 0 指纹一致；外部 HEAD、工作树及所有采样文件未变。
+- 受限 SQLite/Exact/LIKE/unicode61/trigram、source range／child summary、Node 与 Electron Main↔Utility 实验完成；八组针对性风险检查通过。
+- 中文 [调查报告](investigations/phase-2a-data-access-architecture.md) 与 [紧凑证据](investigations/evidence/phase-2a-measurements.json) 已保存；新增依赖与工具仅在独立 investigation package。
+- 未改生产 src/package/lockfile，未建立生产索引／契约／关系／产品 UI，未新增已接受 ADR，未提交或操作远程仓库。
 
 ## 下一步
 
-下一阶段需由用户单独授权；Phase 1A closeout 本身不授权后续数据模型或产品功能实现。Phase 2／后续阶段未启动。签名凭据、发布配置和正式性能预算在对应阶段处理。文档与应用使用同一 Git 仓库，不再维护外层项目文档。
+用户评审 Phase 2A 报告，确认长期候选后再单独授权 Phase 2 产品实现。后续子阶段顺序仅是建议；签名、发布与正式性能预算留在对应阶段。文档与应用使用同一 Git 仓库。

@@ -2,7 +2,7 @@
 
 面向开发者、逆向研究者和配置维护者的桌面原始配置与显式引用调查工作台。
 
-**Phase 0 已关闭／已接受；Phase 1A 已完成并关闭。** Windows x64 与 macOS arm64 两个正式目标的 native/package gate 均已通过，electron-vite + electron-builder 长期工具链路线已接受；当前版本不永久冻结。Phase 2／后续阶段未启动，需单独授权。macOS x64 不属于正式支持范围。见 [收尾记录](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。`tools/investigation/` 保持独立的非生产实验工具。
+**Phase 0、Phase 1 与 Phase 1A 均已关闭；Phase 2A 调查已完成／待评审。** Windows x64 与 macOS arm64 两个正式目标的 native/package gate 均已通过，electron-vite + electron-builder 长期工具链路线已接受；当前版本不永久冻结。Phase 2 产品实现未启动，需评审后单独授权；本轮 [数据访问架构报告](docs/investigations/phase-2a-data-access-architecture.md)已保存。macOS x64 不属于正式支持范围。见 [收尾记录](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。`tools/investigation/` 保持独立的非生产实验工具。
 
 ## 开始阅读
 
