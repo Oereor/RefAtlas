@@ -1,6 +1,6 @@
 # 已接受架构与约束
 
-2026-10-03 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 仍为 NOT STARTED；接受原则不代表功能已实现或获实施授权。
+2026-10-03 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。后续搜索、契约和产品 UI 仍未实现。
 
 ## 1. 桌面栈与进程所有权
 
@@ -33,7 +33,7 @@ Core 不推断引用、不硬编码玩家实体。相等数值、相似字段、
 
 原始 JSON 六类值、无损数值词法与出处必须保留，123 与 "123" 可区分。number lexeme 是事实；解析值只能在证明安全时辅助使用。数值未经安全性证明不得经过 JavaScript number；signed INTEGER 不保证承载全部 ID/哈希。
 
-接受概念地址 `SourceAddress = { workspaceId, relativePath }`、`NodeAddress = { source, pointer }`；SourceAddress + JSON Pointer 定位原始 Node。根 Pointer 是 `""`，`~`、`/` 分别转义为 `~0`、`~1`。具体生产类型与线格式未实现。
+接受概念地址 `SourceAddress = { workspaceId, relativePath }`、`NodeAddress = { source, pointer }`；SourceAddress + JSON Pointer 定位原始 Node。根 Pointer 是 `""`，`~`、`/` 分别转义为 `~0`、`~1`。生产类型和 raw query 线格式现由 `src/shared/raw.ts` 管理，受控标识与路径/Pointer 均经运行时校验。
 
 JSON Node ≠ Structural Record ≠ Logical Entity。在显式选中 collection/container 内，直接 child 可以作为 structural record 列出、浏览；这只是浏览角色，不保证整体物化或一次 IPC 返回。根、容器、属性、scalar 都可定位。Core 不根据 ID、名称、metadata、wrapper 或值猜实体/默认 flatten；逻辑身份和数据集知识留给 Phase 3 的显式 Dataset Contract / dataset adapter。[ADR-0002](decisions/ADR-0002-lossless-raw-data-and-bounded-access.md) [ADR-0007](decisions/ADR-0007-node-addressing-and-source-lifecycle.md)
 
@@ -41,7 +41,7 @@ JSON Node ≠ Structural Record ≠ Logical Entity。在显式选中 collection/
 
 当前 raw source 是只读 viewer / investigation 来源，不设计 raw editing/save/merge/conflict resolution/undo-redo/transactional source writes/source-format rewrite。应用自己的缓存目录可以写，source workspace 保持只读。
 
-外部变化按 old revision → stale → invalidate → reload/reindex → new revision 处理；旧 SourceRange 和相关文件索引失效，打开视图表达 stale。可重新打开仍存在的相同 Pointer，但不意味着同一 logical entity；不存在时表达 location no longer exists。不按 ID、值或 heuristic 迁移，不恢复 array reorder 的原记录。tabs/history 保存物理地址及 revision 上下文，不能把裸 range 当永久身份。目标是可靠检测并响应变化，不要求每次 Node read 重 hash 全文件或数据库级 strict snapshot isolation；具体检测与 race 处理待实现。[ADR-0007](decisions/ADR-0007-node-addressing-and-source-lifecycle.md)
+外部变化按 old revision → stale → invalidate → reload/reindex → new revision 处理；旧 SourceRange 和相关文件索引失效，打开视图表达 stale。可重新打开仍存在的相同 Pointer，但不意味着同一 logical entity；不存在时表达 location no longer exists。不按 ID、值或 heuristic 迁移，不恢复 array reorder 的原记录。tabs/history 保存物理地址及 revision 上下文，不能把裸 range 当永久身份。目标是可靠检测并响应变化，不要求每次 Node read 重 hash 全文件或数据库级 strict snapshot isolation；production 使用已知来源 watcher/轮询、路径与句柄前后 stat 检查，首次完整校验计算 hash；显式 reload 建立新 revision，已知变化不返回成功结果。具体实现和局限见本轮报告。[ADR-0007](decisions/ADR-0007-node-addressing-and-source-lifecycle.md)
 
 ## 3. 有界与混合访问
 
@@ -57,7 +57,15 @@ JSON Node ≠ Structural Record ≠ Logical Entity。在显式选中 collection/
 
 接受可替换的成熟库 adapter 能力契约：六类型、numeric lexeme、不安全数值不先经过 JS number、大文件 bounded/streaming、巨大 scalar 不无界聚合、产生或恢复 source byte range、取消、资源限制、所有路径一致 raw semantics。indexing/range-read/search 不得各自产生不同 raw truth。
 
-`SourceRange = { startByte, endByteExclusive }` 是源文件字节坐标上的半开区间，nullable、version-bound、rebuildable；Pointer 是地址真值，range 是 cache/acceleration metadata，不参与 identity。无范围时仍可定位和恢复，源变化时失效。UTF-8/BOM/转义/分块及资源边界需在生产适配中验证；`@streamparser/json`、`stream-json` 只是原型候选。[ADR-0008](decisions/ADR-0008-parser-capability-contract-and-source-ranges.md)
+`SourceRange = { startByte, endByteExclusive }` 是源文件字节坐标上的半开区间，nullable、version-bound、rebuildable；Pointer 是地址真值，range 是 cache/acceleration metadata，不参与 identity。无范围时仍可定位和恢复，源变化时失效。UTF-8/BOM/转义/分块及资源边界需在生产适配中验证；历史调查中的两库原本只是候选；当前 production adapter 采用固定版 `@streamparser/json@0.0.26`，原始数值不先经过 Number，语法/范围/预算共用一个入口。库仍可替换，版本由 package/lockfile 管理。[ADR-0008](decisions/ADR-0008-parser-capability-contract-and-source-ranges.md)
+
+### 已实现的 Raw Access Foundation
+
+`window.raw` 提供受控 workspace open/close、source info/reload、Node read、children page、scalar segment 和 owner cancellation。Main 原生选择根目录，Utility 拒绝路径逃逸和根下 symlink/junction；不做全库 discovery。小值返回完整六类型 union，大值返回独立 summary，object 使用有序 entries。
+
+首次 Node 请求按预算完整校验一个 source 后才能发布范围；之后可用 revision-bound range。工作预算为 128 MiB read、800 万 token、深度 128、256 KiB token/window 和 15 秒；4 KiB 块之间让出执行。完整值初始 48 KiB/1,000 Node/深度 8，raw response envelope 64 KiB，foundation 控制限制保持 16 KiB。source/range/cursor 均为有限内存状态，不使用 SQLite 持久化；所有数值保留 lexeme。来源变化失效旧缓存，旧 workspace/revision/cursor 不自动恢复。
+
+这些是已验证工程实现，非永久预算或产品 SLA；完整行为、错误和 edge-case policy 见 [报告](investigations/phase-2-raw-access-foundation.md)。
 
 ## 4. 存储与完整搜索
 
@@ -82,8 +90,8 @@ raw field/string/numeric lexeme/path/Pointer/NodeAddress 保持原事实，`Avat
 ## 6. 尚未接受或产品验证
 
 - 正式发布配置、CI/release workflow、签名、公证、安装器/DMG、自动更新与发布节奏。工具链路线已接受，但这些发布事项不属于 ADR-0006；具体版本由 package/lockfile 管理并按风险升级验证。
-- 正式 Query API 与产品级协议／存储接口尚未接受／实现；已有 foundation IPC 只验证基础设施。
-- RawValue 具体接口、SQLite schema、range adapter/revision 检测机制、缓存布局及具体大小预算；原始访问原则已接受，生产实现未启动。Dataset Contract 仍留在 Phase 3。
+- full search、Dataset Contract 和完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。
+- SQLite schema、持久 cache、child index 和更大 scalar streaming 策略仍未实现；当前 RawValue、范围/检测和工程预算见本轮报告。Dataset Contract 仍留在 Phase 3。
 - Exact 具体相等规则、BINARY/case/normalization、分页参数，trigram 启用与文件/语言覆盖、完整数据集容量及性能。
 - parser/i18n/UI 库最终选择、初始 locale、真实数据端到端性能和正式签名/公证验证。
 

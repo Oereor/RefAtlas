@@ -1,7 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import type { IpcMainInvokeEvent } from 'electron'
 import { randomUUID } from 'node:crypto'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile, unlink } from 'node:fs/promises'
 import { mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { cpus, release, totalmem } from 'node:os'
@@ -18,6 +18,15 @@ import {
 } from '../shared/protocol'
 import type { Result } from '../shared/protocol'
 import { DataService } from './data-service'
+import {
+  commandFromInput,
+  RAW_CHANNELS,
+  RAW_LIMITS,
+  RawError,
+  rawFailure,
+  rawBounded,
+} from '../shared/raw'
+import type { RawCode, RawResult } from '../shared/raw'
 
 const guardSmoke = process.argv.includes('--guard-smoke')
 const smoke = process.argv.includes('--smoke') || guardSmoke
@@ -84,6 +93,65 @@ function requireDiagnostics(): void {
   if (!diagnostics) throw new FoundationError('TEST_ONLY', '仅诊断模式允许故障注入')
 }
 
+let choosingWorkspace = false
+function registerRaw(
+  channel: string,
+  action: (event: IpcMainInvokeEvent, input: unknown) => Promise<unknown>,
+): void {
+  ipcMain.handle(channel, async (event, ...args: unknown[]): Promise<RawResult<unknown>> => {
+    if (!trusted(event) || args.length !== 1 || !rawBounded(args, RAW_LIMITS.requestBytes))
+      return rawFailure('INVALID_INPUT')
+    try {
+      const value = await action(event, args[0])
+      const result = { ok: true as const, value }
+      if (!rawBounded(result)) return rawFailure('RESOURCE_LIMIT', { limit: 'RESPONSE_BYTES' })
+      return result
+    } catch (error) {
+      if (error instanceof RawError) return rawFailure(error.code, error.details)
+      if (error instanceof FoundationError) return rawFailure(error.code as RawCode)
+      return rawFailure('INTERNAL')
+    }
+  })
+}
+registerRaw(RAW_CHANNELS.open, async (event, input) => {
+  if (!object(input) || !exact(input, ['requestId']) || !validId(input.requestId))
+    throw new RawError('INVALID_INPUT')
+  if (choosingWorkspace) throw new RawError('BUSY')
+  choosingWorkspace = true
+  try {
+    const selection =
+      smoke && !guardSmoke && reportPath
+        ? { canceled: false, filePaths: [join(dirname(reportPath), 'raw-fixtures')] }
+        : await dialog.showOpenDialog(window!, { properties: ['openDirectory'] })
+    if (selection.canceled) return { status: 'cancelled' }
+    if (!trusted(event)) throw new RawError('CANCELLED')
+    return await service.request(
+      {
+        type: 'request',
+        id: input.requestId,
+        operation: 'raw',
+        input: { kind: 'open', root: selection.filePaths[0] },
+      },
+      event.sender.id,
+    )
+  } finally {
+    choosingWorkspace = false
+  }
+})
+for (const kind of ['close', 'info', 'reload', 'read', 'children', 'segment'] as const)
+  registerRaw(RAW_CHANNELS[kind], async (event, input) => {
+    const command = commandFromInput(kind, input)
+    if (!command || !object(input)) throw new RawError('INVALID_INPUT')
+    return service.request(
+      { type: 'request', id: input.requestId as string, operation: 'raw', input: command },
+      event.sender.id,
+    )
+  })
+registerRaw(RAW_CHANNELS.cancel, async (event, input) => {
+  if (!validId(input)) throw new RawError('INVALID_INPUT')
+  return service.cancel(input, event.sender.id)
+})
+
 register(CHANNELS.status, 0, () => service.status())
 register(CHANNELS.probe, 1, (event, args) => {
   if (!validProbe(args[0]))
@@ -124,6 +192,22 @@ async function emitReport(value: unknown): Promise<void> {
   await writeFile(reportPath, JSON.stringify(value, null, 2), 'utf8')
 }
 async function launch(): Promise<void> {
+  if (smoke && !guardSmoke && reportPath) {
+    const root = join(dirname(reportPath), 'raw-fixtures')
+    await mkdir(root, { recursive: true })
+    await writeFile(
+      join(root, 'sample.json'),
+      '\uFEFF{"n":16752756560315677817,"z":-0,"d":1.00,"s":"16752756560315677817","a~b/c":"中文🙂\\uD800","entries":[' +
+        Array.from({ length: 3000 }, (_, i) => String(i)).join(',') +
+        '],"long":' +
+        JSON.stringify('🙂中文'.repeat(10000)) +
+        '}',
+      'utf8',
+    )
+    await writeFile(join(root, 'cancel.json'), '[' + '0,'.repeat(1_000_000) + '0]', 'utf8')
+    await writeFile(join(root, 'huge.json'), JSON.stringify('x'.repeat(512 * 1024)), 'utf8')
+    await writeFile(join(root, 'bad.json'), '{"a":1,}', 'utf8')
+  }
   await service.start()
   window = new BrowserWindow({
     width: 860,
@@ -156,6 +240,16 @@ async function launch(): Promise<void> {
   const rendererReport: unknown = await window.webContents.executeJavaScript(
     guardSmoke ? 'window.runFoundationGuardSmoke()' : 'window.runFoundationSmoke()',
   )
+  if (!guardSmoke && reportPath && object(rendererReport)) {
+    const rawReports: unknown[] = []
+    rawReports.push(await window.webContents.executeJavaScript('window.runRawSmoke("initial")'))
+    await writeFile(join(dirname(reportPath), 'raw-fixtures/sample.json'), '{"n":2}', 'utf8')
+    rawReports.push(await window.webContents.executeJavaScript('window.runRawSmoke("changed")'))
+    await unlink(join(dirname(reportPath), 'raw-fixtures/sample.json'))
+    rawReports.push(await window.webContents.executeJavaScript('window.runRawSmoke("deleted")'))
+    rawReports.push(await window.webContents.executeJavaScript('window.runRawSmoke("restart")'))
+    rendererReport.raw = rawReports
+  }
   if (
     !object(preloadSecurity) ||
     !exact(preloadSecurity, ['contextIsolation', 'sandbox']) ||

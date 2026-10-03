@@ -23,4 +23,4 @@
 
 候选不冒充已接受 ADR。变更时新增记录，旧记录标为被替代并链接，不改写历史，不以改写调查报告代替决策。
 
-Phase 1 与 Phase 1A 已关闭；ADR-0005/0006 与 [双平台收尾](../investigations/phase-1a-closeout.md) 证据继续有效。Phase 2A 已评审并关闭，用户确认的原则进入 ADR-0007–0010，见 [评审收尾](../investigations/phase-2a-review-closeout.md)。[历史调查](../investigations/phase-2a-data-access-architecture.md) 中的库、schema、协议、预算和 accelerator 默认范围仍为候选；Phase 2 产品实现未启动，需单独授权。
+Phase 1 与 Phase 1A 已关闭；ADR-0005/0006 与 [双平台收尾](../investigations/phase-1a-closeout.md) 证据继续有效。Phase 2A 已评审并关闭，用户确认的原则进入 ADR-0007–0010，见 [评审收尾](../investigations/phase-2a-review-closeout.md)。[历史调查](../investigations/phase-2a-data-access-architecture.md) 中的候选不会自动成为决定；本轮用户授权实现的 raw types、parser、revision 和预算见 [Raw Access Foundation 报告](../investigations/phase-2-raw-access-foundation.md)，属于 ADR 内的工程实现，不新增或改写 ADR。搜索/schema/accelerator 等仍为候选。

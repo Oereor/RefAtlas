@@ -1,6 +1,6 @@
 # 性能政策与 Phase 0 / Phase 1A 基线
 
-更新日期：2026-10-02（UTC+8）。本文件拥有性能口径与基线；结构及技术取舍见 [调查报告](investigations/phase-0-feasibility.md)。数字来自 [环境与样本证据](investigations/evidence/phase-0-measurements.json) 和 [全部运行结果](investigations/evidence/phase-0-benchmarks.json)。
+更新日期：2026-10-03（UTC+8）。本文件拥有性能口径与基线；结构及技术取舍见 [调查报告](investigations/phase-0-feasibility.md)。Phase 0 数字来自 [环境与样本证据](investigations/evidence/phase-0-measurements.json) 和 [全部运行结果](investigations/evidence/phase-0-benchmarks.json)，新增 production raw-access 观察见第 7 节。
 
 ## 1. 环境与口径
 
@@ -90,3 +90,23 @@ Packaged SQLite 三次为 125.60 / 9.60 / 8.30 ms；第一次包含 native 加�
 2026-10-02 在 MacBook Air / Apple M2 / 16 GiB / macOS 27.0.1 通过 dev、built 与 ASAR packaged smoke，见 [macOS 报告](investigations/phase-1a-macos-arm64-validation.md)。shell 为 Node 24.19.0 / npm 11.17.0；Electron 44.5.1 内部 Node 24.21.0 / N-API 10 / ABI 149，SQLite 3.53.4。
 
 沿用原 smoke：每模式一次初始 ready、三次取消/恢复/SQLite，Probe 预热 5 次后采集 100 次。结果保存在本地被忽略的 `artifacts/foundation-{dev,built,packaged}-darwin-arm64.json`；这里只接受基础设施运行、SQLite 清理及模拟任务响应性的功能证据，不新增性能基线、不改写 Windows 数字。后台负载、OS 缓存、磁盘和热状态未控制；跨机器调度与隐藏窗口节流不同，不据此宣称 Mac 比 Windows 更快或可见窗口达到特定帧率。
+
+
+## 7. Phase 2 Raw Access Foundation 观察
+
+2026-10-03（UTC+8），Windows x64 / Node 24.21.0，真实 production service 独立于 Electron 测量，每个样本一次冷 service-cache read 与一次 warm read；未清 OS cache，不能称磁盘冷读，无置信区间、不设 SLA。来源前后 streaming hash/size/mtime 一致；完整验收与局限见 [实现报告](investigations/phase-2-raw-access-foundation.md)。
+
+| 来源 | cold / warm ms | 模式 / payload bytes | actual cold / warm read bytes |
+| --- | ---: | --- | ---: |
+| ExcelOutput/AvatarConfig.json | 35.95 / 2.46 | complete / 5206 | 240469 / 2658 |
+| ExcelOutput/EquipmentConfig.json | 18.57 / 1.69 | complete / 2058 | 132307 / 780 |
+| ExcelOutput/AvatarSkillConfig.json | 928.32 / 1.86 | complete / 2927 | 11438928 / 1181 |
+| TextMap/TextMapCHS.json | 2349.29 / 1.58 | summary / 327 | 52399649 / 0 |
+| Config/LevelOutput_Baked/Floor/P10401_F10401001_Baked.json | 2349.42 / 1.19 | summary / 372 | 29480189 / 0 |
+| Config/SoundBankLookUp.json | 891.66 / 1.60 | summary / 337 | 10920727 / 0 |
+
+首次访问按预算完整校验一个 source，冷 read 含额外 3 字节 BOM sniff。热小值只回读已验证范围；巨大容器的热摘要不读其子树，但仍核对路径/stat。表中 payload 不含 envelope，测试另验证完整 response ≤64 KiB。page/segment 成本不在该表中，不据此声称全部后续访问具有相同延迟。
+
+该次 Vitest、production service 与前后 streaming 指纹整体 maxRSS 为 170,588 KiB，不能分解为单 parser/Utility 高水位；GC、JavaScript key Set 和测试 runner 都有成本。当前 source read/token/depth/scalar/cursor/cache 等工程限制见报告，不代表硬 RSS 上限。
+
+Windows dev/built/ASAR packaged raw 功能链路均通过，但本轮没有可见产品 UI memory/帧率、跨平台 raw 性能、全库访问或巨大 scalar chunk segment 基线。既有 foundation 模拟任务数字与历史 macOS 验收保持原口径。

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "RefAtlas Phase 1A 桌面基础验证",
+  "description": "RefAtlas 只读原始配置访问工作台",
   "author": "RefAtlas contributors",
   "license": "MIT",
   "main": "out/main/index.cjs",
@@ -18,6 +18,7 @@
     "install:electron": "node scripts/install-electron.mjs",
     "typecheck": "tsc --noEmit && svelte-check --tsconfig ./tsconfig.renderer.json",
     "test": "vitest run",
+    "test:raw-data": "node scripts/raw-real-data.mjs",
     "build": "electron-vite build",
     "smoke:built": "node scripts/smoke.mjs built",
     "smoke:dev": "node scripts/smoke.mjs dev",
@@ -27,6 +28,7 @@
     "docs:check": "node scripts/check-docs.mjs"
   },
   "dependencies": {
+    "@streamparser/json": "0.0.26",
     "better-sqlite3": "13.0.3"
   },
   "devDependencies": {

@@ -17,7 +17,7 @@
 
 信息在所属文档维护，其他文档链接引用。重大任务先读 PROJECT → STATUS → ARCHITECTURE → 相关 ADR/调查；性能任务再读 PERFORMANCE。结束更新当前状态与权威文档。
 
-Phase 1 与 Phase 1A 均已完成并关闭，见 [收尾记录](investigations/phase-1a-closeout.md)；electron-vite + electron-builder 路线已由 [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 接受，不永久冻结版本。具体版本、验证命令、打包策略和局限仍保留在 [Windows 交付报告](investigations/phase-1a-foundation.md) 与 [macOS 原生报告](investigations/phase-1a-macos-arm64-validation.md)；开发入口见 [应用 README](../README.md)。Phase 2A investigation 已 CLOSED / REVIEWED，已确认原则进入 ADR-0007–0010，见 [评审收尾](investigations/phase-2a-review-closeout.md)；[原始调查](investigations/phase-2a-data-access-architecture.md) 保留历史候选与证据。当前架构由权威文档/ADR 表达，Phase 2 产品实现仍 NOT STARTED，需单独授权。
+Phase 1 与 Phase 1A 均已完成并关闭，见 [收尾记录](investigations/phase-1a-closeout.md)；electron-vite + electron-builder 路线已由 [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 接受，不永久冻结版本。具体版本、验证命令、打包策略和局限仍保留在 [Windows 交付报告](investigations/phase-1a-foundation.md) 与 [macOS 原生报告](investigations/phase-1a-macos-arm64-validation.md)；开发入口见 [应用 README](../README.md)。Phase 2A investigation 已 CLOSED / REVIEWED，已确认原则进入 ADR-0007–0010，见 [评审收尾](investigations/phase-2a-review-closeout.md)；[原始调查](investigations/phase-2a-data-access-architecture.md) 保留历史候选与证据。当前架构由权威文档/ADR 表达，Phase 2 production implementation 已 STARTED，Raw Access Foundation 已完成并待本轮评审，见 [实现报告](investigations/phase-2-raw-access-foundation.md)；不自动开始下一块。
 
 ## 版本管理
 

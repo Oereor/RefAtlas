@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { rawBounded, RawError } from '../shared/raw'
 import {
   bounded,
   FoundationError,
@@ -73,7 +74,7 @@ export class RequestBroker {
   }
   async cancel(id: string, owner: number): Promise<{ accepted: boolean }> {
     const task = this.pending.get(id)
-    if (!task || task.owner !== owner || task.request.operation !== 'probe')
+    if (!task || task.owner !== owner || !['probe', 'raw'].includes(task.request.operation))
       return { accepted: false }
     return this.request(
       { type: 'request', id: randomUUID(), operation: 'cancel', targetId: task.wireId },
@@ -82,7 +83,7 @@ export class RequestBroker {
   }
   accept(message: unknown): void {
     if (
-      !bounded(message) ||
+      !rawBounded(message) ||
       !object(message) ||
       !exact(message, ['type', 'id', 'result']) ||
       message.type !== 'response' ||
@@ -94,14 +95,37 @@ export class RequestBroker {
     const id = this.wireToId.get(message.id)
     if (!id) return
     const task = this.pending.get(id)!
-    if (!validResult(message.result, task.request.operation as Operation)) {
+    if (
+      (task.request.operation !== 'raw' && !bounded(message)) ||
+      !validResult(
+        message.result,
+        task.request.operation as Operation,
+        task.request.operation === 'raw' ? task.request.input : undefined,
+      )
+    ) {
       this.exit(new FoundationError('PROTOCOL_ERROR', '响应内容不符合类型边界'))
       return
     }
     const pending = this.take(id)!
     if (message.result.ok) pending.resolve(message.result.value)
+    else if (task.request.operation === 'raw')
+      pending.reject(
+        new RawError(
+          message.result.error.code as import('../shared/raw').RawCode,
+          'details' in message.result.error
+            ? (message.result.error.details as { limit: string })
+            : undefined,
+        ),
+      )
     else
-      pending.reject(new FoundationError(message.result.error.code, message.result.error.message))
+      pending.reject(
+        new FoundationError(
+          message.result.error.code as import('../shared/protocol').ErrorCode,
+          'message' in message.result.error
+            ? (message.result.error.message as string)
+            : 'PROTOCOL_ERROR',
+        ),
+      )
   }
   rejectOwner(owner: number): void {
     for (const [id, task] of this.pending) {

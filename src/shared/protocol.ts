@@ -1,3 +1,5 @@
+import { validCommand, validRawResult } from './raw'
+import type { RawCommand, RawOutput, RawResult } from './raw'
 export const SECURITY_CHANNEL = 'foundation:preload-security'
 export const LIMITS = Object.freeze({
   bytes: 16 * 1024,
@@ -53,13 +55,18 @@ export interface FoundationBridge {
   crashDataServiceForTest(): Promise<Result<{ crashed: boolean }>>
   restartDataServiceForTest(): Promise<Result<ServiceStatus>>
 }
-export type Operation = 'probe' | 'sqlite' | 'cancel' | 'crash'
-export type UtilityValue = ProbeResult | SqliteResult | { accepted: boolean }
+export type Operation = 'probe' | 'sqlite' | 'cancel' | 'crash' | 'raw'
+export type UtilityValue = ProbeResult | SqliteResult | { accepted: boolean } | RawOutput
 export type Request =
+  | { type: 'request'; id: string; operation: 'raw'; input: RawCommand }
   | { type: 'request'; id: string; operation: 'probe'; input: ProbeInput }
   | { type: 'request'; id: string; operation: 'sqlite' | 'crash' }
   | { type: 'request'; id: string; operation: 'cancel'; targetId: string }
-export type Response = { type: 'response'; id: string; result: Result<UtilityValue> }
+export type Response = {
+  type: 'response'
+  id: string
+  result: Result<UtilityValue> | RawResult<RawOutput>
+}
 export class FoundationError extends Error {
   constructor(
     public readonly code: ErrorCode,
@@ -106,6 +113,8 @@ export function validProbe(value: unknown): value is ProbeInput {
 export function validRequest(value: unknown): value is Request {
   if (!bounded(value) || !object(value) || value.type !== 'request' || !validId(value.id))
     return false
+  if (value.operation === 'raw')
+    return exact(value, ['type', 'id', 'operation', 'input']) && validCommand(value.input)
   if (value.operation === 'probe')
     return (
       exact(value, ['type', 'id', 'operation', 'input']) &&
@@ -119,7 +128,12 @@ export function validRequest(value: unknown): value is Request {
     exact(value, ['type', 'id', 'operation'])
   )
 }
-export function validResult(value: unknown, operation: Operation): value is Result<UtilityValue> {
+export function validResult(
+  value: unknown,
+  operation: Operation,
+  command?: RawCommand,
+): value is Result<UtilityValue> | RawResult<RawOutput> {
+  if (operation === 'raw') return Boolean(command && validRawResult(value, command))
   if (!object(value)) return false
   if (value.ok === false) {
     const codes: ErrorCode[] = [

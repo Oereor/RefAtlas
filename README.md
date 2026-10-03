@@ -2,7 +2,7 @@
 
 面向开发者、逆向研究者和配置维护者的桌面原始配置与显式引用调查工作台。
 
-**Phase 0、Phase 1、Phase 1A 均已关闭；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：NOT STARTED。** Phase 2A 已确认原则写入 ADR-0007–0010，见 [评审收尾报告](docs/investigations/phase-2a-review-closeout.md)；[原调查](docs/investigations/phase-2a-data-access-architecture.md) 保留历史候选与实测。Windows x64 与 macOS arm64 的 native/package gate 均已通过，electron-vite + electron-builder 长期路线已接受，当前版本不永久冻结；macOS x64 不属于支持范围。见 [Phase 1A 收尾](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。`tools/investigation/` 保持独立非生产；后续产品实现需单独授权。
+**Phase 0、Phase 1、Phase 1A 均已关闭；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** Phase 2A 已确认原则写入 ADR-0007–0010，见 [评审收尾报告](docs/investigations/phase-2a-review-closeout.md)；[原调查](docs/investigations/phase-2a-data-access-architecture.md) 保留历史候选与实测。Windows x64 与 macOS arm64 的 native/package gate 均已通过，electron-vite + electron-builder 长期路线已接受，当前版本不永久冻结；macOS x64 不属于支持范围。见 [Phase 1A 收尾](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。本轮已实现只读 raw Data Service、revision、统一 parser 和有界 query primitives，见 [实现与验收报告](docs/investigations/phase-2-raw-access-foundation.md)。`tools/investigation/` 保持独立非生产；后续 Source Browser 等仍需单独授权。
 
 ## 开始阅读
 
@@ -51,11 +51,11 @@ npm.cmd run validate:foundation
 
 独立使用 `npm.cmd run package:win:x64` 仍会先重新 build，再打包，不信任已有产物；`smoke:built` 和 `smoke:packaged` 单独执行时要求已有对应最新产物。日常按变更选择最小验证层级，不为每次局部修改运行完整链路，详见 [开发流程](docs/DEVELOPMENT-PROCESS.md)。
 
-目录包位于 `dist/win-unpacked/RefAtlas.exe`；`--dir` 保留 ASAR，不生成安装器、不发布、不签名。开发／诊断页面只验证基础设施，不读取数据集。smoke 使用隐藏窗口、120 秒总超时、明确退出码和自动清理；可重复报告保存于被忽略的 `artifacts/`。
+目录包位于 `dist/win-unpacked/RefAtlas.exe`；`--dir` 保留 ASAR，不生成安装器、不发布、不签名。开发／诊断页面保持基础设施 UI；raw production bridge 已建立，smoke 通过应用自己的临时 fixture 验证 raw 访问，不增加产品 UI。smoke 使用隐藏窗口、120 秒总超时、明确退出码和自动清理；可重复报告保存于被忽略的 `artifacts/`。
 
 macOS arm64 在对应原生 Apple Silicon 机器使用相同安装步骤（确认当地系统 7890 代理后设置当前 shell 的 HTTP_PROXY、HTTPS_PROXY、NO_PROXY），执行 `npm run package:mac:arm64`，再执行 `npm run smoke:packaged`。脚本要求 OS 和 Node 架构与目标一致；macOS x64 不提供正式打包入口，不新增远程 workflow。
 
-本轮 Mac 确认的代理为 `http://127.0.0.1:7890`，不能假定其他机器也相同。以下只修改当前 shell；如使用 nvm，可先切换已有的 Node 24，不需要修改全局默认版本：
+Phase 1A Mac 验收时确认的代理为 `http://127.0.0.1:7890`，不能假定其他机器也相同。以下只修改当前 shell；如使用 nvm，可先切换已有的 Node 24，不需要修改全局默认版本：
 
 ```sh
 nvm use 24.19.0
@@ -75,3 +75,17 @@ Mac 目录包位于 `dist/mac-arm64/RefAtlas.app`，本轮不签名、不公证�
 [工程规范与工具链清理](docs/investigations/phase-1a-development-policy-cleanup.md)记录 formatter、测试审阅和验证编排，不改变平台 gate 或已接受架构。
 
 贡献前阅读 [AGENTS.md](AGENTS.md)。保留 [MIT 许可证](LICENSE)。
+
+## Raw Access Foundation 验证
+
+`window.raw` 是正式窄桥，提供 workspace open/close、source info/reload、Node read、children page、scalar segment 和取消。workspace root 由 Main 原生对话框选择；客户端不得提交绝对路径。Node 请求带 expectedRevision，source 变化后先 stale，再显式 reload。不添加浏览或编辑产品 UI。
+
+普通 `npm test` 验证临时 fixture，并跳过外部来源 gate。明确验证六个真实只读样本时执行：
+
+```powershell
+npm.cmd run test:raw-data
+```
+
+该命令按固定样本运行 production service，前后 streaming hash/size/mtime 一致性验证，报告写入被忽略的 `artifacts/raw-real-data.json`。没有全工作区扫描；需要本机同级 TurnBasedGameData。
+
+现有 dev/built/packaged smoke 和 `validate:foundation` 已包含 raw 进程链路验收；fixture 由 Main/runner 在自身临时目录管理。当前新增 raw path 已在 Windows x64 验证，本轮没有新增 macOS 原生结果。接口、资源上限和边界见 [实现报告](docs/investigations/phase-2-raw-access-foundation.md)。

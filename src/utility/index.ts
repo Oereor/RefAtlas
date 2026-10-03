@@ -10,6 +10,8 @@ import {
 import type { Response, UtilityValue } from '../shared/protocol'
 import { runProbe } from './probe'
 import { runSqliteSmoke } from './sqlite-smoke'
+import { RawDataService } from './raw-service'
+import { rawBounded, RawError, rawFailure } from '../shared/raw'
 
 process.parentPort.once('message', (event) => {
   const config: unknown = event.data
@@ -24,8 +26,9 @@ process.parentPort.once('message', (event) => {
     process.exit(2)
   const port = event.ports[0]
   const tasks = new Map<string, AbortController>()
+  const raw = new RawDataService()
   const reply = (response: Response): void => {
-    if (!bounded(response)) process.exit(3)
+    if (!rawBounded(response)) process.exit(3)
     port.postMessage(response)
   }
   port.on('message', async (event) => {
@@ -59,6 +62,25 @@ process.parentPort.once('message', (event) => {
     }
     const controller = new AbortController()
     tasks.set(request.id, controller)
+    if (request.operation === 'raw') {
+      try {
+        const value = await raw.execute(request.input, controller.signal)
+        if (controller.signal.aborted) throw new RawError('CANCELLED')
+        reply({ type: 'response', id: request.id, result: { ok: true, value } })
+      } catch (error) {
+        reply({
+          type: 'response',
+          id: request.id,
+          result: rawFailure(
+            error instanceof RawError ? error.code : 'INTERNAL',
+            error instanceof RawError ? error.details : undefined,
+          ),
+        })
+      } finally {
+        tasks.delete(request.id)
+      }
+      return
+    }
     try {
       const value: UtilityValue =
         request.operation === 'probe'
@@ -80,6 +102,7 @@ process.parentPort.once('message', (event) => {
     }
   })
   port.on('close', () => {
+    raw.dispose()
     for (const task of tasks.values()) task.abort()
     process.exit(0)
   })

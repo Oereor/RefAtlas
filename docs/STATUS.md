@@ -2,7 +2,7 @@
 
 更新日期：2026-10-03（UTC+8）。
 
-**Phase 0：CLOSED；Phase 1：CLOSED；Phase 1A：CLOSED；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：NOT STARTED。** 两个正式支持目标 Windows x64 与 macOS arm64 的 native/package gate 均已通过，工具链已由 ADR-0006 接受。Phase 2A 用户确认的原则已写入 ADR-0007–0010，本轮仅完成 architecture/documentation closeout，见 [评审收尾报告](investigations/phase-2a-review-closeout.md)；原 [调查报告](investigations/phase-2a-data-access-architecture.md)保留历史推荐与实测。
+**Phase 0：CLOSED；Phase 1：CLOSED；Phase 1A：CLOSED；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** 本轮受用户明确授权，首个 production slice 已通过 Windows x64 的完整验收，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Phase 1A 的 Windows x64/macOS arm64 gate 和 ADR-0006 仍有效；本轮没有新增 Mac 原生 raw-path 验证。Phase 2A 原则由 ADR-0007–0010 约束，历史调查保持原样。
 
 ## 已完成
 
@@ -59,7 +59,7 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 | Windows x64 | 通过 | ASAR 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 | macOS arm64 | 通过 | ASAR .app 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 
-Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则已接受，具体 RawValue、Query API、schema、库、预算、revision 检测和 accelerator coverage 仍未锁定或生产实现。Dataset Contract、全量生产索引、增量刷新和产品 UI 尚未实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，真实采样与隔离传输实验保留在原调查报告。
+Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则已接受；本轮已实现 raw types、窄 Query API、固定版 parser adapter、工程预算、source revision 与内存范围缓存。SQLite schema、搜索和 accelerator coverage 仍未实现。Dataset Contract、全量生产索引、增量刷新和产品 UI 尚未实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，真实采样与隔离传输实验保留在原调查报告。
 
 ## Phase 1 最终收尾与 Phase 2A 调查历史
 
@@ -77,6 +77,13 @@ Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则
 - 接受从第一批 Phase 2 production UI 起统一类型化 localization；更新功能测试与专项 localization 测试边界，本轮不实现 runtime。
 - 同步产品、架构、流程和入口，原调查仅追加日期明确的评审补记。报告记录实际文档/格式/diff 验证及最终变更清单；未改生产代码、依赖、配置、工具和证据。
 
+## Phase 2 Raw Access Foundation
+
+- 受控 NodeAddress、只读 workspace/source、stale/reload、revision-bound range 和单任务可取消扫描已生产实现。
+- `@streamparser/json@0.0.26` 经统一 adapter 保留六类型和 numeric lexeme；完整小值、摘要、children 分页及 scalar segment 有明确工作/IPC 预算。
+- 普通测试 65 项通过，专用六来源只读 gate 通过；Windows x64 dev/built/ASAR packaged raw smoke 和九阶段完整验收通过。
+- 未新增产品 UI、SQLite 持久化、search/trigram、Dataset Contract 或 source writes；Mac 原生 raw-path 验收及更大 scalar/child-index 优化未做。
+
 ## 下一步
 
-用户评审本次 [收尾报告](investigations/phase-2a-review-closeout.md)，之后单独授权 Phase 2 产品实现。建议首片为 Data Service / raw access foundation（NodeAddress、revision、parser adapter、只读生命周期及有界查询原语），不含 full search/trigram、Source Browser UI 或 Dataset Contract；名称和拆分仍是建议。签名、发布与正式性能预算留在对应阶段，文档与应用使用同一 Git 仓库。
+用户和 ChatGPT review 本轮 [Raw Access Foundation 实现报告](investigations/phase-2-raw-access-foundation.md)。首片已经完成并停止，建议下一块 Source Browser；不自动开始后续 UI、搜索或 Dataset Contract。签名、发布与正式性能预算留在对应阶段，文档与应用使用同一 Git 仓库。

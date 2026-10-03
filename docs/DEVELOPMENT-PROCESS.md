@@ -60,6 +60,10 @@ macOS arm64 的脚本路径必须在原生 Apple Silicon 环境验证；macOS x6
 
 ## 结束规则（文档与仓库）
 
+Raw Access Foundation 的普通风险测试使用可写临时 fixture；`npm run test:raw-data` 明确启用六个外部只读来源的 production gate，普通 `npm test` 不隐式访问真实数据。前后 streaming SHA-256/size/mtime 需要一致，测量只写被忽略的 artifacts。冷 service cache 不代表磁盘冷读；统计 actual read/token 与 IPC 序列化成本分开。
+
+既有 `smoke:dev`、`smoke:built`、`smoke:packaged` 已扩展真实 raw bridge 流程；临时 source 只在 runner 目录内由 Main 操作，不向 Renderer 暴露任意 source mutation。新增 parser dependency 或进程边界变更按风险重验 runtime/ASAR；不能将既有 macOS Phase 1A 结果冒充本轮 raw-path 验收。当前实现与局限见 [报告](investigations/phase-2-raw-access-foundation.md)。
+
 更新 STATUS 与权威文档，性能变化更新 PERFORMANCE。明确接受才新增 ADR，旧 ADR 标记被替代。检查链接、一致性与矛盾 TODO。复核数据未变、测试、忽略规则和 Git 状态，清理临时输出。
 
 影响架构、状态、路线图或性能事实的实现，应与相应权威文档在同一审查变更中更新。不影响文档事实的琐碎实现无需强制改文档。调查报告保留当时事实与结论；之后的接受/替代决定记录 ADR 和当前架构，可添加日期明确的历史补记，但不改写历史。
