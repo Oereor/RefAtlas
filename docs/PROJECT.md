@@ -28,4 +28,4 @@ Windows x64 与 macOS arm64 桌面，GitHub Releases 分发。macOS x64 不属�
 
 阶段见 [ROADMAP](ROADMAP.md)，约束见 [ARCHITECTURE](ARCHITECTURE.md)。
 
-当前已实现 Source Explorer 和当前 revision 内的 generic raw Node Browser/Inspector。选择 child 只更新 Inspector，Enter/双击才进入 Node；精确 numeric lexeme 和 semantic string 保持原文，一页/一段有界浏览。检测到来源变化后保留旧内容并标 stale，禁止新结构读取；Reload、跨 revision location 恢复、搜索和 History 未实现。Slice D 结果见 [报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)，下一节点是尚未执行、未豁免的 Apple Silicon A/B/C/D 累计验收。
+当前已实现 Source Explorer 和当前 revision 内的 generic raw Node Browser/Inspector。选择 child 只更新 Inspector，Enter/双击才进入 Node；精确 numeric lexeme 和 semantic string 保持原文，一页/一段有界浏览。检测到来源变化后保留旧内容并标 stale，禁止新结构读取；Reload、跨 revision location 恢复、搜索和 History 未实现。Slice D 结果见 [报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)，Apple Silicon A/B/C/D 累计验收已 PASS WITH FIXES，见 [报告](investigations/phase-2-source-browser-macos-arm64-validation.md)；共享修复待 Windows native 补验，下一阶段需独立授权。

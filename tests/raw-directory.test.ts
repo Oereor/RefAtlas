@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { mkdir, mkdtemp, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, realpath, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { randomUUID } from 'node:crypto'
@@ -258,27 +258,27 @@ describe('production directory discovery', () => {
     }
   })
   it('shrinks pages using full envelopes with long Unicode names and paths', async () => {
-    const directory = Array.from({ length: 6 }, (_, i) => 'd' + i + 'x'.repeat(140)).join('/')
+    const directory = Array.from({ length: 4 }, (_, i) => 'd' + i + 'x'.repeat(140)).join('/')
     const path = join(root, ...directory.split('/'))
     await mkdir(path, { recursive: true })
-    for (let i = 0; i < 60; i++) await writeFile(join(path, '界'.repeat(190) + i + '.json'), '0')
+    for (let i = 0; i < 100; i++) await writeFile(join(path, '界'.repeat(70) + i + '.json'), '0')
     let cursor: string | null = null
     let count = 0
     do {
       const page = await list(directory, 200, cursor)
       expect(page.items.length).toBeGreaterThan(0)
-      expect(page.items.length).toBeLessThan(60)
+      expect(page.items.length).toBeLessThan(100)
       expect(
         byteSize({ type: 'response', id: randomUUID(), result: { ok: true, value: page } }),
       ).toBeLessThanOrEqual(RAW_LIMITS.responseBytes)
       count += page.items.length
       cursor = page.nextCursor
     } while (cursor)
-    expect(count).toBe(60)
+    expect(count).toBe(100)
   })
   it('enforces scan/metadata/work/page budgets and snapshot TTL/count/bytes eviction', async () => {
     for (const name of ['a', 'b', 'c']) await mkdir(join(root, name))
-    const workspace = { id: workspaceId, root, generation: 1 }
+    const workspace = { id: workspaceId, root: await realpath(root), generation: 1 }
     const limits = { ...DIRECTORY_LIMITS, snapshots: 1 }
     const directory = new RawDirectory(limits)
     const first = await directory.list(command('', 1), workspace, () => {})

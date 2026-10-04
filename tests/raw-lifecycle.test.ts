@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import type { FSWatcher } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { randomUUID } from 'node:crypto'
@@ -237,6 +238,29 @@ describe('active source lifecycle', () => {
     expect(current.revision).not.toBe(old.revision)
     await expect(read(old)).rejects.toMatchObject({ code: 'SOURCE_CHANGED' })
     expect(await read(current)).toMatchObject({ mode: 'summary' })
+  })
+  it('revalidates watcher hints without staling an unchanged registration', async () => {
+    const current = await info('b.json')
+    await read(current)
+    const internal = service as unknown as {
+      watchers: Map<string, { handle: FSWatcher }>
+      invalidate: (source: unknown) => void
+    }
+    const watcher = [...internal.watchers.values()][0].handle
+    // 延迟通知本身不能证明当前 registration 的文件已改变。
+    watcher.emit('change', 'rename', 'b.json')
+    expect(await read(current)).toMatchObject({ mode: 'complete' })
+    expect(await info('b.json')).toMatchObject({ state: 'current', validated: true })
+    const changed = deferred()
+    const invalidate = internal.invalidate.bind(service)
+    vi.spyOn(internal, 'invalidate').mockImplementation((source) => {
+      invalidate(source)
+      changed.resolve()
+    })
+    await writeFile(join(root, 'b.json'), '[4,5,6]')
+    watcher.emit('change', 'change', 'b.json')
+    await changed.promise
+    await expect(read(current)).rejects.toMatchObject({ code: 'SOURCE_CHANGED' })
   })
   it('retains unrelated ranges/cursors and shares watcher ownership through reload and release', async () => {
     const a = await info(),

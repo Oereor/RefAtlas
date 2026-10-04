@@ -1,6 +1,6 @@
 # 已接受架构与约束
 
-2026-10-03 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；搜索、契约和 Reload 未实现，A/B/C/D macOS arm64 累计 gate 尚未执行、未豁免。
+2026-10-04 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；搜索、契约和 Reload 未实现，A/B/C/D macOS arm64 累计 gate 已 PASS WITH FIXES；共享 watcher 修复待 Windows native 补验，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。
 
 ## 1. 桌面栈与进程所有权
 
@@ -65,7 +65,7 @@ JSON Node ≠ Structural Record ≠ Logical Entity。在显式选中 collection/
 
 Source Browser Slice A 的 `DirectoryPath` 与 `.json` RelativePath 分离，根为 `""`。单目录 listing 仅返回普通目录与精确 `.json` 普通文件，不解析或注册 source；按目录优先、组内 `<`/`>` 排序。分页使用绑定 workspace generation、目录与 snapshot 的 opaque UUID cursor；目录 stat 变化、TTL/淘汰使 cursor 失效。snapshot、扫描、执行、并发和完整 64 KiB response 均有界，长路径页自动缩减，不截断地址。详见 [实现报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
 
-只有 info/reload 显式 acquire；Node 请求绑定已注册 source，release 后返回 SOURCE_CHANGED。解析保留 single queue；directory/info/reload 走并发 2 的 metadata 槽，release/close 直接进入控制屏障。registration token、source-scoped task、同地址控制链及 workspace generation 防止旧任务发布/清理新状态；release 等待 handle finally 后清 metadata/range/cursor，watcher 按明确 source owner 共享。Utility 同步成功 reply 与 acquisition 最终提交，取消的未交付 candidate 回滚。没有公开 lease/ref-count API，仍是单窗口使用范围。
+只有 info/reload 显式 acquire；Node 请求绑定已注册 source，release 后返回 SOURCE_CHANGED。解析保留 single queue；directory/info/reload 走并发 2 的 metadata 槽，release/close 直接进入控制屏障。registration token、source-scoped task、同地址控制链及 workspace generation 防止旧任务发布/清理新状态；release 等待 handle finally 后清 metadata/range/cursor，watcher 按明确 source owner 共享。watcher 通知作为 hint，对当前 registration 复核路径/stat，按 source 合并 pending verification；无变化的迟到或重复通知不使 source stale。变化检测依已有 stat signature，不提供恶意保留所有 stat 的 strict snapshot 保证。Utility 同步成功 reply 与 acquisition 最终提交，取消的未交付 candidate 回滚。没有公开 lease/ref-count API，仍是单窗口使用范围。
 
 首次 Node 请求按预算完整校验一个 source 后才能发布范围；之后可用 revision-bound range。工作预算为 128 MiB read、800 万 token、深度 128、256 KiB token/window 和 15 秒；4 KiB 块之间让出执行。完整值初始 48 KiB/1,000 Node/深度 8，raw response envelope 64 KiB，foundation 控制限制保持 16 KiB。source/range/cursor 均为有限内存状态，不使用 SQLite 持久化；所有数值保留 lexeme。来源变化失效旧缓存，旧 workspace/revision/cursor 不自动恢复。
 
@@ -123,6 +123,6 @@ SOURCE_CHANGED 标记唯一 session stale，取消其他读取并保留缓存内
 - full search、Dataset Contract 和完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。
 - SQLite schema、持久 cache、child index 和更大 scalar streaming 策略仍未实现；当前 RawValue、范围/检测和工程预算见本轮报告。Dataset Contract 仍留在 Phase 3。
 - Exact 具体相等规则、BINARY/case/normalization、分页参数，trigram 启用与文件/语言覆盖、完整数据集容量及性能。
-- macOS A/B/C/D 新 UI 累计 gate、真实屏幕阅读器和正式签名/公证验证；Windows 当前 revision Node Browser/Inspector gate 见 Slice D 报告。
+- 共享 watcher 修复的 Windows native 补验、完整 accessibility audit 和正式签名/公证验证；macOS A/B/C/D 累计 gate 与用户 VoiceOver sanity check 见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。
 
 [Phase 2A 调查](investigations/phase-2a-data-access-architecture.md)保留历史候选与实测；本次接受范围及候选区别见 [评审收尾](investigations/phase-2a-review-closeout.md)。实验表、合成边、采样、具体阈值和库不自动成为生产架构。Phase 0 的版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。

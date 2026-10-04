@@ -1,10 +1,12 @@
 # 调查与证据
 
-- [Source Browser Slice C](phase-2-source-browser-slice-c-source-explorer.md)：正式 shell、Workspace flow、Zag managed tree、TanStack virtualization、source activation、Windows UI/真实数据/打包验收；macOS 累计验收 deferred。
+- [Source Browser A/B/C/D macOS arm64 累计验收](phase-2-source-browser-macos-arm64-validation.md)：PASS WITH FIXES；11 阶段单次 runner、三态、原生 picker、用户触控板/VoiceOver sanity check；共享 watcher 修复待 Windows native 补验。
 
-- [Source Browser Slice B](phase-2-source-browser-slice-b-localization-foundation.md)：Renderer-only localization、窄 bootstrap、持久化/no-reload、生成/离线与 Windows 三态验收；macOS 累计验收 deferred。
+- [Source Browser Slice C](phase-2-source-browser-slice-c-source-explorer.md)：正式 shell、Workspace flow、Zag managed tree、TanStack virtualization、source activation、Windows UI/真实数据/打包验收；历史 Mac deferred 状态由本轮累计报告更新。
 
-- [Source Browser Slice A](phase-2-source-browser-slice-a-directory-lifecycle.md)：DirectoryPath、snapshot/分页、metadata 调度、显式 acquire/release、race regression 与 Windows 验收；macOS 新实现 gate 待验证。
+- [Source Browser Slice B](phase-2-source-browser-slice-b-localization-foundation.md)：Renderer-only localization、窄 bootstrap、持久化/no-reload、生成/离线与 Windows 三态验收；历史 Mac deferred 状态由本轮累计报告更新。
+
+- [Source Browser Slice A](phase-2-source-browser-slice-a-directory-lifecycle.md)：DirectoryPath、snapshot/分页、metadata 调度、显式 acquire/release、race regression 与 Windows 验收；Mac 新实现 gate 已由本轮累计报告验证。
 - [Source Browser preflight](phase-2-source-browser-preflight.md)：已评审的接入调查与 Slice A–E 建议，保持历史证据。
 
 - [Raw Access Foundation macOS arm64 验证](phase-2-raw-access-macos-arm64-validation.md)：Apple M2 原生 filesystem/symlink、watcher/stat 回退、真实数据及 dev/built/ASAR packaged raw 链路验收；两个正式平台已验证，等待评审。

@@ -1,6 +1,6 @@
 # 性能政策与 Phase 0 / Phase 1A 基线
 
-更新日期：2026-10-03（UTC+8）。本文件拥有性能口径与基线；结构及技术取舍见 [调查报告](investigations/phase-0-feasibility.md)。Phase 0 数字来自 [环境与样本证据](investigations/evidence/phase-0-measurements.json) 和 [全部运行结果](investigations/evidence/phase-0-benchmarks.json)，新增 production raw-access 观察见第 7 节。
+更新日期：2026-10-04（UTC+8）。本文件拥有性能口径与基线；结构及技术取舍见 [调查报告](investigations/phase-0-feasibility.md)。Phase 0 数字来自 [环境与样本证据](investigations/evidence/phase-0-measurements.json) 和 [全部运行结果](investigations/evidence/phase-0-benchmarks.json)，新增 production raw-access 观察见第 7 节。
 
 ## 1. 环境与口径
 
@@ -129,6 +129,10 @@ Windows x64 首次真实目录 gate：root 6 项 / 1 页 / 532 bytes，ExcelOutp
 
 ## Source Browser Slice D：Node 浏览观察口径
 
-每次只保留最多 100 个 direct children 或 4096 个 Unicode scalar code points，以及最多 128 项 opaque cursor/page metadata；不累积 payload，不遍历 complete container。表格不需要虚拟化；Explorer 仍使用既有虚拟化路径。Windows dev 真实 UI 已测 Avatar/Equipment/AvatarSkill container→scalar、Previous/Next 与六代表来源；最终三态 root/首 children/导航/分页/segment/Inspector 和 Renderer JS/gzip、包体增量见 [Slice D 报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。计时包含 IPC、parser、缓存与 DOM，不控制 OS cache、不建立 SLA。macOS 新 UI 性能/原生验收尚未执行。
+每次只保留最多 100 个 direct children 或 4096 个 Unicode scalar code points，以及最多 128 项 opaque cursor/page metadata；不累积 payload，不遍历 complete container。表格不需要虚拟化；Explorer 仍使用既有虚拟化路径。Windows dev 真实 UI 已测 Avatar/Equipment/AvatarSkill container→scalar、Previous/Next 与六代表来源；最终三态 root/首 children/导航/分页/segment/Inspector 和 Renderer JS/gzip、包体增量见 [Slice D 报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。计时包含 IPC、parser、缓存与 DOM，不控制 OS cache、不建立 SLA。当时 macOS 新 UI 性能/原生验收尚未执行；本轮 Mac 观察见第 9 节。
 
 最终 Slice D Windows 单次 11 阶段 real-data runner exit 0；Renderer JS 518830 / gzip 103813 bytes，相对 C +94333 / +14241；app.asar 1487748、win-unpacked 413719714 bytes，均增 101857。三态 synthetic root+children 23.4/30.5/24.7ms、next page 28.5/43.6/18.4ms、segment 12.2/15.4/10.1ms、Inspector update 0.7/0.6/0.4ms（dev/built/packaged）；真实 root/children/scalar 分时口径与失败调查见报告，不作为 SLA。
+
+## 9. Source Browser macOS arm64 工程观察
+
+2026-10-04，Apple M2 / 16 GiB / macOS 27.0.1，单次 dev/built/ASAR packaged 累计验收。5010 logical rows 初页约 140.7–151.2 ms、追加约 296.1–315.8 ms，mounted 35（End 后 34）；Avatar activation 约 27.1–30.4 ms。完整目录/Node/segment/真实来源计时及口径见 [累计报告第 15 节](investigations/phase-2-source-browser-macos-arm64-validation.md#15-performance-observations)。未控制 OS cache/后台负载，不新增 SLA 或跨平台性能排名；共享 watcher 修复为正确性修复，不声称性能提升。

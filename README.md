@@ -6,7 +6,7 @@
 
 ## 开始阅读
 
-Source Browser Slice A 已评审，可继续开发；其新实现 macOS arm64 验收延后至累计 Source Browser gate。Slice B 已实现 Renderer-only localization foundation，Windows 完整验收结果见 [Slice B 报告](docs/investigations/phase-2-source-browser-slice-b-localization-foundation.md) 和 [STATUS](docs/STATUS.md)。Slice C 已实现正式 Source Explorer shell，Windows 11 阶段单次完整验收 exit 0，见 [Slice C 报告](docs/investigations/phase-2-source-browser-slice-c-source-explorer.md)。
+Source Browser Slice A 已评审，可继续开发；其新实现 macOS arm64 已由本轮累计 Source Browser gate 验证。Slice B 已实现 Renderer-only localization foundation，Windows 完整验收结果见 [Slice B 报告](docs/investigations/phase-2-source-browser-slice-b-localization-foundation.md) 和 [STATUS](docs/STATUS.md)。Slice C 已实现正式 Source Explorer shell，Windows 11 阶段单次完整验收 exit 0，见 [Slice C 报告](docs/investigations/phase-2-source-browser-slice-c-source-explorer.md)。
 
 - [文档入口](docs/README.md)：职责与阅读顺序。
 - [产品定义](docs/PROJECT.md)、[当前状态](docs/STATUS.md)、[已接受架构](docs/ARCHITECTURE.md)、[ADR](docs/decisions/README.md)。
@@ -90,7 +90,7 @@ npm.cmd run test:raw-data
 
 该命令按固定六样本及 root、ExcelOutput、Config/Level/Mission 目录运行 production service，验证分页/排序/response bounds、零自动注册、取消与 release/reacquire。前后 streaming hash/size/mtime 与外部 HEAD/status 必须一致，报告写入被忽略的 `artifacts/raw-real-data.json`。没有全工作区扫描；需要本机同级 TurnBasedGameData。需要将此 gate 纳入完整原生平台验收时执行 `npm run validate:foundation -- --real-data`，保持单次 production build，真实 gate 失败阻止 smoke/打包。
 
-Source Browser Slice A 的实现与平台状态见 [报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。macOS arm64 新目录/lifecycle/localization/Explorer gate 为 cumulative validation deferred，未豁免；不使用既有 Raw Foundation gate 冒充通过，Slice C 已接入正式 UI，Slice D 已接入当前 revision 的 Node Browser 与 Inspector；A/B/C/D 的累计 macOS gate 是下一节点。
+Source Browser Slice A 的实现与平台状态见 [报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。macOS arm64 新目录/lifecycle/localization/Explorer gate 已累计 PASS WITH FIXES，不使用既有 Raw Foundation gate 冒充通过；Slice C 已接入正式 UI，Slice D 已接入当前 revision 的 Node Browser 与 Inspector；累计证据见 [Mac 报告](docs/investigations/phase-2-source-browser-macos-arm64-validation.md)，共享 watcher 修复待 Windows native 补验。
 
 现有 dev/built/packaged smoke 和 `validate:foundation` 已包含 raw 进程链路验收；fixture 由 Main/runner 在自身临时目录管理。Raw Access Foundation 已在 Windows x64 与 macOS arm64 验证，Mac 的 filesystem/watcher/stat 回退、真实数据与 ASAR runtime 证据见 [原生验证报告](docs/investigations/phase-2-raw-access-macos-arm64-validation.md)。接口、资源上限和边界见 [实现报告](docs/investigations/phase-2-raw-access-foundation.md)；首片仍待 review，整个 Phase 2 未完成。
 
@@ -108,10 +108,10 @@ npm.cmd run i18n:compile -- --offline
 
 dev/typecheck/test/build 和 dev smoke 有自动生成前置步骤；独立 package 与完整 validation 自动准备插件。新 checkout 安装依赖后可直接运行，不需要记住手工生成步骤。generated modules/declarations 与 SDK project metadata ignored，不手改、不格式化。`--offline` 禁止 fetch，并确认零可解析网络地址请求；SDK 对相对模块路径的无效 fetch 探测不会发出 HTTP 请求。
 
-组件只消费统一 `src/renderer/src/i18n` 入口及 reactive locale。`formatUiCount` / `formatByteSize` 仅用于应用 metadata，`formatRawError` 将稳定 code 映射成 presentation，不翻译或重写 raw field/string/lexeme/path/Pointer/revision。Foundation 中文诊断页保持历史范围并隔离；Slice C 工具栏提供正式语言 selector，无 settings 系统。macOS arm64 待累计验收。
+组件只消费统一 `src/renderer/src/i18n` 入口及 reactive locale。`formatUiCount` / `formatByteSize` 仅用于应用 metadata，`formatRawError` 将稳定 code 映射成 presentation，不翻译或重写 raw field/string/lexeme/path/Pointer/revision。Foundation 中文诊断页保持历史范围并隔离；Slice C 工具栏提供正式语言 selector，无 settings 系统。macOS arm64 已累计 PASS WITH FIXES，证据见 [Mac 报告](docs/investigations/phase-2-source-browser-macos-arm64-validation.md)。
 
 ## Source Explorer
 
 打开工作区后仅显示普通目录和精确 `.json` 来源；不特别隐藏 `.git`，不跟随链接。单击 JSON 选择，双击或 Enter 激活；方向键、Home/End 和 Space 可浏览和选择。目录按需分页，尾部自动加载，也可显式加载更多；失败可重试，过期 cursor 必须刷新。刷新 Explorer 保留 active source。
 
-Zag 管理交互/ARIA，ExplorerController 管理异步/缓存，TanStack Virtual 管理固定 24px 行和 overscan 5；缓存起点 10,000 entries / 8 MiB metadata。中央现由 Slice D Source Header、Breadcrumb、direct children 表格和 scalar Value View 组成，右侧 Inspector 默认展开 280px、折叠 32px。NodeBrowserController 复用 RawBridge/SourceSession，不新增生产 IPC、依赖或 Data Service API；只保留一页 children 或一段 scalar、最多 128 项 cursor metadata。`--real-data` 完整验收同时覆盖真实 Electron Explorer/controller/virtualization，前后核对外部仓库与样本指纹。Slice A/B/C/D macOS arm64 累计验收为下一节点，尚未执行、未豁免。Slice D 结果见 [报告](docs/investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)；stale 保留旧内容并禁用结构读取，没有 Reload/History。Copy Pointer 可选按钮因现有权限策略实测拒绝而延期。
+Zag 管理交互/ARIA，ExplorerController 管理异步/缓存，TanStack Virtual 管理固定 24px 行和 overscan 5；缓存起点 10,000 entries / 8 MiB metadata。中央现由 Slice D Source Header、Breadcrumb、direct children 表格和 scalar Value View 组成，右侧 Inspector 默认展开 280px、折叠 32px。NodeBrowserController 复用 RawBridge/SourceSession，不新增生产 IPC、依赖或 Data Service API；只保留一页 children 或一段 scalar、最多 128 项 cursor metadata。`--real-data` 完整验收同时覆盖真实 Electron Explorer/controller/virtualization，前后核对外部仓库与样本指纹。Slice A/B/C/D macOS arm64 已累计 PASS WITH FIXES；下一节点为评审与共享修复 Windows native 补验。Slice D 结果见 [报告](docs/investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)；stale 保留旧内容并禁用结构读取，没有 Reload/History。Copy Pointer 可选按钮因现有权限策略实测拒绝而延期。

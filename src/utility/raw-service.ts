@@ -54,7 +54,7 @@ type Task = {
   done: Promise<void>
   finish: () => void
 }
-type Watcher = { handle: FSWatcher; owners: Set<Source> }
+type Watcher = { handle: FSWatcher; owners: Set<Source>; pending: Set<Source> }
 const keyOf = (source: SourceAddress): string =>
   JSON.stringify([source.workspaceId, source.relativePath])
 const addressKey = (address: NodeAddress, revision: SourceRevision): string =>
@@ -383,11 +383,19 @@ export class RawDataService {
               for (const known of watcher.owners)
                 if (
                   dirname(known.path) === directory &&
-                  (file === null || String(file) === basename(known.path))
-                )
-                  this.invalidate(known)
+                  (file === null || String(file) === basename(known.path)) &&
+                  !known.stale &&
+                  !watcher.pending.has(known)
+                ) {
+                  // 通知可能迟到或重复；只按当前 registration 的路径/stat 失效。
+                  watcher.pending.add(known)
+                  void this.verify(known)
+                    .catch(() => {})
+                    .finally(() => watcher.pending.delete(known))
+                }
             }),
             owners: new Set(),
+            pending: new Set(),
           }
           watcher.handle.on('error', () => {
             watcher.handle.close()
