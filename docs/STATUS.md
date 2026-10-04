@@ -2,9 +2,11 @@
 
 更新日期：2026-10-04（UTC+8）。
 
-**Source Browser Slice E：IMPLEMENTED；Windows x64 native full gate VALIDATED；AWAITING REVIEW。** active-source polling、唯一 stale、显式 Reload、新 revision 同 Pointer 恢复、application-level LOCATION_MISSING/Return to Root 已实现。Windows A/B/C/D shared watcher preflight 在实现前以单次完整 runner exit 0 关闭；最终版本 230 ordinary tests/types/独立真实数据/dev/built/packaged 全过；单次 11 阶段 runner exit 0、production build 恰一次。generic browsing foundation 功能完成不等于整个 Phase 2 或未来功能完成。macOS Slice E targeted regression required，不能沿用旧 A/B/C/D 结果。见 [报告](investigations/phase-2-source-browser-slice-e-change-reload-integration.md)。
+**Source Browser Slice E：IMPLEMENTED；Windows x64 native full gate VALIDATED；macOS arm64 PASS WITH FIXES；AWAITING REVIEW。** active-source polling、唯一 stale、显式 Reload、新 revision 同 Pointer 恢复、application-level LOCATION_MISSING/Return to Root 已实现。Windows A/B/C/D shared watcher preflight 在实现前以单次完整 runner exit 0 关闭；最终版本 230 ordinary tests/types/独立真实数据/dev/built/packaged 全过；单次 11 阶段 runner exit 0、production build 恰一次。generic browsing foundation 功能完成不等于整个 Phase 2 或未来功能完成。macOS 定向验收最终单次 11 阶段 runner exit 0、production build 恰一次，三态 polling/stale/reload/recovery 与真实 minimize/hide/resume 通过；仅 harness 修复/增强，无共享产品行为改动，不要求本轮 Windows native 补验。原生 minimize 的通过范围为台前调度关闭，开启组合保留限制。见 [Windows 实现报告](investigations/phase-2-source-browser-slice-e-change-reload-integration.md) 与 [Mac 定向报告](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md)。
 
-**Source Browser Slice A/B/C/D macOS arm64：PASS WITH FIXES / AWAITING REVIEW。** 2026-10-04 单次 11 阶段累计 runner exit 0、production build 恰一次；202 项普通测试、独立真实数据、dev/built/ASAR packaged、真实 native picker/wheel、用户触控板与 VoiceOver sanity check 均通过，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。共享 watcher hint 修复的 Windows native 补验已在 Slice E preflight 完成；此前历史 Windows 结果不作为本轮证据。Slice E 新 diff 的 Mac gate 仍待执行；Copy Pointer 与完整 accessibility audit 延期。
+**Source Browser A/B/C/D/E generic browsing foundation is validated on both Windows x64 and macOS arm64.** 仅关闭 generic browsing foundation 平台 gate；不表示整个 Phase 2 或完整 accessibility audit 完成。
+
+**Source Browser Slice A/B/C/D macOS arm64：PASS WITH FIXES / AWAITING REVIEW。** 2026-10-04 单次 11 阶段累计 runner exit 0、production build 恰一次；202 项普通测试、独立真实数据、dev/built/ASAR packaged、真实 native picker/wheel、用户触控板与 VoiceOver sanity check 均通过，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。共享 watcher hint 修复的 Windows native 补验已在 Slice E preflight 完成；此前历史 Windows 结果不作为本轮证据。Slice E 新 diff 的 Mac 定向 gate 已单独完成，范围与限制见本页顶部；Copy Pointer 与完整 accessibility audit 延期。
 
 **Source Browser Slice D：IMPLEMENTED；Windows x64 VALIDATED；AWAITING REVIEW。** NodeBrowserController、Source Header、Breadcrumb、direct children 表格、scalar/segment、Previous/Next、Inspector 和唯一 SourceSession stale 边界已实现。201 项普通测试、独立真实数据、dev/built/packaged 均通过；单次 11 阶段完整 runner exit 0，production build 恰一次，见 [Slice D 报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。Copy Pointer 因现有 Renderer 权限策略实测拒绝而延期；没有新增权限或 IPC。Slice A/B/C/D macOS 累计结果见本页顶部；Slice E 本轮已独立授权实现。
 
@@ -102,4 +104,4 @@ Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则
 
 Slice A 已评审，Slice B localization 已获授权并实现；最终 Windows gate 与评审状态见本页顶部及 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。Slice A/B/C/D 新实现的 macOS arm64 累计原生 gate 已完成，证据见本页顶部，不借用旧 Raw Foundation 结果。
 
-下一节点是 Slice E review 和新 diff 的 macOS arm64 targeted regression。generic browsing foundation 能力已齐备；Search、History、Dataset Contract、References/Graph 和发布工作未实现，不自动进入后续阶段。
+下一节点是 Slice E Mac 定向报告 review；平台 gate 已在上述范围关闭。generic browsing foundation 能力已齐备；Search、History、Dataset Contract、References/Graph 和发布工作未实现，不自动进入后续阶段。

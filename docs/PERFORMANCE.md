@@ -142,3 +142,5 @@ Windows x64 首次真实目录 gate：root 6 项 / 1 页 / 532 bytes，ExcelOutp
 只对 active source 以请求 settled 后约 1s 的节奏检查 metadata，no overlap；隐藏/最小化暂停，恢复可见立即检查。不是 SLA，不扫描 workspace，不重复 hash/parse。普通产品启用 Electron 默认后台节流以恢复 Page Visibility，减少不可见窗口持续 timers/frames；不据此宣称已测 CPU/FPS 改善。parser/IPC/children/segment/cursor budgets 未变。最终 bundle/package 和 native visibility 观察见 [Slice E 报告](investigations/phase-2-source-browser-slice-e-change-reload-integration.md)。
 
 最终 Windows 单次 11 阶段 gate exit 0。Renderer JS 相对 Slice E preflight 519309 → 545478 bytes，gzip 103852 → 107587；app.asar 1517026、win-unpacked 413748992 bytes。三态 native minimize/hide 1200ms 窗口内没有周期 poll，恢复可见后检查；controller timer/cancellation 边界另行验证。未保存 preflight package size，不推断同基线 package delta。
+
+2026-10-04 Mac 定向验收：Apple M2 / macOS 27.0.1 / 台前调度关闭；最终三态各 minimize/hide 的真实 hidden 观察 2340.9–3081.4ms，poll 计数均 2→2→4，max pending=1；恢复 visibilitychange→首次请求 0.1–0.5ms，首次完成后下个请求约 1000.5–1006.4ms。只是单次 smoke 的工程观测，未控制缓存/后台负载，不测 CPU/FPS、不新增 SLA。开启台前调度的 minimize gate 未通过，范围与失败分类见 [Mac 定向报告](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md)。

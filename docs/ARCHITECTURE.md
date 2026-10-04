@@ -1,6 +1,6 @@
 # 已接受架构与约束
 
-2026-10-04 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；Slice E 已补齐显式 Reload 和同 Pointer recovery；搜索与契约未实现。A/B/C/D macOS arm64 累计 gate 已 PASS WITH FIXES，shared watcher Windows 补验已在 Slice E preflight 完成，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。
+2026-10-04 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；Slice E 已补齐显式 Reload 和同 Pointer recovery；搜索与契约未实现。A/B/C/D macOS arm64 累计 gate 已 PASS WITH FIXES，shared watcher Windows 补验已在 Slice E preflight 完成，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。Slice E 的 [Mac 定向验收](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md) 已 PASS WITH FIXES，仅 harness 修改；A/B/C/D/E generic browsing foundation 平台 gate 已关闭，Mac minimize 通过范围为台前调度关闭，开启组合保留限制。
 
 ## 1. 桌面栈与进程所有权
 
@@ -125,6 +125,6 @@ SourceSession 只对 active current source 以请求 settled 后约 1s 的节奏
 - full search、Dataset Contract 和完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。
 - SQLite schema、持久 cache、child index 和更大 scalar streaming 策略仍未实现；当前 RawValue、范围/检测和工程预算见本轮报告。Dataset Contract 仍留在 Phase 3。
 - Exact 具体相等规则、BINARY/case/normalization、分页参数，trigram 启用与文件/语言覆盖、完整数据集容量及性能。
-- Slice E 新 diff 的 macOS arm64 targeted regression、完整 accessibility audit 和正式签名/公证验证；macOS A/B/C/D 累计 gate 与用户 VoiceOver sanity check 见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。
+- 台前调度开启组合的 macOS minimize/visibility 回归、完整 accessibility audit 和正式签名/公证验证；macOS A/B/C/D 累计 gate 与用户 VoiceOver sanity check 见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)，Slice E 范围见 [Mac 定向报告](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md)。
 
 [Phase 2A 调查](investigations/phase-2a-data-access-architecture.md)保留历史候选与实测；本次接受范围及候选区别见 [评审收尾](investigations/phase-2a-review-closeout.md)。实验表、合成边、采样、具体阈值和库不自动成为生产架构。Phase 0 的版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。

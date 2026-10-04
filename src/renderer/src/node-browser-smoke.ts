@@ -1,7 +1,7 @@
 import { tick } from 'svelte'
 import { get } from 'svelte/store'
 import { workspace } from './state/app-state'
-import { changeUiLocale, uiLocale } from './i18n'
+import { changeUiLocale, messages, uiLocale } from './i18n'
 import { scalarText } from './browser/node-browser-model'
 import type { JsonPointer, RelativePath, RawBridge } from '../../shared/raw'
 
@@ -96,7 +96,17 @@ async function activate(relativePath: string) {
 const inspector = () => document.querySelector<HTMLElement>('[data-inspector-pointer]')!
 const value = () => document.querySelector<HTMLElement>('[data-scalar-value]')?.textContent
 const metrics: Record<string, number> = {}
-let monitor: { calls: number; pausedCalls: number; restore: () => void } | null = null
+let monitor: {
+  calls: number
+  pausedCalls: number
+  pending: number
+  maxPending: number
+  hiddenAt: number
+  visibleAt: number
+  starts: number[]
+  finishes: number[]
+  restore: () => void
+} | null = null
 async function sourceSettled() {
   await new Promise<void>((resolve) => {
     let done = false
@@ -355,6 +365,13 @@ export async function runNodeBrowserSmoke(stage: string): Promise<unknown> {
     )
     await activate('node-browser.json')
     await open('/entries')
+    button('node-next').click()
+    await ready()
+    row('/entries/100').click()
+    await tick()
+    const scroll = document.querySelector<HTMLElement>('.table-scroll')!
+    scroll.scrollTop = 200
+    assert(ordinal() === 100 && scroll.scrollTop > 0, 'RECOVERY_NONINITIAL_PAGE_SCROLL')
     return {
       stage,
       checks: ['six-root-kinds', 'empty-container', 'resource-limit-preserves-source'],
@@ -375,7 +392,7 @@ export async function runNodeBrowserSmoke(stage: string): Promise<unknown> {
       ),
       'STALE_BREADCRUMB_DISABLED',
     )
-    row('/entries/0').click()
+    rows()[0].click()
     await tick()
     assert(button('inspector-open').disabled, 'STALE_OPEN_DISABLED')
     assert(!button('source-reload').disabled, 'STALE_RELOAD_ACTION')
@@ -393,7 +410,14 @@ export async function runNodeBrowserSmoke(stage: string): Promise<unknown> {
   if (stage === 'reload-survives') {
     const oldRevision = browser.snapshot.revision
     button('source-reload').click()
-    assert(button('source-reload').disabled || workspace.session.snapshot.reloading, 'RELOAD_BUSY')
+    await tick()
+    assert(
+      button('source-reload').disabled &&
+        workspace.session.snapshot.reloading &&
+        button('source-reload').textContent ===
+          messages.source_reloading({}, { locale: get(uiLocale) }),
+      'RELOAD_BUSY_UI',
+    )
     await sourceSettled()
     assert(current() === '/entries' && browser.snapshot.location === 'READY', 'SAME_POINTER_READY')
     assert(
@@ -410,6 +434,7 @@ export async function runNodeBrowserSmoke(stage: string): Promise<unknown> {
         browser.snapshot.context === null &&
         browser.snapshot.history.length === 1 &&
         browser.snapshot.position === 0 &&
+        document.querySelector('.table-scroll')!.scrollTop === 0 &&
         inspector().dataset.inspectorPointer === '/entries',
       'RECOVERY_RESET',
     )
@@ -418,17 +443,100 @@ export async function runNodeBrowserSmoke(stage: string): Promise<unknown> {
       stage,
       checks: [
         'same-pointer-new-revision',
+        'reloading-disabled-localized',
         'new-value',
         'selection-page-context-inspector-reset',
         'no-current-refresh',
       ],
+      oldRevision,
+      newRevision: browser.snapshot.revision,
     }
+  }
+  if (stage === 'scalar-prepare') {
+    await staleObserved()
+    button('source-reload').click()
+    await sourceSettled()
+    await root()
+    await open('/long')
+    button('node-next').click()
+    await ready()
+    const scroll = document.querySelector<HTMLElement>('.value-view')!
+    scroll.scrollTop = 100
+    assert(browser.snapshot.position === 1 && scroll.scrollTop > 0, 'SEGMENT_RECOVERY_SETUP')
+    return { stage, checks: ['second-segment-scroll-before-reload'] }
+  }
+  if (stage === 'scalar-reload') {
+    const old = browser.snapshot.segment,
+      oldRevision = browser.snapshot.revision
+    await staleObserved()
+    assert(browser.snapshot.segment === old && button('node-next').disabled, 'STALE_SEGMENT')
+    await lifecycleLocale()
+    button('source-reload').click()
+    await sourceSettled()
+    assert(
+      current() === '/long' &&
+        browser.snapshot.revision !== oldRevision &&
+        browser.snapshot.segment!.text === '新🙂'.repeat(2048) &&
+        browser.snapshot.position === 0 &&
+        browser.snapshot.history.length === 1 &&
+        browser.snapshot.history[0].cursor === null &&
+        browser.snapshot.selectedChild === null &&
+        browser.snapshot.context === null &&
+        document.querySelector('.value-view')!.scrollTop === 0 &&
+        inspector().dataset.inspectorPointer === '/long',
+      'SEGMENT_RECOVERY_RESET',
+    )
+    return {
+      stage,
+      checks: ['stale-segment-retained-disabled', 'same-pointer-first-segment-scroll-reset'],
+      oldRevision,
+      newRevision: browser.snapshot.revision,
+    }
+  }
+  if (stage === 'invalid-reload') {
+    const old = browser.snapshot.segment,
+      revision = browser.snapshot.revision
+    await staleObserved()
+    button('source-reload').click()
+    await sourceSettled()
+    assert(
+      workspace.session.snapshot.error?.code === 'INVALID_JSON' &&
+        browser.snapshot.segment === old &&
+        browser.snapshot.revision === revision &&
+        browser.snapshot.location !== 'LOCATION_MISSING' &&
+        document.querySelector('[data-error-code="INVALID_JSON"]'),
+      'INVALID_FILE_PRESERVES_SEGMENT',
+    )
+    await lifecycleLocale()
+    return { stage, checks: ['invalid-file-not-location-missing', 'old-segment-error-locale'] }
+  }
+  if (stage === 'scalar-retry') {
+    button('source-reload').click()
+    await sourceSettled()
+    assert(current() === '/long' && !workspace.session.snapshot.error, 'SCALAR_RETRY')
+    return { stage, checks: ['valid-file-retry-same-pointer'] }
   }
   if (stage === 'prepare-location') {
     await root()
     await open('/a')
     await open('/a/b')
     return { stage, checks: ['nested-recovery-pointer'] }
+  }
+  if (stage === 'scalar-value-reload') {
+    const oldRevision = browser.snapshot.revision
+    await staleObserved()
+    button('source-reload').click()
+    await sourceSettled()
+    assert(
+      current() === '/a/b' && value() === '2' && browser.snapshot.revision !== oldRevision,
+      'NESTED_SCALAR_SAME_POINTER',
+    )
+    return {
+      stage,
+      checks: ['nested-scalar-one-to-two-same-pointer'],
+      oldRevision,
+      newRevision: browser.snapshot.revision,
+    }
   }
   if (stage === 'location-missing') {
     await staleObserved()
@@ -516,58 +624,161 @@ export async function runNodeBrowserSmoke(stage: string): Promise<unknown> {
     )
     return { stage, checks: ['file-restored-reload-retry'] }
   }
+  if (stage === 'array-prepare') {
+    await staleObserved()
+    button('source-reload').click()
+    await sourceSettled()
+    assert(browser.snapshot.location === 'LOCATION_MISSING', 'ARRAY_MISSING_OLD_POINTER')
+    button('return-root').click()
+    await ready()
+    await open('/0')
+    assert(browser.snapshot.children[0].node.preview === '1', 'ARRAY_ORIGINAL_ID')
+    return { stage, checks: ['array-position-before-insertion'] }
+  }
+  if (stage === 'array-reload') {
+    await staleObserved()
+    button('source-reload').click()
+    await sourceSettled()
+    assert(
+      current() === '/0' && browser.snapshot.children[0].node.preview === '2',
+      'NO_ID_MIGRATION',
+    )
+    return { stage, checks: ['physical-pointer-zero-not-logical-id-one'] }
+  }
+  if (stage === 'long-location-prepare') {
+    await staleObserved()
+    button('source-reload').click()
+    await sourceSettled()
+    button('return-root').click()
+    await ready()
+    const pointer = browser.snapshot.children[0].node.address.pointer
+    await open(pointer)
+    await open(pointer + '/x')
+    return { stage, checks: ['actual-long-pointer-location'] }
+  }
+  if (stage === 'long-location-missing') {
+    await staleObserved()
+    button('source-reload').click()
+    await sourceSettled()
+    const pointer = document.querySelector<HTMLElement>('[data-location-missing] .raw-pointer')!
+    assert(
+      browser.snapshot.location === 'LOCATION_MISSING' &&
+        pointer.textContent === browser.snapshot.recoveryPointer &&
+        [...pointer.textContent!].length > 300 &&
+        pointer.scrollWidth <= pointer.clientWidth &&
+        document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      'LONG_POINTER_NO_OVERFLOW',
+    )
+    await lifecycleLocale()
+    return {
+      stage,
+      checks: ['long-raw-pointer-localized-narrow-layout'],
+      codePoints: [...pointer.textContent!].length,
+    }
+  }
+  if (stage === 'long-return-root') {
+    button('return-root').click()
+    await ready()
+    assert(current() === '' && browser.snapshot.location === 'READY', 'LONG_RETURN_ROOT')
+    return { stage, checks: ['long-location-explicit-return-root'] }
+  }
   if (stage === 'monitor-visible') {
     // Smoke-only observation of existing bridge calls; no new production diagnostics API.
     const internal = workspace.session as unknown as { bridge: RawBridge },
-      original = internal.bridge
+      original = internal.bridge,
+      active = workspace.session.snapshot.active!
+    const visibility = () => {
+      if (document.visibilityState === 'hidden') observation.hiddenAt = performance.now()
+      else observation.visibleAt = performance.now()
+    }
     const observation = {
       calls: 0,
       pausedCalls: 0,
+      pending: 0,
+      maxPending: 0,
+      hiddenAt: 0,
+      visibleAt: 0,
+      starts: [] as number[],
+      finishes: [] as number[],
       restore: () => {
         internal.bridge = original
+        document.removeEventListener('visibilitychange', visibility)
       },
     }
+    document.addEventListener('visibilitychange', visibility)
     internal.bridge = {
       ...original,
-      getSourceInfo: (input) => {
+      getSourceInfo: async (input) => {
+        assert(JSON.stringify(input.source) === JSON.stringify(active.source), 'POLL_ONLY_ACTIVE')
         observation.calls++
-        return original.getSourceInfo(input)
+        observation.pending++
+        observation.maxPending = Math.max(observation.maxPending, observation.pending)
+        observation.starts.push(performance.now())
+        assert(observation.maxPending === 1, 'NATIVE_POLL_NO_OVERLAP')
+        try {
+          return await original.getSourceInfo(input)
+        } finally {
+          observation.pending--
+          observation.finishes.push(performance.now())
+        }
       },
     }
     monitor = observation
-    await inputObserved(() => document.visibilityState === 'visible' && observation.calls > 0)
+    await inputObserved(
+      () =>
+        document.visibilityState === 'visible' &&
+        observation.calls >= 2 &&
+        observation.pending === 0,
+    )
+    assert(workspace.session.snapshot.active === active, 'UNCHANGED_POLL_RETAINS_CURRENT')
     return {
       stage,
-      checks: ['native-visible-poll'],
+      checks: ['native-visible-periodic-poll', 'only-active-no-overlap-unchanged'],
       visibility: document.visibilityState,
       calls: observation.calls,
+      periodMs: observation.starts[1] - observation.finishes[0],
     }
   }
   if (stage === 'monitor-paused') {
     await inputObserved(() => document.visibilityState === 'hidden')
     const observation = monitor!
     observation.pausedCalls = observation.calls
-    await new Promise((resolve) => setTimeout(resolve, 1200))
+    const start = performance.now()
+    await new Promise((resolve) => setTimeout(resolve, 2200))
     assert(observation.calls === observation.pausedCalls, 'HIDDEN_NO_PERIODIC_POLL')
     return {
       stage,
       checks: ['native-hidden-pause'],
       visibility: document.visibilityState,
       calls: observation.calls,
+      observedHiddenMs: performance.now() - start,
     }
   }
   if (stage === 'monitor-resumed') {
     const observation = monitor!
     await inputObserved(
-      () => document.visibilityState === 'visible' && observation.calls > observation.pausedCalls,
+      () =>
+        document.visibilityState === 'visible' &&
+        observation.calls > observation.pausedCalls &&
+        observation.pending === 0,
     )
+    const resumeMs = observation.starts[observation.pausedCalls] - observation.visibleAt
+    await inputObserved(
+      () => observation.calls >= observation.pausedCalls + 2 && observation.pending === 0,
+    )
+    assert(workspace.session.snapshot.active!.info.state === 'current', 'RESUME_CURRENT')
     observation.restore()
     monitor = null
     return {
       stage,
-      checks: ['native-resume-check'],
+      checks: ['native-resume-check', 'native-periodic-resumed', 'no-overlap'],
       visibility: document.visibilityState,
       calls: observation.calls,
+      resumeMs,
+      resumedPeriodMs:
+        observation.starts[observation.pausedCalls + 1] -
+        observation.finishes[observation.pausedCalls],
+      maxPending: observation.maxPending,
     }
   }
   if (stage === 'real-data') {

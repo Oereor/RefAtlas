@@ -1,8 +1,10 @@
 # 调查与证据
 
-- [Source Browser Slice E](phase-2-source-browser-slice-e-change-reload-integration.md)：Windows preflight closure、active-source polling/stale/reload、同 Pointer recovery、LOCATION_MISSING/Root、竞态/locale/native visibility；新 diff 的 Mac targeted regression 待执行。
+- [Source Browser Slice E macOS arm64 定向验收](phase-2-source-browser-slice-e-macos-arm64-validation.md)：PASS WITH FIXES（仅 harness）；三态 polling、原生窗口、stale/reload/位置恢复与最终 11 阶段 runner；台前调度关闭为 minimize 通过范围，开启组合保留限制，无本轮 Windows 补验要求。
 
-- [Source Browser A/B/C/D macOS arm64 累计验收](phase-2-source-browser-macos-arm64-validation.md)：PASS WITH FIXES；11 阶段单次 runner、三态、原生 picker、用户触控板/VoiceOver sanity check；当时 shared watcher Windows 补验要求已由 Slice E preflight 关闭，新 diff Mac gate 待执行。
+- [Source Browser Slice E](phase-2-source-browser-slice-e-change-reload-integration.md)：Windows preflight closure、active-source polling/stale/reload、同 Pointer recovery、LOCATION_MISSING/Root、竞态/locale/native visibility；历史实现报告保持原样，当前 Mac gate 见上项。
+
+- [Source Browser A/B/C/D macOS arm64 累计验收](phase-2-source-browser-macos-arm64-validation.md)：PASS WITH FIXES；11 阶段单次 runner、三态、原生 picker、用户触控板/VoiceOver sanity check；当时 shared watcher Windows 补验要求已由 Slice E preflight 关闭，Slice E 新 diff Mac gate 已由独立定向报告完成。
 
 - [Source Browser Slice C](phase-2-source-browser-slice-c-source-explorer.md)：正式 shell、Workspace flow、Zag managed tree、TanStack virtualization、source activation、Windows UI/真实数据/打包验收；历史 Mac deferred 状态由本轮累计报告更新。
 

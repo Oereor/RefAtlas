@@ -150,7 +150,12 @@ export async function runExplorerSmoke(stage: string): Promise<unknown> {
     }
   }
   if (stage === 'end') {
-    await waitFor(() => tree().scrollTop > 100000)
+    await waitFor(
+      () =>
+        tree().scrollTop > 100000 &&
+        document.activeElement?.getAttribute('data-source')?.startsWith('说明') === true &&
+        rows().some((row) => row.dataset.source?.startsWith('说明')),
+    )
     const active = document.activeElement as HTMLElement
     assert(active?.getAttribute('role') === 'treeitem', 'END_FOCUS_MOUNTED')
     assert(

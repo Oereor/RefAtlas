@@ -424,13 +424,31 @@ async function launch(): Promise<void> {
     }
     smokeWorkspaceSelections = [join(dirname(reportPath), 'raw-fixtures')]
     const nodeReports: unknown[] = []
+    let nodeNavigations = 0
+    const nodeNavigation = () => nodeNavigations++
+    window.webContents.on('did-start-navigation', nodeNavigation)
     const nodeStage = async (stage: string, visibilityAction?: 'minimize' | 'hide') => {
       try {
         const result: unknown = await window!.webContents.executeJavaScript(
           'window.runNodeBrowserSmoke(' + JSON.stringify(stage) + ')',
         )
         nodeReports.push(
-          visibilityAction && object(result) ? { ...result, visibilityAction } : result,
+          object(result)
+            ? {
+                ...result,
+                ...(visibilityAction ? { visibilityAction } : {}),
+                ...(stage.startsWith('monitor-')
+                  ? {
+                      nativeWindow: {
+                        visible: window!.isVisible(),
+                        minimized: window!.isMinimized(),
+                        focused: window!.isFocused(),
+                        throttling: window!.webContents.backgroundThrottling,
+                      },
+                    }
+                  : {}),
+              }
+            : result,
         )
         return result
       } catch (error) {
@@ -476,7 +494,8 @@ async function launch(): Promise<void> {
       await window!.webContents.executeJavaScript(
         'new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))',
       )
-      return writeFile(
+      const capture = await window!.webContents.capturePage()
+      await writeFile(
         resolve(
           process.cwd(),
           'artifacts/node-browser-' +
@@ -484,8 +503,15 @@ async function launch(): Promise<void> {
             suffix +
             '.png',
         ),
-        (await window!.webContents.capturePage()).toPNG(),
+        capture.toPNG(),
       )
+      nodeReports.push({
+        stage: 'screenshot',
+        suffix,
+        window: window!.getBounds(),
+        content: window!.getContentBounds(),
+        physical: capture.getSize(),
+      })
     }
     await screenshot('')
     window.setSize(900, 600)
@@ -502,7 +528,28 @@ async function launch(): Promise<void> {
       'utf8',
     )
     await nodeStage('reload-survives')
+    const scalarFixture = { entries: [42], a: { b: 1 }, long: '旧🙂'.repeat(30000) }
+    await writeFile(
+      join(dirname(reportPath), 'raw-fixtures/node-browser.json'),
+      JSON.stringify(scalarFixture),
+    )
+    await nodeStage('scalar-prepare')
+    scalarFixture.long = '新🙂'.repeat(30000)
+    await writeFile(
+      join(dirname(reportPath), 'raw-fixtures/node-browser.json'),
+      JSON.stringify(scalarFixture),
+    )
+    await nodeStage('scalar-reload')
+    await writeFile(join(dirname(reportPath), 'raw-fixtures/node-browser.json'), '{')
+    await nodeStage('invalid-reload')
+    await writeFile(
+      join(dirname(reportPath), 'raw-fixtures/node-browser.json'),
+      JSON.stringify(scalarFixture),
+    )
+    await nodeStage('scalar-retry')
     await nodeStage('prepare-location')
+    await writeFile(join(dirname(reportPath), 'raw-fixtures/node-browser.json'), '{"a":{"b":2}}')
+    await nodeStage('scalar-value-reload')
     await writeFile(
       join(dirname(reportPath), 'raw-fixtures/node-browser.json'),
       '{"a":{"c":2}}',
@@ -522,6 +569,24 @@ async function launch(): Promise<void> {
       'utf8',
     )
     await nodeStage('reload-error-retry')
+    await writeFile(join(dirname(reportPath), 'raw-fixtures/node-browser.json'), '[{"id":1}]')
+    await nodeStage('array-prepare')
+    await writeFile(
+      join(dirname(reportPath), 'raw-fixtures/node-browser.json'),
+      '[{"id":2},{"id":1}]',
+    )
+    await nodeStage('array-reload')
+    await writeFile(
+      join(dirname(reportPath), 'raw-fixtures/node-browser.json'),
+      JSON.stringify({ ['long-中文🙂'.repeat(40)]: { x: 1 } }),
+    )
+    await nodeStage('long-location-prepare')
+    await writeFile(join(dirname(reportPath), 'raw-fixtures/node-browser.json'), '{}')
+    window.setSize(900, 600)
+    await nodeStage('long-location-missing')
+    await screenshot('-long-location-missing')
+    window.setSize(1280, 800)
+    await nodeStage('long-return-root')
     for (const action of ['minimize', 'hide'] as const) {
       await nodeStage('monitor-visible')
       if (action === 'minimize') window.minimize()
@@ -532,6 +597,9 @@ async function launch(): Promise<void> {
       window.focus()
       await nodeStage('monitor-resumed', action)
     }
+    window.webContents.removeListener('did-start-navigation', nodeNavigation)
+    if (nodeNavigations !== 0) throw new Error('Slice E lifecycle caused page navigation')
+    nodeReports.push({ stage: 'lifecycle-navigation', count: nodeNavigations })
     if (process.argv.includes('--explorer-real-data')) {
       smokeWorkspaceSelections = [resolve(process.cwd(), '../TurnBasedGameData')]
       await nodeStage('real-data')
