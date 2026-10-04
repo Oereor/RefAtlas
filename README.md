@@ -2,7 +2,7 @@
 
 面向开发者、逆向研究者和配置维护者的桌面原始配置与显式引用调查工作台。
 
-**Phase 0、Phase 1、Phase 1A 均已关闭；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** Phase 2A 已确认原则写入 ADR-0007–0010，见 [评审收尾报告](docs/investigations/phase-2a-review-closeout.md)；[原调查](docs/investigations/phase-2a-data-access-architecture.md) 保留历史候选与实测。Windows x64 与 macOS arm64 的 native/package gate 均已通过，electron-vite + electron-builder 长期路线已接受，当前版本不永久冻结；macOS x64 不属于支持范围。见 [Phase 1A 收尾](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。本轮已实现只读 raw Data Service、revision、统一 parser 和有界 query primitives，见 [实现与验收报告](docs/investigations/phase-2-raw-access-foundation.md)。`tools/investigation/` 保持独立非生产；当前 Node Browser 与 Inspector 已按 Slice D 独立授权实现；后续 change/reload 等仍需单独授权。
+**Phase 0、Phase 1、Phase 1A 均已关闭；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** Phase 2A 已确认原则写入 ADR-0007–0010，见 [评审收尾报告](docs/investigations/phase-2a-review-closeout.md)；[原调查](docs/investigations/phase-2a-data-access-architecture.md) 保留历史候选与实测。Windows x64 与 macOS arm64 的 native/package gate 均已通过，electron-vite + electron-builder 长期路线已接受，当前版本不永久冻结；macOS x64 不属于支持范围。见 [Phase 1A 收尾](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。本轮已实现只读 raw Data Service、revision、统一 parser 和有界 query primitives，见 [实现与验收报告](docs/investigations/phase-2-raw-access-foundation.md)。`tools/investigation/` 保持独立非生产；Source Browser Slice E 已独立授权实现 change/reload/location recovery；当前验收和跨平台范围见 [Slice E 报告](docs/investigations/phase-2-source-browser-slice-e-change-reload-integration.md)。
 
 ## 开始阅读
 
@@ -53,7 +53,7 @@ npm.cmd run validate:foundation
 
 独立使用 `npm.cmd run package:win:x64` 仍会先重新 build，再打包，不信任已有产物；`smoke:built` 和 `smoke:packaged` 单独执行时要求已有对应最新产物。日常按变更选择最小验证层级，不为每次局部修改运行完整链路，详见 [开发流程](docs/DEVELOPMENT-PROCESS.md)。
 
-目录包位于 `dist/win-unpacked/RefAtlas.exe`；`--dir` 保留 ASAR，不生成安装器、不发布、不签名。正式启动显示 Source Explorer；Foundation 诊断保留在受保护 harness。smoke 通过应用自己的临时 fixture 验证 raw 与 UI，键盘阶段短暂显示聚焦窗口，保持 120 秒总超时、明确退出码和自动清理；可重复报告保存于被忽略的 `artifacts/`。
+目录包位于 `dist/win-unpacked/RefAtlas.exe`；`--dir` 保留 ASAR，不生成安装器、不发布、不签名。正式启动显示 Source Explorer；Foundation 诊断保留在受保护 harness。smoke 通过应用自己的临时 fixture 验证 raw 与 UI，常规 smoke 使用与产品一致的初始可见窗口，键盘阶段聚焦，保持 120 秒总超时、明确退出码和自动清理；可重复报告保存于被忽略的 `artifacts/`。
 
 macOS arm64 在对应原生 Apple Silicon 机器使用相同安装步骤（确认当地系统 7890 代理后设置当前 shell 的 HTTP_PROXY、HTTPS_PROXY、NO_PROXY），执行 `npm run package:mac:arm64`，再执行 `npm run smoke:packaged`。脚本要求 OS 和 Node 架构与目标一致；macOS x64 不提供正式打包入口，不新增远程 workflow。
 
@@ -90,7 +90,7 @@ npm.cmd run test:raw-data
 
 该命令按固定六样本及 root、ExcelOutput、Config/Level/Mission 目录运行 production service，验证分页/排序/response bounds、零自动注册、取消与 release/reacquire。前后 streaming hash/size/mtime 与外部 HEAD/status 必须一致，报告写入被忽略的 `artifacts/raw-real-data.json`。没有全工作区扫描；需要本机同级 TurnBasedGameData。需要将此 gate 纳入完整原生平台验收时执行 `npm run validate:foundation -- --real-data`，保持单次 production build，真实 gate 失败阻止 smoke/打包。
 
-Source Browser Slice A 的实现与平台状态见 [报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。macOS arm64 新目录/lifecycle/localization/Explorer gate 已累计 PASS WITH FIXES，不使用既有 Raw Foundation gate 冒充通过；Slice C 已接入正式 UI，Slice D 已接入当前 revision 的 Node Browser 与 Inspector；累计证据见 [Mac 报告](docs/investigations/phase-2-source-browser-macos-arm64-validation.md)，共享 watcher 修复待 Windows native 补验。
+Source Browser Slice A 的实现与平台状态见 [报告](docs/investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。macOS arm64 新目录/lifecycle/localization/Explorer gate 已累计 PASS WITH FIXES，不使用既有 Raw Foundation gate 冒充通过；Slice C 已接入正式 UI，Slice D 已接入当前 revision 的 Node Browser 与 Inspector；累计证据见 [Mac 报告](docs/investigations/phase-2-source-browser-macos-arm64-validation.md)，共享 watcher Windows native 补验已在 Slice E preflight 完成；新 diff 的 Mac 验证仍待执行。
 
 现有 dev/built/packaged smoke 和 `validate:foundation` 已包含 raw 进程链路验收；fixture 由 Main/runner 在自身临时目录管理。Raw Access Foundation 已在 Windows x64 与 macOS arm64 验证，Mac 的 filesystem/watcher/stat 回退、真实数据与 ASAR runtime 证据见 [原生验证报告](docs/investigations/phase-2-raw-access-macos-arm64-validation.md)。接口、资源上限和边界见 [实现报告](docs/investigations/phase-2-raw-access-foundation.md)；首片仍待 review，整个 Phase 2 未完成。
 
@@ -114,4 +114,4 @@ dev/typecheck/test/build 和 dev smoke 有自动生成前置步骤；独立 pack
 
 打开工作区后仅显示普通目录和精确 `.json` 来源；不特别隐藏 `.git`，不跟随链接。单击 JSON 选择，双击或 Enter 激活；方向键、Home/End 和 Space 可浏览和选择。目录按需分页，尾部自动加载，也可显式加载更多；失败可重试，过期 cursor 必须刷新。刷新 Explorer 保留 active source。
 
-Zag 管理交互/ARIA，ExplorerController 管理异步/缓存，TanStack Virtual 管理固定 24px 行和 overscan 5；缓存起点 10,000 entries / 8 MiB metadata。中央现由 Slice D Source Header、Breadcrumb、direct children 表格和 scalar Value View 组成，右侧 Inspector 默认展开 280px、折叠 32px。NodeBrowserController 复用 RawBridge/SourceSession，不新增生产 IPC、依赖或 Data Service API；只保留一页 children 或一段 scalar、最多 128 项 cursor metadata。`--real-data` 完整验收同时覆盖真实 Electron Explorer/controller/virtualization，前后核对外部仓库与样本指纹。Slice A/B/C/D macOS arm64 已累计 PASS WITH FIXES；下一节点为评审与共享修复 Windows native 补验。Slice D 结果见 [报告](docs/investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)；stale 保留旧内容并禁用结构读取，没有 Reload/History。Copy Pointer 可选按钮因现有权限策略实测拒绝而延期。
+Zag 管理交互/ARIA，ExplorerController 管理异步/缓存，TanStack Virtual 管理固定 24px 行和 overscan 5；缓存起点 10,000 entries / 8 MiB metadata。中央现由 Slice D Source Header、Breadcrumb、direct children 表格和 scalar Value View 组成，右侧 Inspector 默认展开 280px、折叠 32px。NodeBrowserController 复用 RawBridge/SourceSession，不新增生产 IPC、依赖或 Data Service API；只保留一页 children 或一段 scalar、最多 128 项 cursor metadata。`--real-data` 完整验收同时覆盖真实 Electron Explorer/controller/virtualization，前后核对外部仓库与样本指纹。Slice A/B/C/D macOS arm64 已累计 PASS WITH FIXES；下一节点为 Slice E review 与新 diff 的 macOS targeted regression。Slice D 结果见 [报告](docs/investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)；stale 保留旧内容并禁用结构读取；Slice E 提供显式 Reload、同 Pointer 恢复、LOCATION_MISSING 和 Return to Root，只有 current Pointer 跨 revision 恢复；没有 History。Copy Pointer 可选按钮因现有权限策略实测拒绝而延期。

@@ -3,7 +3,7 @@ import { get } from 'svelte/store'
 import { workspace } from './state/app-state'
 import { changeUiLocale, uiLocale } from './i18n'
 import { scalarText } from './browser/node-browser-model'
-import type { JsonPointer, RelativePath } from '../../shared/raw'
+import type { JsonPointer, RelativePath, RawBridge } from '../../shared/raw'
 
 const browser = workspace.browser
 function assert(value: unknown, code: string): asserts value {
@@ -96,6 +96,47 @@ async function activate(relativePath: string) {
 const inspector = () => document.querySelector<HTMLElement>('[data-inspector-pointer]')!
 const value = () => document.querySelector<HTMLElement>('[data-scalar-value]')?.textContent
 const metrics: Record<string, number> = {}
+let monitor: { calls: number; pausedCalls: number; restore: () => void } | null = null
+async function sourceSettled() {
+  await new Promise<void>((resolve) => {
+    let done = false
+    const unsubscribe = workspace.session.changes.subscribe((state) => {
+      if (!state.reloading && !state.pending && !state.requestId)
+        void tick().then(() => {
+          if (
+            !done &&
+            !workspace.session.snapshot.reloading &&
+            !workspace.session.snapshot.requestId
+          ) {
+            done = true
+            unsubscribe()
+            resolve()
+          }
+        })
+    })
+  })
+  await ready()
+}
+async function staleObserved() {
+  await inputObserved(() => workspace.session.snapshot.active?.info.state === 'stale')
+}
+async function lifecycleLocale() {
+  const session = workspace.session.snapshot.active,
+    state = browser.snapshot,
+    open = button('inspector-toggle').getAttribute('aria-expanded'),
+    error = workspace.session.snapshot.error
+  for (const locale of ['en', 'zh-CN', 'en', 'zh-CN'] as const) {
+    changeUiLocale(locale)
+    await tick()
+    assert(
+      workspace.session.snapshot.active === session &&
+        browser.snapshot === state &&
+        workspace.session.snapshot.error === error &&
+        button('inspector-toggle').getAttribute('aria-expanded') === open,
+      'LIFECYCLE_LOCALE_CONTINUITY',
+    )
+  }
+}
 export async function runNodeBrowserSmoke(stage: string): Promise<unknown> {
   if (stage === 'initial') {
     await workspace.open()
@@ -321,12 +362,7 @@ export async function runNodeBrowserSmoke(stage: string): Promise<unknown> {
   }
   if (stage === 'stale') {
     const before = browser.snapshot.children
-    button('node-next').click()
-    const deadline = performance.now() + 3000
-    while (workspace.session.snapshot.active?.info.state !== 'stale') {
-      assert(performance.now() < deadline, 'STALE_TIMEOUT')
-      await new Promise((resolve) => setTimeout(resolve, 10))
-    }
+    await staleObserved()
     await tick()
     assert(browser.snapshot.children === before && rows().length === 100, 'STALE_RETAINS')
     assert(
@@ -342,9 +378,196 @@ export async function runNodeBrowserSmoke(stage: string): Promise<unknown> {
     row('/entries/0').click()
     await tick()
     assert(button('inspector-open').disabled, 'STALE_OPEN_DISABLED')
+    assert(!button('source-reload').disabled, 'STALE_RELOAD_ACTION')
+    await lifecycleLocale()
     return {
       stage,
-      checks: ['source-changed-single-stale', 'old-content-retained', 'stale-navigation-disabled'],
+      checks: [
+        'poll-detects-without-navigation',
+        'old-content-retained',
+        'stale-navigation-disabled',
+        'stale-locale',
+      ],
+    }
+  }
+  if (stage === 'reload-survives') {
+    const oldRevision = browser.snapshot.revision
+    button('source-reload').click()
+    assert(button('source-reload').disabled || workspace.session.snapshot.reloading, 'RELOAD_BUSY')
+    await sourceSettled()
+    assert(current() === '/entries' && browser.snapshot.location === 'READY', 'SAME_POINTER_READY')
+    assert(
+      browser.snapshot.revision !== oldRevision &&
+        workspace.session.snapshot.active!.info.state === 'current',
+      'NEW_REVISION',
+    )
+    assert(
+      browser.snapshot.children[0].node.preview === '42' && browser.snapshot.children.length === 1,
+      'NEW_RAW_VALUE',
+    )
+    assert(
+      browser.snapshot.selectedChild === null &&
+        browser.snapshot.context === null &&
+        browser.snapshot.history.length === 1 &&
+        browser.snapshot.position === 0 &&
+        inspector().dataset.inspectorPointer === '/entries',
+      'RECOVERY_RESET',
+    )
+    assert(!document.querySelector('[data-action="source-reload"]'), 'NO_CURRENT_REFRESH')
+    return {
+      stage,
+      checks: [
+        'same-pointer-new-revision',
+        'new-value',
+        'selection-page-context-inspector-reset',
+        'no-current-refresh',
+      ],
+    }
+  }
+  if (stage === 'prepare-location') {
+    await root()
+    await open('/a')
+    await open('/a/b')
+    return { stage, checks: ['nested-recovery-pointer'] }
+  }
+  if (stage === 'location-missing') {
+    await staleObserved()
+    button('source-reload').click()
+    await sourceSettled()
+    assert(
+      browser.snapshot.location === 'LOCATION_MISSING' &&
+        browser.snapshot.recoveryPointer === '/a/b' &&
+        browser.snapshot.current === null &&
+        workspace.session.snapshot.active!.info.state === 'current',
+      'LOCATION_MISSING_CURRENT_SOURCE',
+    )
+    assert(
+      document.querySelector('[data-location-missing]') &&
+        !button('return-root').disabled &&
+        rows().length === 0,
+      'LOCATION_MISSING_PRESENTATION',
+    )
+    button('inspector-toggle').click()
+    await tick()
+    await lifecycleLocale()
+    assert(
+      button('inspector-toggle').getAttribute('aria-expanded') === 'false',
+      'MISSING_COLLAPSE_CONTINUITY',
+    )
+    button('inspector-toggle').click()
+    await tick()
+    return {
+      stage,
+      checks: [
+        'application-location-missing',
+        'no-auto-root',
+        'new-source-metadata',
+        'missing-locale-inspector',
+      ],
+    }
+  }
+  if (stage === 'return-root') {
+    button('return-root').click()
+    await ready()
+    assert(
+      current() === '' && browser.snapshot.location === 'READY' && rows().length === 1,
+      'RETURN_ROOT',
+    )
+    await open('/a')
+    await open('/a/c')
+    return { stage, checks: ['explicit-return-root', 'fresh-first-page'] }
+  }
+  if (stage === 'reload-error') {
+    const node = browser.snapshot.current,
+      scalar = browser.snapshot.scalar,
+      revision = browser.snapshot.revision
+    await staleObserved()
+    button('source-reload').click()
+    await sourceSettled()
+    assert(
+      workspace.session.snapshot.error?.code === 'NOT_FOUND' &&
+        workspace.session.snapshot.active!.info.state === 'stale' &&
+        browser.snapshot.current === node &&
+        browser.snapshot.scalar === scalar &&
+        browser.snapshot.revision === revision &&
+        browser.snapshot.location !== 'LOCATION_MISSING',
+      'FILE_MISSING_RELOAD_FAILURE',
+    )
+    assert(
+      document.querySelector('[data-error-code="NOT_FOUND"]') && !button('source-reload').disabled,
+      'RELOAD_ERROR_PRESENTATION',
+    )
+    await lifecycleLocale()
+    return {
+      stage,
+      checks: [
+        'file-not-location-missing',
+        'old-content-revision-retained',
+        'error-retry-localized',
+      ],
+    }
+  }
+  if (stage === 'reload-error-retry') {
+    button('source-reload').click()
+    await sourceSettled()
+    assert(
+      current() === '/a/c' && value() === '3' && !workspace.session.snapshot.error,
+      'RELOAD_ERROR_RETRY',
+    )
+    return { stage, checks: ['file-restored-reload-retry'] }
+  }
+  if (stage === 'monitor-visible') {
+    // Smoke-only observation of existing bridge calls; no new production diagnostics API.
+    const internal = workspace.session as unknown as { bridge: RawBridge },
+      original = internal.bridge
+    const observation = {
+      calls: 0,
+      pausedCalls: 0,
+      restore: () => {
+        internal.bridge = original
+      },
+    }
+    internal.bridge = {
+      ...original,
+      getSourceInfo: (input) => {
+        observation.calls++
+        return original.getSourceInfo(input)
+      },
+    }
+    monitor = observation
+    await inputObserved(() => document.visibilityState === 'visible' && observation.calls > 0)
+    return {
+      stage,
+      checks: ['native-visible-poll'],
+      visibility: document.visibilityState,
+      calls: observation.calls,
+    }
+  }
+  if (stage === 'monitor-paused') {
+    await inputObserved(() => document.visibilityState === 'hidden')
+    const observation = monitor!
+    observation.pausedCalls = observation.calls
+    await new Promise((resolve) => setTimeout(resolve, 1200))
+    assert(observation.calls === observation.pausedCalls, 'HIDDEN_NO_PERIODIC_POLL')
+    return {
+      stage,
+      checks: ['native-hidden-pause'],
+      visibility: document.visibilityState,
+      calls: observation.calls,
+    }
+  }
+  if (stage === 'monitor-resumed') {
+    const observation = monitor!
+    await inputObserved(
+      () => document.visibilityState === 'visible' && observation.calls > observation.pausedCalls,
+    )
+    observation.restore()
+    monitor = null
+    return {
+      stage,
+      checks: ['native-resume-check'],
+      visibility: document.visibilityState,
+      calls: observation.calls,
     }
   }
   if (stage === 'real-data') {

@@ -277,11 +277,14 @@ async function launch(): Promise<void> {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    show: !smoke,
+    // Exercise the same initially visible window as production. Electron's initially
+    // hidden painting mode can report visible even after native minimize/hide.
+    show: !guardSmoke,
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
       ...security,
-      backgroundThrottling: false,
+      // Page Visibility must reflect hide/minimize in product and native smoke alike.
+      backgroundThrottling: true,
       additionalArguments: [UI_LOCALE_ARGUMENT + initialLocale],
     },
   })
@@ -392,7 +395,7 @@ async function launch(): Promise<void> {
     key('Return')
     await explorerStage('activated')
     key('Up')
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await explorerStage('up')
     key('Down')
     await explorerStage('up-down')
     key('Left')
@@ -421,19 +424,34 @@ async function launch(): Promise<void> {
     }
     smokeWorkspaceSelections = [join(dirname(reportPath), 'raw-fixtures')]
     const nodeReports: unknown[] = []
-    const nodeStage = async (stage: string) => {
+    const nodeStage = async (stage: string, visibilityAction?: 'minimize' | 'hide') => {
       try {
         const result: unknown = await window!.webContents.executeJavaScript(
           'window.runNodeBrowserSmoke(' + JSON.stringify(stage) + ')',
         )
-        nodeReports.push(result)
+        nodeReports.push(
+          visibilityAction && object(result) ? { ...result, visibilityAction } : result,
+        )
         return result
       } catch (error) {
+        const visibility = stage.startsWith('monitor-')
+          ? JSON.stringify({
+              action: visibilityAction,
+              visible: window!.isVisible(),
+              minimized: window!.isMinimized(),
+              focused: window!.isFocused(),
+              throttling: window!.webContents.backgroundThrottling,
+              rendererVisibility: await window!.webContents.executeJavaScript(
+                'document.visibilityState',
+              ),
+            })
+          : ''
         throw new Error(
           'NodeBrowser stage ' +
             stage +
             ': ' +
-            (error instanceof Error ? error.message : String(error)),
+            (error instanceof Error ? error.message : String(error)) +
+            visibility,
         )
       }
     }
@@ -477,6 +495,43 @@ async function launch(): Promise<void> {
     await nodeStage('root-kinds')
     await writeFile(join(dirname(reportPath), 'raw-fixtures/node-browser.json'), '{}', 'utf8')
     await nodeStage('stale')
+    await screenshot('-stale')
+    await writeFile(
+      join(dirname(reportPath), 'raw-fixtures/node-browser.json'),
+      '{"entries":[42],"a":{"b":1}}',
+      'utf8',
+    )
+    await nodeStage('reload-survives')
+    await nodeStage('prepare-location')
+    await writeFile(
+      join(dirname(reportPath), 'raw-fixtures/node-browser.json'),
+      '{"a":{"c":2}}',
+      'utf8',
+    )
+    await nodeStage('location-missing')
+    window.setSize(900, 600)
+    await screenshot('-location-missing')
+    window.setSize(1280, 800)
+    await nodeStage('return-root')
+    await unlink(join(dirname(reportPath), 'raw-fixtures/node-browser.json'))
+    await nodeStage('reload-error')
+    await screenshot('-reload-error')
+    await writeFile(
+      join(dirname(reportPath), 'raw-fixtures/node-browser.json'),
+      '{"a":{"c":3}}',
+      'utf8',
+    )
+    await nodeStage('reload-error-retry')
+    for (const action of ['minimize', 'hide'] as const) {
+      await nodeStage('monitor-visible')
+      if (action === 'minimize') window.minimize()
+      else window.hide()
+      await nodeStage('monitor-paused', action)
+      if (action === 'minimize') window.restore()
+      else window.show()
+      window.focus()
+      await nodeStage('monitor-resumed', action)
+    }
     if (process.argv.includes('--explorer-real-data')) {
       smokeWorkspaceSelections = [resolve(process.cwd(), '../TurnBasedGameData')]
       await nodeStage('real-data')

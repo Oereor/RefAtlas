@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { ActiveSource } from '../state/source-session'
   import { formatByteSize, messages, uiLocale } from '../i18n'
-  let { active }: { active: ActiveSource } = $props()
+  let { active, busy, onreload }: { active: ActiveSource; busy: boolean; onreload: () => void } =
+    $props()
 </script>
 
 <header class="source-header">
@@ -12,6 +13,19 @@
         ? messages.node_stale({}, { locale: $uiLocale })
         : messages.node_current({}, { locale: $uiLocale })}</span
     >
+    {#if active.info.state === 'stale'}
+      <button
+        class="reload"
+        data-action="source-reload"
+        disabled={busy}
+        onclick={onreload}
+        aria-label={messages.source_reload({}, { locale: $uiLocale })}
+        title={messages.source_reload({}, { locale: $uiLocale })}
+        >{busy
+          ? messages.source_reloading({}, { locale: $uiLocale })
+          : messages.source_reload({}, { locale: $uiLocale })}</button
+      >
+    {/if}
   </div>
   <p class="path" title={active.source.relativePath}>{active.source.relativePath}</p>
   <p class="metadata">
@@ -36,6 +50,12 @@
     align-items: center;
     gap: 12px;
     min-width: 0;
+    flex-wrap: wrap;
+  }
+  .reload {
+    background: var(--selection);
+    font-size: 12px;
+    flex: none;
   }
   h1 {
     font-size: 17px;

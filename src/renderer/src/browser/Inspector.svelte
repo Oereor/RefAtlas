@@ -32,35 +32,35 @@
       onclick={() => (open = !open)}>{open ? '›' : '‹'}</button
     >{#if open}<h2>{messages.inspector_title({}, { locale: $uiLocale })}</h2>{/if}
   </header>
-  {#if open && target && $source.active}
+  {#if open && $source.active}
     <div
       class="content"
-      data-inspector-pointer={target.address.pointer}
-      data-inspector-revision={target.revision}
+      data-inspector-pointer={target?.address.pointer}
+      data-inspector-revision={target?.revision ?? $source.active.info.revision}
     >
-      <h3>{messages.node_node({}, { locale: $uiLocale })}</h3>
-      <dl>
-        {#if context}<dt>
-            {context.parentKind === 'array'
-              ? messages.node_index({}, { locale: $uiLocale })
-              : messages.node_key({}, { locale: $uiLocale })}
-          </dt>
-          <dd data-inspector-key>{context.key}</dd>{/if}
-        <dt>{messages.node_type({}, { locale: $uiLocale })}</dt>
-        <dd>{kindLabel(target.kind, $uiLocale)}</dd>
-        <dt>{messages.node_pointer({}, { locale: $uiLocale })}</dt>
-        <dd class="raw" data-inspector-pointer-text>{target.address.pointer}</dd>
-        <dt>{messages.node_children({}, { locale: $uiLocale })}</dt>
-        <dd>{target.childCount === null ? '—' : formatUiCount(target.childCount, $uiLocale)}</dd>
-      </dl>
-      {#if $changes.selectedChild}<div class="actions">
-          <button
-            data-action="inspector-open"
-            disabled={$source.active.info.state === 'stale'}
-            onclick={() => void browser.openChild()}
-            >{messages.node_open({}, { locale: $uiLocale })}</button
-          >
-        </div>{/if}
+      {#if target}<h3>{messages.node_node({}, { locale: $uiLocale })}</h3>
+        <dl>
+          {#if context}<dt>
+              {context.parentKind === 'array'
+                ? messages.node_index({}, { locale: $uiLocale })
+                : messages.node_key({}, { locale: $uiLocale })}
+            </dt>
+            <dd data-inspector-key>{context.key}</dd>{/if}
+          <dt>{messages.node_type({}, { locale: $uiLocale })}</dt>
+          <dd>{kindLabel(target.kind, $uiLocale)}</dd>
+          <dt>{messages.node_pointer({}, { locale: $uiLocale })}</dt>
+          <dd class="raw" data-inspector-pointer-text>{target.address.pointer}</dd>
+          <dt>{messages.node_children({}, { locale: $uiLocale })}</dt>
+          <dd>{target.childCount === null ? '—' : formatUiCount(target.childCount, $uiLocale)}</dd>
+        </dl>
+        {#if $changes.selectedChild}<div class="actions">
+            <button
+              data-action="inspector-open"
+              disabled={$source.active.info.state === 'stale'}
+              onclick={() => void browser.openChild()}
+              >{messages.node_open({}, { locale: $uiLocale })}</button
+            >
+          </div>{/if}{/if}
       <h3>{messages.node_source({}, { locale: $uiLocale })}</h3>
       <dl>
         <dt>{messages.node_file({}, { locale: $uiLocale })}</dt>

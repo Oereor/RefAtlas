@@ -1,6 +1,6 @@
 # 已接受架构与约束
 
-2026-10-04 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；搜索、契约和 Reload 未实现，A/B/C/D macOS arm64 累计 gate 已 PASS WITH FIXES；共享 watcher 修复待 Windows native 补验，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。
+2026-10-04 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；Slice E 已补齐显式 Reload 和同 Pointer recovery；搜索与契约未实现。A/B/C/D macOS arm64 累计 gate 已 PASS WITH FIXES，shared watcher Windows 补验已在 Slice E preflight 完成，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。
 
 ## 1. 桌面栈与进程所有权
 
@@ -109,13 +109,15 @@ WorkspaceController 保留 picker cancel 前的树/session，成功后基于已�
 
 SourceSession 是 source acquire/release 和 stale 的唯一所有者；markStale 按 SourceAddress + revision 验证，迟到旧源错误不能标记新源。成功 root read 完成语法验证后同步 validated；失败不把尚未验证当 invalid JSON。NodeBrowserController 只消费 active source，不注册或释放 source。
 
-Controller 保存 current address/summary、已知 parent context、可选 complete RawScalar、selected child、一页 children 或一段 scalar、cursor metadata、局部 pending/error 和 epoch。单执行通道取消旧意图，等待旧请求 settled 后执行最新意图；提交同时验证 source/revision/epoch。readNode 成功先提交 current，随后加载第一页；失败保留旧 current/view。返回当前 Node 取消其他 pending navigation，不重新 read/acquire。workspace/source/revision 切换清空 Node 状态；picker cancel、Explorer refresh 和 locale switch 保持状态。
+Controller 保存 current address/summary、已知 parent context、可选 complete RawScalar、selected child、一页 children 或一段 scalar、cursor metadata、局部 pending/error 和 epoch。单执行通道取消旧意图，等待旧请求 settled 后执行最新意图；提交同时验证 source/revision/epoch。readNode 成功先提交 current，随后加载第一页；失败保留旧 current/view。返回当前 Node 取消其他 pending navigation，不重新 read/acquire。workspace/source 切换清空 Node 状态；同 source 新 revision 只恢复 current Pointer并清分页/selection；picker cancel、Explorer refresh 和 locale switch 保持状态。
 
 Container 一律 listNodeChildren，page 上限 RAW_LIMITS.page=100，不遍历 complete container value、不额外 read 每行。Scalar complete number 显示 exact lexeme、string 显示 semantic value；summary string/number 用 readScalarSegment，limit=4096。Previous/Next 替换 payload，最多 128 项 opaque cursor/page metadata，窗口边界提供 Restart；STALE_CURSOR 保留原页并要求 null cursor Restart，不解析 cursor。
 
-SOURCE_CHANGED 标记唯一 session stale，取消其他读取并保留缓存内容；Header/中央/Inspector 显示 stale，Controller 和按钮双重禁止新的结构读取。无 Reload、LOCATION_MISSING、History 或跨 revision 位置恢复。Breadcrumb 使用 splitPointer/joinPointer/parentPointer，显示 decoded raw token，不将 numeric-looking object key 猜为 Index。Inspector 优先 selected child，否则 current，只有已知父 kind 才标 Index；展开状态只在 App UI memory。
+SOURCE_CHANGED 标记唯一 session stale，取消其他读取并保留缓存内容；Header/中央/Inspector 显示 stale，Controller 和按钮双重禁止新的结构读取。Slice E 提供 stale-only Reload 和新 revision 同 Pointer 恢复。LOCATION_MISSING 为应用状态，recovery NOT_FOUND 后须确认来源仍 current；文件级失败保留旧 stale view，不自动跳根。成功只恢复 current Pointer，selection/page/cursor/segment/context/scroll 清空，Return to Root 由用户触发；没有 History。Breadcrumb 使用 splitPointer/joinPointer/parentPointer，显示 decoded raw token，不将 numeric-looking object key 猜为 Index。Inspector 优先 selected child，否则 current，只有已知父 kind 才标 Index；展开状态只在 App UI memory。
 
 表格使用 semantic table 和 roving tabindex，Up/Down/Home/End 选择并移动 focus，Enter/双击进入，Escape 清选择，区域内 Alt+Left 返回父；不引入虚拟化或新表格库。UI message 沿用 Slice B，raw key/value/lexeme/path/Pointer/revision 原样保留。Copy Pointer 真实用户手势在现有 deny-all permission handler 下失败，作为可选功能延期；没有新增 clipboard IPC 或扩大权限。Windows 验收与限制见 [Slice D 报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。
+
+SourceSession 只对 active current source 以请求 settled 后约 1s 的节奏 getSourceInfo，no overlap；AppShell 传 visibility，隐藏/最小化暂停，恢复可见立即检查，可见但失焦继续。普通 poll error 保留 view；reset/dispose 清 timer/listener/request。普通产品 BrowserWindow 使用 Electron 默认 backgroundThrottling=true，让 Page Visibility 正确反映窗口；smoke 也从创建时使用 true，并使用与产品一致的初始可见窗口；guard smoke 保持隐藏。没有 Main→Renderer push IPC。Session.reload 复用 reloadSource/root validation，NodeBrowser 等待新 revision Pointer recovery，source/workspace 新意图仍优先；底层 registration/queue/预算保持原实现。详见 [Slice E 报告](investigations/phase-2-source-browser-slice-e-change-reload-integration.md)。
 
 ## 8. 尚未接受或产品验证
 
@@ -123,6 +125,6 @@ SOURCE_CHANGED 标记唯一 session stale，取消其他读取并保留缓存内
 - full search、Dataset Contract 和完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。
 - SQLite schema、持久 cache、child index 和更大 scalar streaming 策略仍未实现；当前 RawValue、范围/检测和工程预算见本轮报告。Dataset Contract 仍留在 Phase 3。
 - Exact 具体相等规则、BINARY/case/normalization、分页参数，trigram 启用与文件/语言覆盖、完整数据集容量及性能。
-- 共享 watcher 修复的 Windows native 补验、完整 accessibility audit 和正式签名/公证验证；macOS A/B/C/D 累计 gate 与用户 VoiceOver sanity check 见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。
+- Slice E 新 diff 的 macOS arm64 targeted regression、完整 accessibility audit 和正式签名/公证验证；macOS A/B/C/D 累计 gate 与用户 VoiceOver sanity check 见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。
 
 [Phase 2A 调查](investigations/phase-2a-data-access-architecture.md)保留历史候选与实测；本次接受范围及候选区别见 [评审收尾](investigations/phase-2a-review-closeout.md)。实验表、合成边、采样、具体阈值和库不自动成为生产架构。Phase 0 的版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。

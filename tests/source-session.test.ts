@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -55,6 +55,7 @@ function deferred<T>() {
   return { promise, resolve }
 }
 const flush = () => new Promise<void>((resolve) => setImmediate(resolve))
+afterEach(() => vi.useRealTimers())
 function fixture() {
   const events: string[] = []
   const partial: Partial<RawBridge> = {
@@ -258,5 +259,178 @@ describe('SourceSession activation boundary', () => {
       service.dispose()
       await rm(directory, { recursive: true, force: true })
     }
+  })
+})
+
+describe('active source monitoring and reload', () => {
+  it('polls without overlap, pauses hidden, checks immediately on resume and cleans up on dispose', async () => {
+    const { bridge, events } = fixture(),
+      session = new SourceSession(bridge)
+    await session.activate(source('a.json'))
+    const active = session.snapshot.active!,
+      gate = deferred<RawResult<SourceInfo>>()
+    const poll = vi
+      .fn()
+      .mockImplementationOnce(() => gate.promise)
+      .mockResolvedValue({ ok: true, value: active.info })
+    bridge.getSourceInfo = poll
+    vi.useFakeTimers()
+    session.setMonitoringVisible(true)
+    await vi.advanceTimersByTimeAsync(0)
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(poll).toHaveBeenCalledTimes(1)
+    session.setMonitoringVisible(false)
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(poll).toHaveBeenCalledTimes(1)
+    expect(events).toContain('cancel')
+    session.setMonitoringVisible(true)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(poll).toHaveBeenCalledTimes(1)
+    gate.resolve({ ok: true, value: { ...active.info, state: 'stale' } })
+    await vi.advanceTimersByTimeAsync(0)
+    // Old hidden-time completion cannot mark stale, and resume schedules immediately.
+    await vi.advanceTimersByTimeAsync(1)
+    expect(poll).toHaveBeenCalledTimes(2)
+    expect(session.snapshot.active).toBe(active)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(poll).toHaveBeenCalledTimes(3)
+    session.setMonitoringVisible(false)
+    await vi.advanceTimersByTimeAsync(10000)
+    expect(poll).toHaveBeenCalledTimes(3)
+    session.setMonitoringVisible(true)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(poll).toHaveBeenCalledTimes(4)
+    await session.dispose()
+    await vi.advanceTimersByTimeAsync(10000)
+    expect(poll).toHaveBeenCalledTimes(4)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+  it.each<RawCode>(['TIMEOUT', 'SERVICE_UNAVAILABLE', 'INTERNAL'])(
+    'retains view on polling %s and continues checking',
+    async (code) => {
+      const { bridge } = fixture(),
+        session = new SourceSession(bridge)
+      await session.activate(source('a.json'))
+      const active = session.snapshot.active!
+      const poll = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: false, error: { code } })
+        .mockResolvedValue({ ok: true, value: active.info })
+      bridge.getSourceInfo = poll
+      vi.useFakeTimers()
+      session.setMonitoringVisible(true)
+      await vi.advanceTimersByTimeAsync(0)
+      expect(session.snapshot.active).toBe(active)
+      expect(session.snapshot.error).toBeNull()
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(poll).toHaveBeenCalledTimes(2)
+      await session.dispose()
+    },
+  )
+  it.each(['stale-info', 'SOURCE_CHANGED', 'different-revision'])(
+    'marks only Session stale for %s and stops polling',
+    async (mode) => {
+      const { bridge } = fixture(),
+        session = new SourceSession(bridge)
+      await session.activate(source('a.json'))
+      const active = session.snapshot.active!
+      const poll = vi.fn().mockResolvedValue(
+        mode === 'SOURCE_CHANGED'
+          ? { ok: false, error: { code: 'SOURCE_CHANGED' } }
+          : {
+              ok: true,
+              value: {
+                ...active.info,
+                ...(mode === 'stale-info' ? { state: 'stale' } : { revision: crypto.randomUUID() }),
+              },
+            },
+      )
+      bridge.getSourceInfo = poll
+      vi.useFakeTimers()
+      session.setMonitoringVisible(true)
+      await vi.advanceTimersByTimeAsync(0)
+      expect(session.snapshot.active!.info.state).toBe('stale')
+      expect(session.snapshot.active!.info.revision).toBe(active.info.revision)
+      expect(session.snapshot.active!.root).toBe(active.root)
+      await vi.advanceTimersByTimeAsync(10000)
+      expect(poll).toHaveBeenCalledTimes(1)
+      await session.dispose()
+    },
+  )
+  it.each(['source', 'workspace'])('discards a late poll across %s switch', async (mode) => {
+    const { bridge } = fixture(),
+      session = new SourceSession(bridge)
+    await session.activate(source('a.json'))
+    const old = session.snapshot.active!,
+      gate = deferred<RawResult<SourceInfo>>()
+    const normal = bridge.getSourceInfo
+    bridge.getSourceInfo = (input) =>
+      input.source.relativePath === 'a.json' ? gate.promise : normal(input)
+    vi.useFakeTimers()
+    session.setMonitoringVisible(true)
+    await vi.advanceTimersByTimeAsync(0)
+    if (mode === 'workspace') session.reset()
+    await session.activate({
+      ...source('b.json'),
+      ...(mode === 'workspace' ? { workspaceId: crypto.randomUUID() as WorkspaceId } : {}),
+    })
+    const fresh = session.snapshot.active!
+    // Stabilize subsequent B polling; no new revision is substituted by monitoring.
+    bridge.getSourceInfo = async () => ({ ok: true, value: fresh.info })
+    gate.resolve({ ok: true, value: { ...old.info, state: 'stale' } })
+    await vi.advanceTimersByTimeAsync(1)
+    expect(session.snapshot.active).toBe(fresh)
+    expect(fresh.info.state).toBe('current')
+    await session.dispose()
+  })
+  it.each(['source', 'workspace'])(
+    'coalesces reload and rejects its late completion across %s switch',
+    async (mode) => {
+      const { bridge, events } = fixture(),
+        session = new SourceSession(bridge)
+      await session.activate(source('a.json'))
+      const old = session.snapshot.active!
+      session.markStale(old.source, old.info.revision)
+      const gate = deferred<RawResult<SourceInfo>>()
+      bridge.reloadSource = vi.fn(() => gate.promise)
+      const first = session.reload(),
+        second = session.reload()
+      expect(second).toBe(first)
+      expect(bridge.reloadSource).toHaveBeenCalledTimes(1)
+      expect(session.snapshot.reloading).toBe(true)
+      if (mode === 'workspace') session.reset()
+      const switchSource = session.activate(source('b.json'))
+      gate.resolve({ ok: true, value: metadata(old.source) })
+      await Promise.all([first, switchSource])
+      expect(session.snapshot.active!.source.relativePath).toBe('b.json')
+      expect(session.snapshot.reloading).toBe(false)
+      expect(session.snapshot.error).toBeNull()
+      expect(events.filter((event) => event === 'read:a.json')).toHaveLength(1)
+      await session.dispose()
+    },
+  )
+  it('preserves stale content after candidate root validation fails, retires candidate and allows retry', async () => {
+    const { bridge, events } = fixture(),
+      session = new SourceSession(bridge)
+    await session.activate(source('a.json'))
+    const old = session.snapshot.active!
+    session.markStale(old.source, old.info.revision)
+    const stale = session.snapshot.active
+    bridge.reloadSource = async (input) => ({ ok: true, value: metadata(input.source) })
+    const normalRead = bridge.readNode
+    bridge.readNode = async () => ({ ok: false, error: { code: 'INVALID_JSON' } })
+    await session.reload()
+    expect(session.snapshot.active).toBe(stale)
+    expect(session.snapshot.error?.code).toBe('INVALID_JSON')
+    expect(session.snapshot.reloading).toBe(false)
+    expect(events.at(-1)).toBe('release:a.json')
+    bridge.readNode = normalRead
+    await session.reload()
+    expect(session.snapshot.active!.info.state).toBe('current')
+    expect(session.snapshot.active!.info.revision).not.toBe(old.info.revision)
+    expect(session.snapshot.active!.root.revision).toBe(session.snapshot.active!.info.revision)
+    // Successful same-address reload must not release the new registration.
+    expect(events.filter((event) => event === 'release:a.json')).toHaveLength(1)
+    await session.dispose()
   })
 })

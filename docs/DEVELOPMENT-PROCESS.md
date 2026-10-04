@@ -21,7 +21,7 @@ Phase 2A 接受范围见 [评审收尾](investigations/phase-2a-review-closeout.
 
 完整验收在应用仓库根目录执行 `npm run validate:foundation`：format:check → typecheck → test → docs:check → smoke:dev → production build → smoke:built → builder → smoke:packaged。命令和安装说明见应用 README；每个目标在对应原生机器运行，不用交叉产物或 Rosetta 成功冒充另一架构的原生验收。
 
-smoke 通过真实窗口/Preload bridge（UI keyboard 阶段显示并聚焦，其余保持隐藏） 运行，120 秒总超时；父 runner 清理自身进程树和已核实边界的临时目录。报告含目标身份、安全配置、运行时、SQLite 清理与 ASAR native 证据；打包态另验普通模式拒绝故障注入。失败须报告非零退出码，不以残留旧成功报告替代当前结果。
+smoke 通过真实窗口/Preload bridge（常规 smoke 与产品同样初始可见，keyboard 阶段聚焦，guard smoke 隐藏） 运行，120 秒总超时；父 runner 清理自身进程树和已核实边界的临时目录。报告含目标身份、安全配置、运行时、SQLite 清理与 ASAR native 证据；打包态另验普通模式拒绝故障注入。失败须报告非零退出码，不以残留旧成功报告替代当前结果。
 
 macOS arm64 的脚本路径必须在原生 Apple Silicon 环境验证；macOS x64 不属于正式 gate。electron-vite + electron-builder 路线已由 [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md) 接受；版本升级按该 ADR 与现有 Validation Cadence 选择必要的兼容性和平台验证，不要求每次 patch/minor 无条件完整跨平台重验。正式发布、签名、公证和 release workflow 仍需后续独立授权。
 
@@ -93,3 +93,7 @@ Slice C 在既有 smoke 内验证正式 Svelte shell、实际 Electron key event
 Slice D 扩展现有三态 smoke：真实 Controller/桥、六种 root、特殊 key/Pointer、精确数值、children/segment Previous/Next、Inspector/折叠、stale 与窄窗。键盘使用 Electron sendInputEvent，检查等待实际 focus/selection/navigation 可观察状态；tick 不等于原生事件已送达。真实请求等待 Controller 完成，保留原有 work/IPC/runner deadline，不用任意 5 秒 UI polling 判定大来源超时。
 
 --real-data 在三态 UI 内浏览六代表来源，外部仍全程只读；stale mutation 仅在 app runner 临时 fixture。正常 packaged guard 不暴露 Node Browser harness。Copy Pointer 在 Windows 真实点击下权限拒绝，按可选范围延期，不扩大现有 permissions/IPC。macOS A/B/C/D 累计 gate 为下一节点、未执行且未豁免；既有 Raw Foundation 结果不能替代。
+
+## Source Browser change/recovery 验收
+
+Slice E 的 shared watcher Windows preflight 必须在 production implementation 前关闭；完整 runner 仍要求单次全部阶段 exit 0、production build 恰一次。三态 smoke 扩展 polling 自动 stale、同 Pointer Reload、LOCATION_MISSING/Return to Root、file-deleted error/retry、locale continuity、实际 minimize/hide/resume。原生 keyboard 每次等待实际 focus/controller 状态，不以 tick 或固定 sleep 代替事件完成。产品与 smoke 从创建时统一使用 backgroundThrottling=true；常规 smoke 初始可见，避免 Electron initially-hidden painting 对 visibility 证据的影响。mutation 只在 app-owned temp fixtures，真实数据始终只读；新 diff 的 Mac targeted gate 必须独立记录，不能沿用此前 A/B/C/D 结果。

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import type { WorkspaceController } from '../state/workspace-controller'
   import WorkspaceToolbar from './WorkspaceToolbar.svelte'
   import NodeBrowser from '../browser/NodeBrowser.svelte'
@@ -8,6 +9,16 @@
   let { workspace }: { workspace: WorkspaceController } = $props()
   const view = $derived(workspace.changes)
   let inspectorOpen = $state(true)
+  onMount(() => {
+    const visibility = () =>
+      workspace.session.setMonitoringVisible(document.visibilityState === 'visible')
+    document.addEventListener('visibilitychange', visibility)
+    visibility()
+    return () => {
+      document.removeEventListener('visibilitychange', visibility)
+      void workspace.dispose()
+    }
+  })
 </script>
 
 <div class="app-shell" data-workspace-state={$view.status}>

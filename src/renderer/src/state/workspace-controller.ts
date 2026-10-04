@@ -38,6 +38,11 @@ export class WorkspaceController {
     this.state = { ...this.state, ...change }
     this.store.set(this.state)
   }
+  async dispose(): Promise<void> {
+    this.browser.dispose()
+    this.explorer.reset(null)
+    await this.session.dispose()
+  }
   async open(): Promise<void> {
     if (this.state.status === 'opening') return
     const previous = this.state

@@ -27,7 +27,10 @@
             ;(
               region?.querySelector<HTMLElement>(
                 'tbody tr, [data-scalar-value], [data-scalar-segment]',
-              ) ?? region?.querySelector<HTMLElement>('nav button[aria-current]')
+              ) ??
+              region?.querySelector<HTMLElement>(
+                '[data-action="return-root"], nav button[aria-current]',
+              )
             )?.focus({ preventScroll: true })
           }),
       )
@@ -54,8 +57,10 @@
   class="node-browser"
   data-active-source={$source.active?.source.relativePath ?? ''}
   data-pending-source={$source.pending?.relativePath ?? ''}
-  data-current-pointer={$changes.current?.address.pointer}
+  data-current-pointer={$changes.current?.address.pointer ?? $changes.recoveryPointer}
   data-browser-stale={stale}
+  data-location-state={$changes.location}
+  aria-busy={$source.reloading || $changes.busy}
   use:parentShortcut
 >
   {#if $source.pending}<p class="notice" role="status">
@@ -63,22 +68,61 @@
       <span>{$source.pending.relativePath}</span>
     </p>{/if}
   {#if $source.error}<p class="notice error" role="alert" data-error-code={$source.error.code}>
-      {formatRawError($source.error, $uiLocale).message}
+      {$source.errorOperation === 'reload'
+        ? messages.source_reload_failed(
+            {
+              reason:
+                $source.error.code === 'NOT_FOUND'
+                  ? messages.source_file_missing({}, { locale: $uiLocale })
+                  : formatRawError($source.error, $uiLocale).message,
+            },
+            { locale: $uiLocale },
+          )
+        : formatRawError($source.error, $uiLocale).message}
     </p>{/if}
-  {#if $source.active && $changes.current}
-    <SourceHeader active={$source.active} /><Breadcrumb {browser} />
+  {#if $source.active}
+    <SourceHeader
+      active={$source.active}
+      busy={$source.reloading || $changes.location === 'RECOVERING'}
+      onreload={() => void browser.reload()}
+    />
+    {#if $changes.current}<Breadcrumb {browser} />{/if}
     {#if stale}<p class="notice stale" role="alert">
         {messages.node_stale_boundary({}, { locale: $uiLocale })}
       </p>{/if}
-    {#if $changes.busy}<p class="notice" role="status">
-        {messages.node_loading({}, { locale: $uiLocale })}
+    {#if $source.reloading || $changes.busy}<p class="notice" role="status">
+        {$source.reloading
+          ? messages.source_reloading({}, { locale: $uiLocale })
+          : messages.node_loading({}, { locale: $uiLocale })}
       </p>{/if}
+    {#if $changes.location === 'LOCATION_MISSING'}
+      <div class="notice error" role="status" data-location-missing>
+        <p>{messages.node_location_missing({}, { locale: $uiLocale })}</p>
+        <p class="raw-pointer">{$changes.recoveryPointer}</p>
+        <button
+          data-action="return-root"
+          disabled={stale || $changes.busy}
+          onclick={() => void browser.returnToRoot()}
+          >{messages.node_return_root({}, { locale: $uiLocale })}</button
+        >
+      </div>
+    {/if}
     {#if $changes.error && !stale}<div
         class="notice error"
         role="alert"
         data-node-error-code={$changes.error.code}
       >
-        {formatRawError($changes.error, $uiLocale).message}
+        {$changes.recoveryPointer !== null
+          ? messages.node_recovery_failed(
+              {
+                reason:
+                  $changes.error.code === 'NOT_FOUND'
+                    ? messages.source_file_missing({}, { locale: $uiLocale })
+                    : formatRawError($changes.error, $uiLocale).message,
+              },
+              { locale: $uiLocale },
+            )
+          : formatRawError($changes.error, $uiLocale).message}
         <button
           data-action="node-retry"
           disabled={$changes.busy}
@@ -89,12 +133,16 @@
             : messages.common_retry({}, { locale: $uiLocale })}</button
         >
       </div>{/if}
-    {#if container}<ChildrenTable {browser} />{:else}<ScalarValueView {browser} />{/if}
+    {#if $changes.current}
+      {#key $changes.revision}
+        {#if container}<ChildrenTable {browser} />{:else}<ScalarValueView {browser} />{/if}
+      {/key}
+    {/if}
     {#if pagination}
       <footer class="pagination" aria-label={messages.node_children({}, { locale: $uiLocale })}>
         <span data-page-range
           >{#if container && $changes.children.length}
-            {$changes.current.childCount === null
+            {$changes.current!.childCount === null
               ? messages.node_range(
                   {
                     start: formatUiCount($changes.children[0].ordinal + 1, $uiLocale),
@@ -106,7 +154,7 @@
                   {
                     start: formatUiCount($changes.children[0].ordinal + 1, $uiLocale),
                     end: formatUiCount($changes.children.at(-1)!.ordinal + 1, $uiLocale),
-                    total: formatUiCount($changes.current.childCount, $uiLocale),
+                    total: formatUiCount($changes.current!.childCount!, $uiLocale),
                   },
                   { locale: $uiLocale },
                 )}
@@ -160,6 +208,10 @@
   }
   .notice span {
     font-family: var(--mono);
+  }
+  .raw-pointer {
+    font-family: var(--mono);
+    white-space: pre-wrap;
   }
   .error,
   .stale {

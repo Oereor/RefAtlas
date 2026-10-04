@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { describe, expect, it, vi } from 'vitest'
+import { mkdtemp, rm, writeFile, unlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -135,6 +135,7 @@ async function withService(
   const controllers = new Map<string, AbortController>(),
     file = join(directory, 'source.json')
   let browser: NodeBrowserController | undefined
+  let session: SourceSession | undefined
   const execute = async <T extends RawOutput>(
     id: string,
     command: RawCommand,
@@ -158,6 +159,8 @@ async function withService(
     const api = {
       getSourceInfo: ({ requestId, source }) =>
         execute<SourceInfo>(requestId, { kind: 'info', source }),
+      reloadSource: ({ requestId, source }) =>
+        execute<SourceInfo>(requestId, { kind: 'reload', source }),
       readNode: ({ requestId, ...rest }) =>
         execute<NodeResult>(requestId, { kind: 'read', ...rest }),
       listNodeChildren: ({ requestId, ...rest }) =>
@@ -170,7 +173,7 @@ async function withService(
         return { ok: true, value: { accepted: true } }
       },
     } as RawBridge
-    const session = new SourceSession(api)
+    session = new SourceSession(api)
     browser = new NodeBrowserController(api, session)
     await session.activate({
       workspaceId: opened.workspaceId,
@@ -181,6 +184,7 @@ async function withService(
     await run({ browser, session, api, file })
   } finally {
     browser?.dispose()
+    await session?.dispose()
     service.dispose()
     await rm(directory, { recursive: true, force: true })
   }
@@ -273,22 +277,270 @@ describe('NodeBrowser real raw composition', () => {
       expect(browser.snapshot.segment!.kind).toBe(kind)
     })
   })
-  it('real mutation makes session stale and prevents further reads', async () => {
-    await withService('[1,2,3]', async ({ browser, session, file, api }) => {
-      const before = browser.snapshot.children
-      await writeFile(file, '[4,5,6,7]')
-      await browser.openChild(before[0])
-      expect(session.snapshot.active!.info.state).toBe('stale')
-      expect(browser.snapshot.children).toBe(before)
-      api.readNode = async () => {
-        throw Error('stale must not issue reads')
-      }
-      await browser.parent()
-      await browser.restart()
-      await browser.openChild(before[1])
-      expect(browser.snapshot.current?.address.pointer).toBe('')
+  it.each(['read', 'children', 'segment'])(
+    'real mutation causes request-time stale in %s and blocks reads',
+    async (method) => {
+      const fixture =
+        method === 'segment'
+          ? JSON.stringify('x'.repeat(60000))
+          : '[' + Array.from({ length: 205 }, (_, i) => i).join(',') + ']'
+      await withService(fixture, async ({ browser, session, file, api }) => {
+        const before = browser.snapshot.children
+        const current = browser.snapshot.current,
+          segment = browser.snapshot.segment
+        await writeFile(file, '[4,5,6,7]')
+        if (method === 'read') await browser.openChild(before[0])
+        else await browser.next()
+        expect(session.snapshot.active!.info.state).toBe('stale')
+        expect(browser.snapshot.error?.code).toBe('SOURCE_CHANGED')
+        expect(browser.snapshot.current).toBe(current)
+        expect(browser.snapshot.children).toBe(before)
+        expect(browser.snapshot.segment).toBe(segment)
+        api.readNode =
+          api.listNodeChildren =
+          api.readScalarSegment =
+            async () => {
+              throw Error('stale must not issue reads')
+            }
+        await browser.parent()
+        await browser.restart()
+        await browser.openChild(before[1])
+        expect(browser.snapshot.current?.address.pointer).toBe('')
+      })
+    },
+  )
+})
+
+describe('revision location recovery with real RawDataService', () => {
+  const navigate = (browser: NodeBrowserController, pointer: string) =>
+    browser.navigate({
+      source: browser.snapshot.source!,
+      pointer: pointer as JsonPointer,
+    })
+  async function reload(browser: NodeBrowserController, session: SourceSession) {
+    const old = session.snapshot.active!
+    session.markStale(old.source, old.info.revision)
+    await browser.reload()
+    await settled(browser)
+  }
+  it('monitoring detects real mutation without navigation, retains old scalar, then recovers its exact Pointer', async () => {
+    await withService('{"a":{"b":1}}', async ({ browser, session, file }) => {
+      await navigate(browser, '/a/b')
+      const old = browser.snapshot.current!,
+        scalar = browser.snapshot.scalar
+      session.setMonitoringVisible(true)
+      await writeFile(file, '{"a":{"b":22}}')
+      await vi.waitFor(() => expect(session.snapshot.active!.info.state).toBe('stale'))
+      expect(browser.snapshot.current).toBe(old)
+      expect(browser.snapshot.scalar).toBe(scalar)
+      await browser.reload()
+      await settled(browser)
+      expect(browser.snapshot.location).toBe('READY')
+      expect(browser.snapshot.current!.address.pointer).toBe('/a/b')
+      expect(browser.snapshot.scalar).toEqual({ kind: 'number', lexeme: '22' })
+      expect(browser.snapshot.revision).not.toBe(old.revision)
+      await session.dispose()
     })
   })
+  it('reports application LOCATION_MISSING on a current source, without jumping to root', async () => {
+    await withService('{"a":{"b":1}}', async ({ browser, session, file }) => {
+      await navigate(browser, '/a/b')
+      await writeFile(file, '{"a":{"c":2}}')
+      await reload(browser, session)
+      expect(session.snapshot.active!.info.state).toBe('current')
+      expect(browser.snapshot.location).toBe('LOCATION_MISSING')
+      expect(browser.snapshot.recoveryPointer).toBe('/a/b')
+      expect(browser.snapshot.current).toBeNull()
+      expect(browser.snapshot.error).toBeNull()
+      expect(browser.snapshot.children).toEqual([])
+      await browser.returnToRoot()
+      expect(browser.snapshot.current!.address.pointer).toBe('')
+      expect(browser.snapshot.location).toBe('READY')
+      expect(browser.snapshot.history[0].number).toBe(1)
+    })
+  })
+  it('keeps /0 after array insertion, without following the old id value to /1', async () => {
+    await withService('[{"id":1}]', async ({ browser, session, file }) => {
+      await navigate(browser, '/0')
+      await writeFile(file, '[{"id":2},{"id":1}]')
+      await reload(browser, session)
+      expect(browser.snapshot.current!.address.pointer).toBe('/0')
+      expect(browser.snapshot.children[0].node.preview).toBe('2')
+      expect(browser.snapshot.selectedChild).toBeNull()
+      expect(browser.snapshot.context).toBeNull()
+    })
+  })
+  it.each(['deleted', 'invalid-json', 'inaccessible'] as const)(
+    'retains old stale view on file-level reload failure: %s',
+    async (mode) => {
+      await withService('{"a":{"b":1}}', async ({ browser, session, api, file }) => {
+        await navigate(browser, '/a/b')
+        const current = browser.snapshot.current,
+          scalar = browser.snapshot.scalar,
+          revision = browser.snapshot.revision
+        if (mode === 'deleted') await unlink(file)
+        else if (mode === 'invalid-json') await writeFile(file, '{')
+        else api.reloadSource = async () => ({ ok: false, error: { code: 'ACCESS_DENIED' } })
+        await reload(browser, session)
+        expect(session.snapshot.error?.code).toBe(
+          mode === 'deleted'
+            ? 'NOT_FOUND'
+            : mode === 'invalid-json'
+              ? 'INVALID_JSON'
+              : 'ACCESS_DENIED',
+        )
+        expect(session.snapshot.active!.info.state).toBe('stale')
+        expect(browser.snapshot.revision).toBe(revision)
+        expect(browser.snapshot.current).toBe(current)
+        expect(browser.snapshot.scalar).toBe(scalar)
+        expect(browser.snapshot.location).not.toBe('LOCATION_MISSING')
+      })
+    },
+  )
+  it('does not confuse a file disappearing during recovery with a missing Pointer', async () => {
+    await withService('{"a":{"b":1}}', async ({ browser, session, api, file }) => {
+      await navigate(browser, '/a/b')
+      await writeFile(file, '{"a":{"b":2}}')
+      const read = api.readNode
+      api.readNode = async (input) => {
+        if (input.address.pointer === '/a/b') {
+          await unlink(file)
+          // The raw open boundary can report NOT_FOUND after verification.
+          return { ok: false, error: { code: 'NOT_FOUND' } }
+        }
+        return read(input)
+      }
+      await reload(browser, session)
+      expect(session.snapshot.active!.info.state).toBe('stale')
+      expect(browser.snapshot.location).toBe('ERROR')
+      expect(browser.snapshot.recoveryPointer).toBe('/a/b')
+      expect(browser.snapshot.location).not.toBe('LOCATION_MISSING')
+    })
+  })
+  it('resets children page, selection, context and cursors on the new revision', async () => {
+    const text = '[' + Array.from({ length: 205 }, (_, i) => String(i)).join(',') + ']'
+    await withService(text, async ({ browser, session, file }) => {
+      await browser.next()
+      browser.select(browser.snapshot.children[0])
+      const oldCursor = browser.snapshot.nextCursor
+      await writeFile(file, text + ' ')
+      await reload(browser, session)
+      expect(browser.snapshot.children[0].ordinal).toBe(0)
+      expect(browser.snapshot.history).toEqual([{ cursor: null, number: 1 }])
+      expect(browser.snapshot.selectedChild).toBeNull()
+      expect(browser.snapshot.context).toBeNull()
+      expect(browser.snapshot.nextCursor).not.toBe(oldCursor)
+    })
+  })
+  it('restarts scalar segmentation and drops cursor history after reload', async () => {
+    await withService('"' + 'x'.repeat(60000) + '"', async ({ browser, session, file }) => {
+      await browser.next()
+      expect(browser.snapshot.history[browser.snapshot.position].number).toBe(2)
+      const old = browser.snapshot.segment
+      await writeFile(file, '"' + 'y'.repeat(60000) + '"')
+      await reload(browser, session)
+      expect(browser.snapshot.segment!.text).toBe('y'.repeat(4096))
+      expect(browser.snapshot.segment).not.toBe(old)
+      expect(browser.snapshot.position).toBe(0)
+      expect(browser.snapshot.history).toEqual([{ cursor: null, number: 1 }])
+    })
+  })
+  it('recovers the committed Pointer and ignores an old revision request/finally after reload', async () => {
+    await withService('{"a":{"b":1,"c":5}}', async ({ browser, session, api, file }) => {
+      await navigate(browser, '/a/b')
+      const read = api.readNode,
+        gate = deferred<RawResult<NodeResult>>()
+      api.readNode = (input) => (input.address.pointer === '/a/c' ? gate.promise : read(input))
+      const navigation = navigate(browser, '/a/c')
+      await flush()
+      await writeFile(file, '{"a":{"b":2,"c":6}}')
+      const oldRevision = browser.snapshot.revision
+      session.markStale(session.snapshot.active!.source, oldRevision!)
+      const transaction = browser.reload()
+      await vi.waitFor(() => expect(session.snapshot.active!.info.revision).not.toBe(oldRevision))
+      expect(browser.snapshot.location).toBe('RECOVERING')
+      gate.resolve({ ok: false, error: { code: 'SOURCE_CHANGED' } })
+      await Promise.all([navigation, transaction])
+      expect(browser.snapshot.location).toBe('READY')
+      expect(browser.snapshot.current!.address.pointer).toBe('/a/b')
+      expect(browser.snapshot.scalar).toEqual({ kind: 'number', lexeme: '2' })
+      expect(session.snapshot.active!.info.state).toBe('current')
+      expect(browser.snapshot.error).toBeNull()
+      expect(browser.snapshot.busy).toBe(false)
+    })
+  })
+  it('allows a new source reload while an obsolete recovery request is still settling', async () => {
+    await withService('{"a":{"b":1}}', async ({ browser, session, api, file }) => {
+      await navigate(browser, '/a/b')
+      const read = api.readNode,
+        gate = deferred<RawResult<NodeResult>>()
+      let entered = false
+      api.readNode = (input) => {
+        if (input.address.pointer === '/a/b') {
+          entered = true
+          return gate.promise
+        }
+        return read(input)
+      }
+      session.markStale(session.snapshot.active!.source, browser.snapshot.revision!)
+      const oldReload = browser.reload()
+      await vi.waitFor(() => expect(entered).toBe(true))
+      await writeFile(join(file, '..', 'other.json'), 'true')
+      await session.activate({
+        ...session.snapshot.active!.source,
+        relativePath: 'other.json' as RelativePath,
+      })
+      const oldBRevision = browser.snapshot.revision
+      session.markStale(session.snapshot.active!.source, oldBRevision!)
+      const freshReload = browser.reload()
+      expect(freshReload).not.toBe(oldReload)
+      await freshReload
+      expect(browser.snapshot.revision).not.toBe(oldBRevision)
+      gate.resolve({ ok: false, error: { code: 'SOURCE_CHANGED' } })
+      await oldReload
+      expect(browser.snapshot.source!.relativePath).toBe('other.json')
+      expect(browser.snapshot.scalar).toEqual({ kind: 'boolean', value: true })
+      expect(session.snapshot.active!.info.state).toBe('current')
+    })
+  })
+  it.each(['source', 'workspace'] as const)(
+    'rejects late recovery response/finally after %s switch',
+    async (mode) => {
+      await withService('{"a":{"b":1}}', async ({ browser, session, api, file }) => {
+        await navigate(browser, '/a/b')
+        await writeFile(file, '{"a":{"b":2}}')
+        const read = api.readNode,
+          gate = deferred<RawResult<NodeResult>>()
+        let recoveryInput!: NodeInput
+        api.readNode = (input) => {
+          if (input.address.pointer === '/a/b') {
+            recoveryInput = input
+            return gate.promise
+          }
+          return read(input)
+        }
+        session.markStale(session.snapshot.active!.source, browser.snapshot.revision!)
+        const transaction = browser.reload()
+        expect(browser.reload()).toBe(transaction)
+        await vi.waitFor(() => expect(recoveryInput).toBeDefined())
+        expect(browser.snapshot.location).toBe('RECOVERING')
+        if (mode === 'workspace') session.reset()
+        else {
+          const other = {
+            ...session.snapshot.active!.source,
+            relativePath: 'other.json' as RelativePath,
+          }
+          await writeFile(join(file, '..', 'other.json'), 'true')
+          await session.activate(other)
+        }
+        const fresh = browser.snapshot
+        gate.resolve({ ok: false, error: { code: 'SOURCE_CHANGED' } })
+        await transaction
+        expect(browser.snapshot).toBe(fresh)
+        expect(session.snapshot.active?.info.state).not.toBe('stale')
+      })
+    },
+  )
 })
 describe('NodeBrowser races, errors and bounds', () => {
   it('waits for an obsolete read to settle and executes only the latest navigation', async () => {

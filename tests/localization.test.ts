@@ -31,6 +31,27 @@ function storage(initial?: string) {
   }
 }
 afterEach(() => initializeLocalization('en'))
+it('provides recovery messages in both supported locales', () => {
+  for (const locale of ['en', 'zh-CN'] as const) {
+    const options = { locale }
+    const recovery = [
+      messages.source_reload({}, options),
+      messages.source_reloading({}, options),
+      messages.source_reload_failed({ reason: messages.source_file_missing({}, options) }, options),
+      messages.node_recovery_failed({ reason: messages.source_file_missing({}, options) }, options),
+      messages.node_location_missing({}, options),
+      messages.node_return_root({}, options),
+    ]
+    expect(recovery.every((value) => value.length > 0)).toBe(true)
+    expect(recovery).not.toContain('source_reload')
+  }
+  expect(messages.node_location_missing({}, { locale: 'en' })).toBe(
+    'The source was reloaded, but this location no longer exists.',
+  )
+  expect(messages.node_location_missing({}, { locale: 'zh-CN' })).toBe(
+    '来源已重新加载，但此位置已不存在。',
+  )
+})
 
 describe('presentation locale boundary', () => {
   it.each(['zh', 'zh-CN', 'zh-TW', 'zh-Hant', 'zh-Hans-CN', 'ZH-hk', ' zh-CN '])(

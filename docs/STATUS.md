@@ -2,9 +2,11 @@
 
 更新日期：2026-10-04（UTC+8）。
 
-**Source Browser Slice A/B/C/D macOS arm64：PASS WITH FIXES / AWAITING REVIEW。** 2026-10-04 单次 11 阶段累计 runner exit 0、production build 恰一次；202 项普通测试、独立真实数据、dev/built/ASAR packaged、真实 native picker/wheel、用户触控板与 VoiceOver sanity check 均通过，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。本轮修复共享 watcher hint 误标 stale；**Windows native revalidation required**，此前 Windows 结果不覆盖本轮 diff。Slice E、Copy Pointer 与完整 accessibility audit 未推进。
+**Source Browser Slice E：IMPLEMENTED；Windows x64 native full gate VALIDATED；AWAITING REVIEW。** active-source polling、唯一 stale、显式 Reload、新 revision 同 Pointer 恢复、application-level LOCATION_MISSING/Return to Root 已实现。Windows A/B/C/D shared watcher preflight 在实现前以单次完整 runner exit 0 关闭；最终版本 230 ordinary tests/types/独立真实数据/dev/built/packaged 全过；单次 11 阶段 runner exit 0、production build 恰一次。generic browsing foundation 功能完成不等于整个 Phase 2 或未来功能完成。macOS Slice E targeted regression required，不能沿用旧 A/B/C/D 结果。见 [报告](investigations/phase-2-source-browser-slice-e-change-reload-integration.md)。
 
-**Source Browser Slice D：IMPLEMENTED；Windows x64 VALIDATED；AWAITING REVIEW。** NodeBrowserController、Source Header、Breadcrumb、direct children 表格、scalar/segment、Previous/Next、Inspector 和唯一 SourceSession stale 边界已实现。201 项普通测试、独立真实数据、dev/built/packaged 均通过；单次 11 阶段完整 runner exit 0，production build 恰一次，见 [Slice D 报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。Copy Pointer 因现有 Renderer 权限策略实测拒绝而延期；没有新增权限或 IPC。Slice A/B/C/D macOS 累计结果见本页顶部；不自动进入 Slice E。
+**Source Browser Slice A/B/C/D macOS arm64：PASS WITH FIXES / AWAITING REVIEW。** 2026-10-04 单次 11 阶段累计 runner exit 0、production build 恰一次；202 项普通测试、独立真实数据、dev/built/ASAR packaged、真实 native picker/wheel、用户触控板与 VoiceOver sanity check 均通过，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。共享 watcher hint 修复的 Windows native 补验已在 Slice E preflight 完成；此前历史 Windows 结果不作为本轮证据。Slice E 新 diff 的 Mac gate 仍待执行；Copy Pointer 与完整 accessibility audit 延期。
+
+**Source Browser Slice D：IMPLEMENTED；Windows x64 VALIDATED；AWAITING REVIEW。** NodeBrowserController、Source Header、Breadcrumb、direct children 表格、scalar/segment、Previous/Next、Inspector 和唯一 SourceSession stale 边界已实现。201 项普通测试、独立真实数据、dev/built/packaged 均通过；单次 11 阶段完整 runner exit 0，production build 恰一次，见 [Slice D 报告](investigations/phase-2-source-browser-slice-d-node-browser-inspector.md)。Copy Pointer 因现有 Renderer 权限策略实测拒绝而延期；没有新增权限或 IPC。Slice A/B/C/D macOS 累计结果见本页顶部；Slice E 本轮已独立授权实现。
 
 **Source Browser Slice C：IMPLEMENTED；Windows x64 VALIDATED；本轮已获 Slice D 独立授权。** 正式 App Shell、Workspace flow、Zag managed Source Explorer、TanStack virtualization、分页/取消/retry/refresh、有界缓存和 SourceSession 最小 activation 已实现。172 项普通测试、独立真实数据与 dev/built/packaged UI/data gate 均通过；11 阶段完整 runner 在单次 invocation exit 0，production build 恰一次，见 [Slice C 报告](investigations/phase-2-source-browser-slice-c-source-explorer.md)。Slice A/B/C/D macOS arm64 已累计 PASS WITH FIXES，见本页顶部。
 
@@ -15,7 +17,7 @@
 
 ## 已完成
 
-**Source Browser Slice A：Windows x64 IMPLEMENTED / VALIDATED；REVIEWED，可继续开发；macOS arm64 cumulative validation PASS WITH FIXES（共享修复待 Windows 补验）。** 本轮只实现底层目录发现、metadata 调度和 source 生命周期；106 项普通测试、三目录/六样本真实 gate、dev/built/ASAR packaged smoke 与含真实数据的十步完整验收通过。详细范围、stat 检测边界与清理见 [Slice A 报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
+**Source Browser Slice A：Windows x64 IMPLEMENTED / VALIDATED；REVIEWED，可继续开发；macOS arm64 cumulative validation PASS WITH FIXES（共享修复 Windows 补验已完成）。** 本轮只实现底层目录发现、metadata 调度和 source 生命周期；106 项普通测试、三目录/六样本真实 gate、dev/built/ASAR packaged smoke 与含真实数据的十步完整验收通过。详细范围、stat 检测边界与清理见 [Slice A 报告](investigations/phase-2-source-browser-slice-a-directory-lifecycle.md)。
 
 - 核实实际目录 TurnBasedGameData，外部仓库初始干净。
 - 项目文档整体迁入应用仓库 `docs/`，外层旧目录已移除，证据保留；收尾已提交为 `809a4a5 Closeout Phase 0`。
@@ -70,7 +72,7 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 | Windows x64 | 通过 | ASAR 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 | macOS arm64 | 通过 | ASAR .app 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 
-Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则已接受；本轮已实现 raw types、窄 Query API、固定版 parser adapter、工程预算、source revision 与内存范围缓存。SQLite schema、搜索和 accelerator coverage 仍未实现。Dataset Contract、全量生产索引、增量刷新尚未实现；Source Explorer shell 与当前 revision 的 Node Browser/Inspector 已实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，真实采样与隔离传输实验保留在原调查报告。
+Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则已接受；本轮已实现 raw types、窄 Query API、固定版 parser adapter、工程预算、source revision 与内存范围缓存。SQLite schema、搜索和 accelerator coverage 仍未实现。Dataset Contract、全量生产索引与持久索引增量刷新尚未实现；Source Explorer shell 与当前 revision 的 Node Browser/Inspector 已实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，真实采样与隔离传输实验保留在原调查报告。
 
 ## Phase 1 最终收尾与 Phase 2A 调查历史
 
@@ -100,4 +102,4 @@ Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则
 
 Slice A 已评审，Slice B localization 已获授权并实现；最终 Windows gate 与评审状态见本页顶部及 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。Slice A/B/C/D 新实现的 macOS arm64 累计原生 gate 已完成，证据见本页顶部，不借用旧 Raw Foundation 结果。
 
-下一节点是评审 Slice D 与 macOS 累计报告，并在 Windows 原生环境补验本轮共享 watcher 修复。不得直接进入 Slice E；搜索、Reload、LOCATION_MISSING、History、Dataset Contract 和发布工作均未获本轮授权。
+下一节点是 Slice E review 和新 diff 的 macOS arm64 targeted regression。generic browsing foundation 能力已齐备；Search、History、Dataset Contract、References/Graph 和发布工作未实现，不自动进入后续阶段。

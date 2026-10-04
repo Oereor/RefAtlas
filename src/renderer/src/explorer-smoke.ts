@@ -93,8 +93,22 @@ export async function runExplorerSmoke(stage: string): Promise<unknown> {
     )
     return { stage, checks: ['enter-activation', 'root-read', 'center-placeholder', 'active-row'] }
   }
+  if (stage === 'up') {
+    await waitFor(
+      () =>
+        document.activeElement?.getAttribute('data-directory') === 'nested' &&
+        document.activeElement?.getAttribute('data-value') ===
+          workspace.explorer.snapshot.focusedId,
+    )
+    return { stage, checks: ['arrow-up-parent-focus'] }
+  }
   if (stage === 'up-down') {
-    await tick()
+    await waitFor(
+      () =>
+        document.activeElement?.getAttribute('data-source') === 'nested/child.json' &&
+        document.activeElement?.getAttribute('data-value') ===
+          workspace.explorer.snapshot.focusedId,
+    )
     assert(
       document.activeElement?.getAttribute('data-source') === 'nested/child.json',
       'UP_DOWN_RETURNS_CHILD',

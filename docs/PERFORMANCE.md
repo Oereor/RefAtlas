@@ -136,3 +136,9 @@ Windows x64 首次真实目录 gate：root 6 项 / 1 页 / 532 bytes，ExcelOutp
 ## 9. Source Browser macOS arm64 工程观察
 
 2026-10-04，Apple M2 / 16 GiB / macOS 27.0.1，单次 dev/built/ASAR packaged 累计验收。5010 logical rows 初页约 140.7–151.2 ms、追加约 296.1–315.8 ms，mounted 35（End 后 34）；Avatar activation 约 27.1–30.4 ms。完整目录/Node/segment/真实来源计时及口径见 [累计报告第 15 节](investigations/phase-2-source-browser-macos-arm64-validation.md#15-performance-observations)。未控制 OS cache/后台负载，不新增 SLA 或跨平台性能排名；共享 watcher 修复为正确性修复，不声称性能提升。
+
+## Source Browser Slice E：monitoring 与 recovery 口径
+
+只对 active source 以请求 settled 后约 1s 的节奏检查 metadata，no overlap；隐藏/最小化暂停，恢复可见立即检查。不是 SLA，不扫描 workspace，不重复 hash/parse。普通产品启用 Electron 默认后台节流以恢复 Page Visibility，减少不可见窗口持续 timers/frames；不据此宣称已测 CPU/FPS 改善。parser/IPC/children/segment/cursor budgets 未变。最终 bundle/package 和 native visibility 观察见 [Slice E 报告](investigations/phase-2-source-browser-slice-e-change-reload-integration.md)。
+
+最终 Windows 单次 11 阶段 gate exit 0。Renderer JS 相对 Slice E preflight 519309 → 545478 bytes，gzip 103852 → 107587；app.asar 1517026、win-unpacked 413748992 bytes。三态 native minimize/hide 1200ms 窗口内没有周期 poll，恢复可见后检查；controller timer/cancellation 边界另行验证。未保存 preflight package size，不推断同基线 package delta。

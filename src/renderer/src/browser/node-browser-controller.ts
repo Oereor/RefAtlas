@@ -36,9 +36,11 @@ export type NodeBrowserState = {
   pendingPointer: JsonPointer | null
   error: UiError | null
   epoch: number
+  location: 'EMPTY' | 'READY' | 'RECOVERING' | 'LOCATION_MISSING' | 'ERROR'
+  recoveryPointer: JsonPointer | null
 }
 type Intent =
-  | { kind: 'navigate'; address: NodeAddress; context: NodeContext }
+  | { kind: 'navigate'; address: NodeAddress; context: NodeContext; recovering?: boolean }
   | { kind: 'page'; page: PagePosition; history: PagePosition[]; position: number }
 const empty = (epoch: number): NodeBrowserState => ({
   source: null,
@@ -56,6 +58,8 @@ const empty = (epoch: number): NodeBrowserState => ({
   pendingPointer: null,
   error: null,
   epoch,
+  location: 'EMPTY',
+  recoveryPointer: null,
 })
 export class NodeBrowserController {
   private state = empty(0)
@@ -64,6 +68,8 @@ export class NodeBrowserController {
   private queue = new RequestQueue(1)
   private controller: AbortController | null = null
   private retryIntent: Intent | null = null
+  private reopening: Promise<void> | null = null
+  private reloadRunning: Promise<void> | null = null
   private unsubscribe: () => void
   constructor(
     private readonly bridge: RawBridge,
@@ -76,6 +82,25 @@ export class NodeBrowserController {
   }
   get stale(): boolean {
     return this.session.snapshot.active?.info.state === 'stale'
+  }
+  reload(): Promise<void> {
+    if (this.reloadRunning) return this.reloadRunning
+    if (!this.stale || this.session.snapshot.pending) return Promise.resolve()
+    const source = this.state.source!
+    const transaction = this.session
+      .reload()
+      .then(async () => {
+        if (this.state.source && sameSource(source, this.state.source)) await this.reopening
+      })
+      .finally(() => {
+        if (this.reloadRunning === transaction) this.reloadRunning = null
+      })
+    this.reloadRunning = transaction
+    return transaction
+  }
+  returnToRoot(): Promise<void> {
+    if (this.state.location !== 'LOCATION_MISSING' || !this.state.source) return Promise.resolve()
+    return this.navigate({ source: this.state.source, pointer: '' as JsonPointer })
   }
   private publish(change: Partial<NodeBrowserState>): void {
     this.state = { ...this.state, ...change }
@@ -96,10 +121,22 @@ export class NodeBrowserController {
       if (active.info.state === 'stale') {
         this.controller?.abort()
         this.retryIntent = null
-        this.publish({ epoch: this.state.epoch + 1, busy: false, pendingPointer: null })
+        this.publish({
+          epoch: this.state.epoch + 1,
+          busy: false,
+          pendingPointer: null,
+          ...(this.state.location === 'RECOVERING' ? { location: 'ERROR' as const } : {}),
+        })
       }
       return
     }
+    const recoveryPointer =
+      active && this.state.source && sameSource(active.source, this.state.source)
+        ? (this.state.current?.address.pointer ?? this.state.recoveryPointer)
+        : null
+    if (!active || !this.state.source || !sameSource(active.source, this.state.source))
+      this.reloadRunning = null
+    this.reopening = null
     this.controller?.abort()
     this.retryIntent = null
     this.state = empty(this.state.epoch + 1)
@@ -107,11 +144,22 @@ export class NodeBrowserController {
       Object.assign(this.state, {
         source: active.source,
         revision: active.info.revision,
-        current: active.root,
-        scalar: active.rootScalar,
+        current: recoveryPointer ? null : active.root,
+        scalar: recoveryPointer ? null : active.rootScalar,
+        location: recoveryPointer ? 'RECOVERING' : 'READY',
+        recoveryPointer,
       })
     this.store.set(this.state)
-    if (active && active.info.state !== 'stale' && this.needsPage()) void this.restart()
+    if (active && active.info.state !== 'stale') {
+      if (recoveryPointer)
+        this.reopening = this.perform({
+          kind: 'navigate',
+          address: { source: active.source, pointer: recoveryPointer },
+          context: null,
+          recovering: true,
+        })
+      else this.reopening = this.needsPage() ? this.restart() : null
+    }
   }
   private needsPage(): boolean {
     const kind = this.state.current?.kind
@@ -126,7 +174,13 @@ export class NodeBrowserController {
     this.publish({ selectedChild: child })
   }
   navigate(address: NodeAddress, context: NodeContext = null): Promise<void> {
-    if (this.stale || !this.state.source || !sameSource(address.source, this.state.source))
+    if (
+      this.stale ||
+      this.session.snapshot.reloading ||
+      this.state.location === 'RECOVERING' ||
+      !this.state.source ||
+      !sameSource(address.source, this.state.source)
+    )
       return Promise.resolve()
     if (this.state.current && sameAddress(address, this.state.current.address)) {
       if (this.state.busy) {
@@ -227,7 +281,14 @@ export class NodeBrowserController {
     }
   }
   private async perform(intent: Intent): Promise<void> {
-    if (this.stale || !this.state.current || !this.state.source || !this.state.revision) return
+    if (
+      this.stale ||
+      this.session.snapshot.reloading ||
+      (intent.kind === 'page' && !this.state.current) ||
+      !this.state.source ||
+      !this.state.revision
+    )
+      return
     this.controller?.abort()
     const controller = new AbortController()
     this.controller = controller
@@ -240,6 +301,9 @@ export class NodeBrowserController {
       error: null,
       pendingPointer: intent.kind === 'navigate' ? intent.address.pointer : null,
       ...(intent.kind === 'navigate' ? { selectedChild: null } : {}),
+      ...(intent.kind === 'navigate' && intent.recovering
+        ? { location: 'RECOVERING' as const }
+        : {}),
     })
     const current = () =>
       !controller.signal.aborted &&
@@ -252,13 +316,31 @@ export class NodeBrowserController {
     try {
       await this.queue.run(controller.signal, async () => {
         if (intent.kind === 'navigate') {
-          const result: NodeResult = await request(this.bridge, controller.signal, (requestId) =>
-            this.bridge.readNode({
-              requestId,
-              address: intent.address,
-              expectedRevision: revision,
-            }),
-          )
+          let result: NodeResult
+          try {
+            result = await request(this.bridge, controller.signal, (requestId) =>
+              this.bridge.readNode({
+                requestId,
+                address: intent.address,
+                expectedRevision: revision,
+              }),
+            )
+          } catch (error) {
+            if (!current()) return
+            if (!intent.recovering || errorOf(error).code !== 'NOT_FOUND') throw error
+            // A raw NOT_FOUND may also be a file disappearing between verify and open.
+            const info = await request(this.bridge, controller.signal, (requestId) =>
+              this.bridge.getSourceInfo({ requestId, source }),
+            )
+            if (!current()) return
+            if (info.state === 'stale' || info.revision !== revision) {
+              this.session.markStale(source, revision)
+              return
+            }
+            this.retryIntent = null
+            this.publish({ location: 'LOCATION_MISSING', recoveryPointer: intent.address.pointer })
+            return
+          }
           if (!current()) return
           const scalar =
             result.mode === 'complete' &&
@@ -277,6 +359,8 @@ export class NodeBrowserController {
             position: 0,
             nextCursor: null,
             pendingPointer: null,
+            location: 'READY',
+            recoveryPointer: null,
           })
           if (this.needsPage()) {
             const page = { cursor: null, number: 1 }
@@ -289,7 +373,10 @@ export class NodeBrowserController {
     } catch (error) {
       if (current()) {
         const failure = errorOf(error)
-        this.publish({ error: failure })
+        this.publish({
+          error: failure,
+          ...(this.state.location === 'RECOVERING' ? { location: 'ERROR' as const } : {}),
+        })
         if (failure.code === 'SOURCE_CHANGED') this.session.markStale(source, revision)
       }
     } finally {

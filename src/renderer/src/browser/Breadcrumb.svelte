@@ -13,7 +13,9 @@
     {#if index}<span aria-hidden="true">›</span>{/if}
     <button
       data-pointer={joinPointer(tokens.slice(0, index))}
-      disabled={$source.active?.info.state === 'stale'}
+      disabled={$source.active?.info.state === 'stale' ||
+        $source.reloading ||
+        $changes.location === 'RECOVERING'}
       aria-current={index === tokens.length ? 'location' : undefined}
       aria-label={messages.node_breadcrumb_go(
         {

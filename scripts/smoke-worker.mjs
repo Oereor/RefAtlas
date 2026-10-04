@@ -106,9 +106,19 @@ try {
     throw new Error('真实 Source Explorer/controller/virtualization gate 缺失')
   if (
     !Array.isArray(content.renderer.nodeBrowser) ||
-    !['flow', 'stale', 'narrow', 'root-kinds'].every((stage) =>
-      content.renderer.nodeBrowser.some((result) => result.stage === stage),
-    )
+    ![
+      'flow',
+      'stale',
+      'narrow',
+      'root-kinds',
+      'reload-survives',
+      'location-missing',
+      'return-root',
+      'reload-error',
+      'reload-error-retry',
+      'monitor-paused',
+      'monitor-resumed',
+    ].every((stage) => content.renderer.nodeBrowser.some((result) => result.stage === stage))
   )
     throw new Error('NodeBrowser UI/stale/layout 证明缺失')
   if (
