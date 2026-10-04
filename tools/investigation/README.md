@@ -1,4 +1,61 @@
-# Phase 0 / Phase 2A 非生产调查工具
+# Phase 0 / Phase 2A / Phase 2 Search 非生产调查工具
+
+## Phase 2 Search 全库调查
+
+这是独立 investigation，不提供正式 Search API/IPC/UI。只读同级 TurnBasedGameData；全部 DB、truth、fixtures、日志与 Electron profile 写入被忽略的 `artifacts/search/`。不要在来源目录创建缓存或复制全量数据。本轮工具复用已安装的独立依赖，生产 package/lockfile 不变。
+
+从空的自有产物目录复现，重型阶段必须串行；全库运行需要数十 GiB 空间及较长时间，不借用 Phase 2A 的采样数字：
+
+```powershell
+node search-build.mjs baseline
+node search-edges.mjs
+node --max-old-space-size=1024 search-build.mjs build
+node --max-old-space-size=1024 search-reference.mjs
+node search-run.mjs A C stats forensic normalization lifecycle fallback query-baseline C-optimized C-like file-proof schema-parity
+node search-run.mjs unicode61
+# 再分别执行 accelerator 候选；先结束上一阶段，失败先取证，不能直接跳过。
+node search-run.mjs trigram-all
+# 原始候选全部取证后，有序插入作为不同参数的受控对照。
+# 其余候选名见下文；每次只运行一个，保留终态。
+node search-run.mjs runtime temp-indices fts-plans post-fts-parity publication cancellation textmap normalization-coverage audit
+node search-export.mjs
+node search-report.mjs
+node search-checks.mjs
+```
+
+`search-run.mjs` 无参数时按源码列出的全部阶段执行，遇到失败立即停止。上面的分段命令便于先审查失败，再继续独立阶段；不是一次复制就忽略失败的成功流水线。四个原始 FTS 阶段为 `unicode61`、`trigram-all`、`trigram-string`、`trigram-large`；后三者分别还有 `-ordered` 阶段，强制主键范围扫描和递增 rowid。每个阶段串行、有依赖结果，无自动重试。日志和 exit/wall 记录在自身产物目录。
+
+本机原始三个trigram、有序全scalar与有序string-only查询计划补测均发生0xC0000005，完整查询未执行；有序string-only、大文本首轮成功proof保留，但不代表稳定性。失败后先运行 `node search-fts-failure.mjs <阶段名>`，保留quick_check、最后提交范围、退出状态和未完成声明。计划补测的取证命令为 `node search-fts-failure.mjs trigram-string-ordered-plans fts-plans`；只对其partial accelerator采集EXPLAIN，未执行查询。确认没有阶段在运行，再执行 `node search-query.mjs reset-accelerator`，才可继续独立阶段或测试不同参数/假设。无代码/参数/环境变化不得机械重跑同一失败。`search-fts-plan.mjs` 记录两种INSERT计划；`search-trigram-range.mjs` 仅对照原始全scalar失败下一批，不能证明大索引稳定。
+
+`search-export.mjs` 要求成功阶段的完整文件，失败 FTS 候选则要求显式 failure manifest；不把 progress 文件导出成成功证据。已完成 literal/trigram 若出现漏匹配、语义或来源审计失败，导出会拒绝；未完成 accelerator 不算零漏匹配。`post-fts-parity` 重新逐行校验 C 的全部 facts，`publication` 比较整源事务与 staging，`cancellation` 单独记录真实取消请求时间，`textmap` 统计全部语言/分片的逻辑载荷。`temp-indices` 是另外一次 A/B/C 全量索引重建，外部100ms观察自有 SQLite temp 目录，不与原始构建耗时混合。
+
+`fts-plans` 原意是补齐首轮未持久化的查询计划，另外完整重建有序string-only索引，只记录EXPLAIN、不重复计数/集合性能测试；本轮补测崩溃，完整计划仍OPEN。其build/内存数字不混入首轮基准，原始成功proof保留。保存failure manifest、reset后，使用 `node search-run.mjs post-fts-parity publication cancellation textmap normalization-coverage audit` 继续独立收尾；不得把partial/空FTS或toy库当作成功全量query plan。`normalization-coverage` 将forensic新增的歧义来源distinct string与既有分组对照，全库case/NFC统计包含这些内容。
+
+初次 reference 因生产 tokenizer 的 U+FEFF 丢失失败，本轮修正调查观察层后全量重跑；历史 `--repair-investigation` 只用于对照确认后修正 B 自有实验库，不是 production 修复，也不修改 raw 来源。当前正确观察层的新运行不需要该参数。发生 parity failure 先保留 truth DB/log，诊断原因并重新校验；不能直接开启 repair 消除未知差异。`search-normalization.py` 保留首次 Python SQLite native crash 原型用于审查，不是默认成功路径；正式复现用 Node normalization，Python 只生成 casefold map。独立 Node harness 先执行全量 workload，再在真实 Electron Utility 重复；Electron 无窗口、有限45分钟 guard，不关闭 sandbox，也不修改正式入口。
+
+直接 Node 的 SIGINT 在读取块/SQL批次之间合作取消；独立 reference 的取消检查主要在来源之间。同步 SQL 正在执行时不能被同线程 timer 打断。监督进程终止 child 或 Electron guard 结束属于崩溃/强制终止，保留数据库/log，未发布来源保持 building/stale；不是低延迟取消证明。只有 publication gate 成功才能发布 current coverage。
+
+调查 scanner 使用64 KiB chunk、16 MiB token、depth256、120秒/source、2 GiB RSS guard；生产 RawDataService 的更窄预算没有变化。packed scalar 在调查预算内物化，超限输出明确 resource failure。观测层复用成熟 tokenizer/grammar，numeric lexeme 不转 Number；有界 quoted string 原生解码保留 FEFF。独立 stream-json 全库重新产生事实与 query truth。FAILED duplicate sources 的 raw census 与可导航 index scope 分开，FILE 全量覆盖。
+
+自有数据库清理前关闭全部相关子进程/handle；先列清单，再执行：
+
+FTS reset 只移除两张调查 accelerator/eligibility 表，保留 lossless facts。同步 count/CREATE INDEX 的取消可能等待长 SQL 返回，不能将此诊断工具视为低延迟 production planner；有界取消证据来自 lifecycle 和独立 cancellation 分批 probe。执行 cleanup 前，完成 export/report/检查与最终 source audit；清理记录可追加到紧凑证据的 delivery 字段。
+
+```powershell
+node search-cleanup.mjs
+# 已完成export/report/checks和最终全库metadata audit后，才能删除大型JSON。
+node search-cleanup.mjs --include-large-json
+node search-cleanup.mjs --execute --include-large-json
+node search-delivery.mjs
+```
+
+若保留大型JSON以继续audit，可省略 `--include-large-json`，然后执行：
+
+```powershell
+node search-build.mjs audit
+```
+
+cleanup 核实绝对目标是 `artifacts/search` 的直接普通文件，拒绝 symlink，移除 SQLite/sidecar 与命名 synthetic fixtures；可选移除同一自有目录中大于4MiB的JSON。不会删除來源、依赖、production 文件或整个工作区。`search-delivery.mjs` 验证清理已执行、重查外部HEAD/status/16个代表hash，追加delivery记录与最终验收段，再检查文档链接和diff。全库metadata审计在删除baseline前完成。大原始 JSON/log 位于忽略目录，仅紧凑证据进入 docs。清理后重测数据库阶段需从 build/reference 开始，不能用旧 progress 恢复成 complete。最终报告见 [Phase 2 Search](../../docs/investigations/phase-2-search-architecture-full-dataset-investigation.md)。Windows 结果不外推为 Mac 或 packaged SLA。
 
 ## Phase 2A 复现
 

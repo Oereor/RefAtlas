@@ -2,6 +2,8 @@
 
 更新日期：2026-10-04（UTC+8）。
 
+**Phase 2 Search 全库调查：REPORT DELIVERED / AWAITING REVIEW；关键 OPEN 项未关闭。** 已形成中文[调查报告](investigations/phase-2-search-architecture-full-dataset-investigation.md)与[紧凑证据](investigations/evidence/phase-2-search-measurements.json)：完整137,916来源普查、三种完整schema、独立原始来源身份比对、literal/FTS查询、发布/取消与Node/真实Utility浏览竞争。83,513,357可导航FIELD/VALUE事实通过独立校验，15个重复键来源仍为partial；生产FEFF解码缺陷、部分trigram原生崩溃、完整生产压力/平台边界继续OPEN。C与完整literal路径只是候选建议，未接受schema、未修改production代码/依赖/IPC/UI、未进入Search Foundation；调查交付后等待review，不宣称所有调查问题已关闭。
+
 **Source Browser Slice E：IMPLEMENTED；Windows x64 native full gate VALIDATED；macOS arm64 PASS WITH FIXES；AWAITING REVIEW。** active-source polling、唯一 stale、显式 Reload、新 revision 同 Pointer 恢复、application-level LOCATION_MISSING/Return to Root 已实现。Windows A/B/C/D shared watcher preflight 在实现前以单次完整 runner exit 0 关闭；最终版本 230 ordinary tests/types/独立真实数据/dev/built/packaged 全过；单次 11 阶段 runner exit 0、production build 恰一次。generic browsing foundation 功能完成不等于整个 Phase 2 或未来功能完成。macOS 定向验收最终单次 11 阶段 runner exit 0、production build 恰一次，三态 polling/stale/reload/recovery 与真实 minimize/hide/resume 通过；仅 harness 修复/增强，无共享产品行为改动，不要求本轮 Windows native 补验。原生 minimize 的通过范围为台前调度关闭，开启组合保留限制。见 [Windows 实现报告](investigations/phase-2-source-browser-slice-e-change-reload-integration.md) 与 [Mac 定向报告](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md)。
 
 **Source Browser A/B/C/D/E generic browsing foundation is validated on both Windows x64 and macOS arm64.** 仅关闭 generic browsing foundation 平台 gate；不表示整个 Phase 2 或完整 accessibility audit 完成。

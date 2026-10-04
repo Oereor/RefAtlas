@@ -1,5 +1,8 @@
 # 调查与证据
 
+- [Phase 2 Search 全库调查](phase-2-search-architecture-full-dataset-investigation.md)：INVESTIGATION / AWAITING REVIEW；137,916 来源全量 occurrence census、三种完整 schema、独立 truth、literal/FTS/fallback、生命周期与 Node/Utility 浏览竞争；15个重复键来源使 workspace coverage partial，生产 FEFF 缺陷需后续修复。候选不作为 accepted architecture。
+- [Phase 2 Search 紧凑证据](evidence/phase-2-search-measurements.json)：全量测量与集合差分、来源指纹、失败及未测边界；Windows数字不是macOS SLA。
+
 - [Source Browser Slice E macOS arm64 定向验收](phase-2-source-browser-slice-e-macos-arm64-validation.md)：PASS WITH FIXES（仅 harness）；三态 polling、原生窗口、stale/reload/位置恢复与最终 11 阶段 runner；台前调度关闭为 minimize 通过范围，开启组合保留限制，无本轮 Windows 补验要求。
 
 - [Source Browser Slice E](phase-2-source-browser-slice-e-change-reload-integration.md)：Windows preflight closure、active-source polling/stale/reload、同 Pointer recovery、LOCATION_MISSING/Root、竞态/locale/native visibility；历史实现报告保持原样，当前 Mac gate 见上项。
