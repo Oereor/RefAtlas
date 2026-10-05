@@ -2,6 +2,18 @@
 
 ## Phase 2 Search Round 2：停止报告与复现
 
+后续 [Execution-lane closeout](../../docs/investigations/phase-2-search-execution-lane-validation.md) 已完成；下文保留先前失败及 Controlled Retry 历史，当前状态由 docs/STATUS 管理。
+
+### 本轮 closeout 工具
+
+`search2-closeout.mjs` 保存 baseline、单次原入口复现、恢复/普通 built smoke、私有 lane/probes 和来源审计；`search2-closeout-acl.ps1` 保存 SID/SDDL、icacls backup 及局部 grant/audit；`search2-closeout-{work,lane,electron}` 执行有界负载，`search2-closeout-checks.mjs` 验证 resolver 终态，`search2-closeout-cleanup.ps1` 做受控清理/只读进程审计，`search2-closeout-export.mjs` 在独立验收后导出 evidence。
+
+固定 ignored 产物根为 `artifacts/search-round2/execution-lane-closeout/`。单次阶段 manifest 已存在时拒绝覆盖，不删除历史来盲目 retry。新调查若复用，应先明确另一个产物 namespace，保留本轮源码 snapshots/指纹和日志。
+
+本轮顺序：baseline → reproduce（原入口/参数不变，旧小型文件备份/恢复）→ ACL inspect/backup → 仅复现相同 fatal 才 grant/audit → 正常用户 recovery-owner → 当前 build/built smoke-owner → lanes → failure-recovery-addendum → probes（只修正 histogram 首 tick，不重跑矩阵）→ checks/audit → cleanup/process audit/export。原 harness 固定写出的 profile 单独列入清理记录。
+
+Electron/构建在 CodexSandboxOffline 身份下仍受限制，实际 Electron 验收使用正常用户身份；应用 sandbox 保持开启。ACL 仅给 `electron/dist` 添加标准 package RX，先 backup，不修改广泛父目录或其他 ACE。Main 只发私有有界消息；Worker/Utility 自己拥有 native connections，不接 public IPC，不需要被清理的 full S1 DB。
+
 这是调查工具，不进入 production bundle。报告见 [Round 2](../../docs/investigations/phase-2-search-candidate-source-index-investigation.md)，紧凑证据见 [measurements](../../docs/investigations/evidence/phase-2-search-candidate-source-measurements.json)。本次三来源预检成功，随后全库 S1 原生退出 `0xC0000409`，已按明确 stop condition 停止；未完成 hashed/packed/hybrid、真实 Exact/Contains 或隔离 lane benchmark。
 
 产物全部位于 ignored `artifacts/search-round2/`。复用已安装依赖；不改生产/调查 package 和 lockfile、不下载、不写 TurnBasedGameData。每次大型阶段先检查磁盘并保留 30 GiB 调查安全余量；来源 scanner 与整体 RSS/time guard 复用 Round 1 调查预算，不改变生产限制。32 MiB 去重记账触发自有 staging spill，记账不是实际 JS heap。

@@ -502,3 +502,9 @@ benchmark 后收尾检查发现来源已发布之后、查询完成之前变化�
 本次最终逐文件清理 4041930695 bytes（约 3.76 GiB），含 S1、两种 staging 和大型 census/inventory；转换 DB 与 fixture/spool 在各阶段先清理，详细命名文件记录进入证据。保留两次小型日志、checkpoints、完整终态 compact JSON、工具源码/指纹和清理记录；所有产物在 ignored `tools/investigation/artifacts/search-round2/`。production src、RawBridge/Preload/public IPC/UI、全部 package/lockfile、外部来源未改；无 commit/push/PR、无 production build。
 
 最终语法、相关 fixture、format:check、文档链接、diff 与来源/清理审计结果写入 [Controlled retry evidence](evidence/phase-2-search-candidate-source-controlled-retry.json)。本轮交付后停止等待 review，不进入 Search Foundation。
+
+## 32. Execution-lane Closeout 补记（2026-10-05）
+
+后续定向任务已完成局部 Electron ACL 标准 RX 恢复、正常用户真实 sandboxed built smoke、三通道固定探针、Worker/独立 Search Utility 的 16 场景/192 Browser RPC、协作取消和受控 JS 退出/DB 恢复。没有重跑本报告的全库构建、membership 或查询/空间套件；两次原始 compact evidence 字节保留。详细结论和执行身份限制见[新报告](phase-2-search-execution-lane-validation.md)与[证据](evidence/phase-2-search-execution-lane-measurements.json)。
+
+当前 execution gate 在 Windows 私有原型范围 validated，建议独立 Search Utility、concurrency=1；现有 literal S1 架构证据 sufficiently supported for review，不机械要求 full Round 3。本节更新后续状态，不改写第 31 节当时的 native stop 与 NO 结论。历史 `0xC0000409` 根因仍未知，生产 FEFF/coverage-generation/增量边界与平台/打包验收继续保留。无 accepted ADR，无 production Search；交付后等待 review。

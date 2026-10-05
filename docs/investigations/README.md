@@ -1,6 +1,8 @@
 # 调查与证据
 
-- [Phase 2 Search Round 2 Candidate-Source 调查](phase-2-search-candidate-source-index-investigation.md)：Controlled Retry #2 PASS / BLOCKED BY NATIVE STABILITY / NO / REQUIRES ROUND 3 / AWAITING REVIEW。完整 S1、独立 membership proof、Exact/Contains、空间转换、生命周期/spool 证据已取得；Electron lane 在 ready 前 native ACL fatal，三通道和 Browser 竞争未验证，首次 Node crash 根因仍未知。
+- [Search Round 2 Closeout：Electron ACL 与 execution lane](phase-2-search-execution-lane-validation.md)：Windows sandboxed built smoke、三通道探针、Worker/独立 Utility 竞争、取消和故障恢复已验收；架构证据足以提交 review，推荐独立 Search Utility。受限执行身份、历史 native 根因和生产 FEFF/平台前置条件保留。
+- [Execution lane 紧凑证据](evidence/phase-2-search-execution-lane-measurements.json)：ACL 差异、执行身份、安全断言、192 独立 Browser RPC、终态与清理；非 accepted architecture。
+- [Phase 2 Search Round 2 Candidate-Source 调查](phase-2-search-candidate-source-index-investigation.md)：保留 Controlled Retry #2 PASS 及当时的 ACL native stop 历史；完整 S1、独立 membership proof、Exact/Contains、空间、生命周期/spool 证据复用，后续 lane closeout 见上述新报告。
 - [Round 2 首次失败证据](evidence/phase-2-search-candidate-source-measurements.json)：原字节保留 Attempt #1。
 - [Round 2 Controlled Retry 证据](evidence/phase-2-search-candidate-source-controlled-retry.json)：完整重试验收、冻结查询 identity/timing、空间/生命周期、后续 native stop、来源与清理审计；不是 accepted architecture。
 

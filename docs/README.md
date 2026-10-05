@@ -2,6 +2,8 @@
 
 中文权威项目文档位于 `RefAtlas/docs/`，与应用代码纳入同一 Git 仓库。外层 `RefAtlas-Project/` 只是本地工作区容器；同级 `TurnBasedGameData/` 仍为只读外部数据。
 
+Search Round 2 的定向 Electron ACL/execution-lane 收尾见 [报告](investigations/phase-2-search-execution-lane-validation.md)；候选建议等待 review，不自动进入 Search Foundation。当前阶段真相见 STATUS。
+
 ## 权威模型
 
 | 文档 | 唯一职责 |
