@@ -2,6 +2,8 @@
 
 2026-10-04 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；Slice E 已补齐显式 Reload 和同 Pointer recovery；搜索与契约未实现。A/B/C/D macOS arm64 累计 gate 已 PASS WITH FIXES，shared watcher Windows 补验已在 Slice E preflight 完成，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。Slice E 的 [Mac 定向验收](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md) 已 PASS WITH FIXES，仅 harness 修改；A/B/C/D/E generic browsing foundation 平台 gate 已关闭，Mac minimize 通过范围为台前调度关闭，开启组合保留限制。
 
+2026-10-05 产品范围更新：[ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md) 已接受搜索范围与引用优先方向，部分替代 ADR-0009 的 workspace-wide content search 要求；既有 investigation evidence 保留。当前 V1 workspace discovery 仅要求 Source Locator，raw content find 限 active source，跨 source 语义导航由 Dataset Contract / Reference Resolver 承担。上述方向尚未实现，本次不改变生产拓扑或 API。
+
 ## 1. 桌面栈与进程所有权
 
 采用 Electron、Svelte 5、TypeScript，面向 Windows x64 与 macOS arm64，通过 GitHub Releases 分发，无网页部署。macOS x64 不属于正式支持目标。接受 electron-vite 负责 Main/Preload/Renderer/Utility 入口与开发构建，electron-builder 负责桌面打包、ASAR/native unpack 及后续发布打包基础；不永久冻结当前包版本，正式发布配置仍未决定。[ADR-0001](decisions/ADR-0001-desktop-stack-and-process-model.md) [ADR-0005](decisions/ADR-0005-macos-platform-scope.md) [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md)
@@ -71,17 +73,41 @@ Source Browser Slice A 的 `DirectoryPath` 与 `.json` RelativePath 分离，根
 
 这些是已验证工程实现，非永久预算或产品 SLA；完整行为、错误和 edge-case policy 见 [报告](investigations/phase-2-raw-access-foundation.md)。
 
-## 4. 存储与完整搜索
+## 4. 存储、discovery/find 与契约引用
 
 Phase 1 首选 better-sqlite3，SQLite 属于 Data Service，经窄内部存储边界隔离，不引入 ORM。Windows x64 与 macOS arm64 打包后的原生加载与数据库访问是正式必过门槛；macOS x64 已由 [ADR-0005](decisions/ADR-0005-macos-platform-scope.md) 移出支持范围。存在实质问题可复审驱动而不改高层 Query API 语义。本次不设计存储 API。[ADR-0003](decisions/ADR-0003-phase-1-sqlite-driver.md)
 
-搜索先定义确定性行为：Exact 精确标量/未来显式契约 ID，Contains 字面 Unicode 子串，Field 字段名，File 文件/路径，Text 原始来源文本（可能包含数据集自身的多语言内容）。Text 与 APP UI translation 无关；Phase 2 不提供契约 ID resolver。名称不固定 UI/API；FTS/tokenizer 只作加速，不能改变语义，不引入语义分词、embeddings 或 AI 搜索。[ADR-0004](decisions/ADR-0004-deterministic-search-semantics.md)
+### 当前 V1 discovery model
 
-Search completeness 是正确性要求，latency 是优化问题：完整可搜索范围含 raw scalar、field names、files/relative paths。SQLite 是可重建 cache/index，raw JSON 是 source of truth；可保存来源、NodeAddress/provenance、字段出现、scalar kind、exact lexeme/text、revision 及必要结构 metadata，不等于接受具体 schema。ID-like value、大整数 hash/raw number 不强制存 SQLite INTEGER。
+| 范围 | 职责 | 实现边界 |
+| --- | --- | --- |
+| Workspace | Source Locator：filename / relative path | 不要求解析全部 JSON、scalar/field occurrence index、S1、FTS/trigram、persistent content index 或 dedicated Search Utility |
+| Active source | Find in Source：bounded literal Contains/find | 复用 raw/parser foundation，渐进匹配、取消、source-revision safety、previous/next navigation、有界 Renderer payload；不要求 persistent index |
+| Cross-source semantic navigation | Dataset Contract / Reference Resolver | 显式契约定义 target scope、structure、matching rule，返回目标 NodeAddress / Logical Entity |
 
-Search coverage ≠ acceleration coverage。Trigram 只为 Contains/Text 的候选，不默认覆盖所有 scalar；启用与文件/语言范围待完整数据集容量和性能测量。未加速、特殊值或未索引来源仍参与 bounded SQLite scan / instr / source streaming fallback。最终 verification 不能补回 candidate omission；完整搜索不能只覆盖索引 preview。
+当前 Source Explorer 仍是单目录 discovery，完整 workspace source catalog 尚不存在。Source Locator 与 Find in Source 都未实现，需独立授权。Find 示例 `1407` 可匹配当前 source 的 `1407`、`140701`、`131407`，不扩展到所有 workspace source。
 
-Query/UI 必须能表达 searching/progress/coverage/partial results/cancellation，不能把未完成或失败的覆盖标为全工作区已搜完。回退要有界且可取消；不为 1–2 字符查询提前自研复杂单字/双字倒排索引。具体 planner、匹配选项、schema、分页和 accelerator coverage 未接受。[ADR-0009](decisions/ADR-0009-search-completeness-and-optional-acceleration.md)
+确定性匹配方向遵循 [ADR-0004](decisions/ADR-0004-deterministic-search-semantics.md)，具体匹配选项/API/预算不在本次设计。完整性约束声明的查询范围，progress、partial results 与 cancellation 必须可观察，未覆盖或失败不能冒充完整无结果；不再要求 V1 完整 workspace raw content coverage。raw JSON 是 source of truth，SQLite 是可重建缓存，类型、numeric lexeme、出处与 revision 边界继续有效；不因存储方案丢失大整数或 raw facts。[ADR-0009 的历史与部分替代](decisions/ADR-0009-search-completeness-and-optional-acceleration.md)
+
+### Search 与 Reference 的正式边界
+
+**Search discovers raw content; Dataset Contracts establish reference meaning.**
+
+**Reference resolution must not be implemented as unconstrained workspace-wide content search.**
+
+未来 selected raw Node → Dataset Contract → deterministic reference semantics → target scope / target structure / matching rule → Reference Resolver → target NodeAddress / Logical Entity。`Avatar.Skill[] = 140701` 可由契约规定 lookup `AvatarSkillConfig.json` 的 `SkillID`，按契约的 typed exact equality 确定目标；不能退化为 Global Search `140701`。可直接从 `CharacterName.Hash` 推导 TextMap key / Pointer 时直接访问。示例不接受具体契约 schema 或相等规则，raw search semantics 不自动定义 reference resolution。
+
+Incoming References / Referenced by 只能来自显式 contract semantics；`SomeRandomNumber: 140701` 不因值等于 SkillID 生成边。关系导航继续遵守 Core does not infer relationships。
+
+### Deferred / dropped Search 工作
+
+Workspace-wide raw Exact / Contains / Field / Text、scalar / ID / hash occurrence search 为 DEFER，是接受的 V1 产品缺口，不是技术失败。Relational S1、persistent content cache、FTS/trigram 与 dedicated Search Utility 同样 DEFER；compact typed hash + Contains dictionary 为 DROP from current V1 candidate set，不再做 direct-from-raw validation。
+
+S1 的 candidate-source architecture 已有充分可行性证据，但当前 V1 没有 workspace-wide raw-content Exact acceleration 需求，停止 production schema、full build、partial coverage、background / query-assisted indexing、generation 与 persistent content cache lifecycle；不是永久 rejected。约 3 GiB 的历史 S1 空间量级可接受，compact 的 collision/dictionary/GC/incremental complexity 与收益不匹配。
+
+若未来恢复重型 workspace-wide Search/indexing，Raw Utility + Dedicated Search Utility 是合理 isolation 方向，当前不提前实现。保留 [全库调查](investigations/phase-2-search-architecture-full-dataset-investigation.md)、[S1/compact 调查](investigations/phase-2-search-candidate-source-index-investigation.md) 与 [execution-lane evidence](investigations/phase-2-search-execution-lane-validation.md)，未来复审应复用证据；私有原型不等同生产或跨平台验收。
+
+生产 segmented TextDecoder 丢 U+FEFF 仍是 OPEN 的 Raw Access correctness defect；真实 `TextMap/TextMapJP.json` `/7505878640962067595` 的首字符丢失见 [既有调查](investigations/phase-2-search-architecture-full-dataset-investigation.md)。这是近期独立 raw fidelity 任务，影响 TextMap/reference preview，不随 Search defer 关闭；本轮不修复。
 
 ## 5. UI 本地化边界
 
@@ -122,9 +148,9 @@ SourceSession 只对 active current source 以请求 settled 后约 1s 的节奏
 ## 8. 尚未接受或产品验证
 
 - 正式发布配置、CI/release workflow、签名、公证、安装器/DMG、自动更新与发布节奏。工具链路线已接受，但这些发布事项不属于 ADR-0006；具体版本由 package/lockfile 管理并按风险升级验证。
-- full search、Dataset Contract 和完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。
-- SQLite schema、持久 cache、child index 和更大 scalar streaming 策略仍未实现；当前 RawValue、范围/检测和工程预算见本轮报告。Dataset Contract 仍留在 Phase 3。
-- Exact 具体相等规则、BINARY/case/normalization、分页参数，trigram 启用与文件/语言覆盖、完整数据集容量及性能。
+- Source Locator、active-source Find、Dataset Contract 与完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。Phase 3A 契约架构/调查是下一焦点，需独立授权。
+- Workspace-wide content search / S1 / content cache / FTS-trigram / dedicated Search Utility 已 defer，compact hash 已退出当前候选；不是等待继续 Search Foundation 的任务清单。
+- Active-source Find 的具体匹配选项、分页/API/预算，以及契约 schema、resolver matching rule、incoming/reference navigation 仍待独立设计；child index 和更大 scalar streaming 优化尚未实现。FEFF 是独立 OPEN correctness work。
 - 台前调度开启组合的 macOS minimize/visibility 回归、完整 accessibility audit 和正式签名/公证验证；macOS A/B/C/D 累计 gate 与用户 VoiceOver sanity check 见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)，Slice E 范围见 [Mac 定向报告](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md)。
 
 [Phase 2A 调查](investigations/phase-2a-data-access-architecture.md)保留历史候选与实测；本次接受范围及候选区别见 [评审收尾](investigations/phase-2a-review-closeout.md)。实验表、合成边、采样、具体阈值和库不自动成为生产架构。Phase 0 的版本矩阵没有被接受为永久要求；真实测量见 [PERFORMANCE](PERFORMANCE.md)，已完成阶段范围见 [Phase 1A](ROADMAP.md#已完成phase-1a--桌面基础与架构验证)，当前状态以 STATUS 为准。

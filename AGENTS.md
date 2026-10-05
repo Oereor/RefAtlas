@@ -13,7 +13,7 @@
 - 渲染进程只收有界查询结果、Node 摘要或有界值/片段，不载入巨大文件到 UI 状态/编辑器。主进程不承担重型数据工作。
 - source workspace 是只读来源；缓存写入应用自己的目录。外部 revision 改变后使旧 range/索引/视图失效并 reload/reindex，不按 ID、值或 heuristic 迁移位置。
 - parser adapter 保留类型与 numeric lexeme，支持有界处理、取消、资源限制和范围产生/恢复；indexing、range-read、search 等路径必须产生一致 raw semantics，具体成熟库可替换。
-- raw scalar、field、file/path 的搜索覆盖是正确性要求；SQLite 是可重建缓存，accelerator 不能决定完整性。未覆盖范围、partial results、进度与取消必须可观察，不冒充完整搜索完成。
+- V1 workspace discovery 仅要求 source filename / relative-path locator，raw content find 限 active source；workspace-wide raw content search、S1 与 dedicated Search Utility 已 defer，compact hash 退出当前 V1 candidate set。声明范围内的完整性、partial results、进度与取消必须可观察；SQLite 是可重建缓存，accelerator 不能决定完整性。Reference Resolver / Incoming References 必须来自显式契约，不以 unconstrained global search 或 raw equality 推断关系。见 [ADR-0011](docs/decisions/ADR-0011-search-scope-and-reference-first-direction.md)。
 - 从首批 Phase 2 production UI 起，用户消息经统一类型化 localization layer；协议使用稳定 code，locale 不传入 Data Service。raw field/string/numeric lexeme/path/Pointer/NodeAddress 不本地化；APP 自有格式使用共享 presentation formatter。具体约束见 ADR-0010。
 - 成熟依赖优先，不自研解析器、虚拟列表、图引擎、编辑器或通用 diff。
 - 阶段推进必须来自用户明确授权，并以 `docs/STATUS.md` 为当前阶段真相；调查、清理或收尾本身不自动授权进入下一阶段。本文件不维护临时进度。

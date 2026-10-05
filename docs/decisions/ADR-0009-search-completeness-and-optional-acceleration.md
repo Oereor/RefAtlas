@@ -1,8 +1,10 @@
 # ADR-0009：搜索完整性与可选加速
 
-- 状态：已接受。
+- 状态：已接受，产品搜索范围由 ADR-0011 部分替代。
 - 日期：2026-10-03（UTC+8）。
 - 适用阶段：Phase 2 搜索与索引设计；不表示产品搜索已实现。
+
+范围补记（2026-10-05，UTC+8）：[ADR-0011](ADR-0011-search-scope-and-reference-first-direction.md) 部分替代本 ADR 的 V1 workspace-wide raw-content 搜索范围：V1 仅要求 source filename / relative-path locator 与 active-source Find，跨 source 语义导航由 Dataset Contract / Reference Resolver 承担。全库内容搜索、S1 content cache、FTS/trigram 与 dedicated Search Utility 已 defer，compact hash 退出当前 V1 candidate set；下文不再构成其生产实现要求。声明范围内的完整性、raw truth、可重建缓存与可观察性原则继续有效。原决定正文保留。
 
 ## 背景
 

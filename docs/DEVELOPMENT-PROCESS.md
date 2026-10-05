@@ -11,7 +11,9 @@
 - 先小范围测试再扩展，不能因基准便利损坏整数。
 - 新说明中文，必要标识符保留原文。
 
-Phase 2A 接受范围见 [评审收尾](investigations/phase-2a-review-closeout.md) 和 ADR-0007–0010。后续实现区分 Node 地址、Structural Record 浏览角色和显式契约实体；source workspace 只读，外部变化使旧范围/索引/视图失效。parser 各路径统一 raw semantics；搜索 coverage 与 accelerator coverage 分开，进度、部分结果和取消必须可观察。
+Phase 2A 接受范围见 [评审收尾](investigations/phase-2a-review-closeout.md) 和 ADR-0007–0010；当前 V1 搜索范围由 [ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md) 部分替代 ADR-0009。后续实现区分 Node 地址、Structural Record 浏览角色和显式契约实体；source workspace 只读，外部变化使旧范围/索引/视图失效。parser 各路径统一 raw semantics；完整性、进度、部分结果和取消约束声明的查询范围，不要求当前 V1 全工作区内容索引。
+
+Search investigation line 已 completed / retained as historical evidence；旧 OPEN / UNKNOWN / AWAITING REVIEW 不能自动触发继续调查、compact follow-up 或 Search Foundation。Workspace discovery 仅要求 source filename / relative-path locator，raw find 限 active source；Reference Resolver 与 Incoming References 来自显式契约，不退化为 unconstrained global search 或 raw equality。FEFF 保持独立 Raw Access correctness task。Source Locator、Find、FEFF 修复与 Phase 3A 契约架构/调查都需单独授权；收尾后停止等待评审。
 
 从第一批 Phase 2 production UI 起，用户消息通过集中、类型化 localization layer；内部稳定 code 由 presentation 翻译，locale 不传入 Data Service。raw 字段/值/数值词法/路径/地址不翻译或按 locale 改写；APP 自有格式通过共享 `Intl.*` formatter。message sources 为权威，generated artifact 不手工维护；当前采用 Renderer-only Paraglide 与 en/zh-CN，配置和边界见 ARCHITECTURE。[ADR-0010](decisions/ADR-0010-ui-localization-boundary.md)
 

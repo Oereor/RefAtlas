@@ -2,9 +2,17 @@
 
 更新日期：2026-10-05（UTC+8）。
 
-**Phase 2 Search Round 2 Closeout：EXECUTION GATE VALIDATED / ARCHITECTURE SUFFICIENTLY SUPPORTED FOR REVIEW / AWAITING REVIEW。** 既有完整 S1、membership、冻结查询、空间、生命周期/spool 证据复用，未重跑全库调查。局部 Electron dist 标准 package RX 恢复及正常用户真实 sandboxed built smoke 通过；受限 CodexSandboxOffline 启动仍失败，执行身份限制保留。三通道固定探针、Worker/独立 Utility 的 16 场景/192 Browser RPC、取消与受控 JS 退出/DB 恢复通过；推荐独立 Search Utility、并发 1，同线程 scheduler 不足。见[本轮报告](investigations/phase-2-search-execution-lane-validation.md)与[证据](investigations/evidence/phase-2-search-execution-lane-measurements.json)。历史 `0xC0000409` 根因仍未知，本轮没有新 unexplained native crash；[Controlled Retry 历史](investigations/phase-2-search-candidate-source-index-investigation.md)保留。临时产物已清理，来源/scanner/production/package 未变，无 accepted ADR 或 Search Foundation。交付后等待 review；FEFF 修复和 Foundation 均需独立授权，Windows prototype 不替代后续 macOS/打包/production 验收。
+**Phase 2 Search investigation line：COMPLETED / CLOSED；RETAINED AS HISTORICAL EVIDENCE。Production workspace-content search：DEFERRED BY PRODUCT DECISION。** 用户已明确接受 [ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md) 的 V1 搜索范围与引用优先方向；这是 architecture/documentation closeout，不是技术失败，也不表示所有技术未知项已解决。本次交付状态为 **DOCUMENTATION CLOSEOUT / WAIT FOR REVIEW**，报告见 [架构收尾](investigations/phase-2-search-scope-architecture-closeout.md)。
 
-**Phase 2 Search 全库调查：REPORT DELIVERED / AWAITING REVIEW；关键 OPEN 项未关闭。** 已形成中文[调查报告](investigations/phase-2-search-architecture-full-dataset-investigation.md)与[紧凑证据](investigations/evidence/phase-2-search-measurements.json)：完整137,916来源普查、三种完整schema、独立原始来源身份比对、literal/FTS查询、发布/取消与Node/真实Utility浏览竞争。83,513,357可导航FIELD/VALUE事实通过独立校验，15个重复键来源仍为partial；生产FEFF解码缺陷、部分trigram原生崩溃、完整生产压力/平台边界继续OPEN。C与完整literal路径只是候选建议，未接受schema、未修改production代码/依赖/IPC/UI、未进入Search Foundation；调查交付后等待review，不宣称所有调查问题已关闭。
+**当前方向：workspace Source Locator（filename / relative path）＋active-source bounded literal Find＋Dataset Contract / deterministic Reference Resolver。** 现有 Source Explorer 仅单目录 discovery，不代表完整 workspace catalog；Source Locator 与 Find 尚未实现，分别独立授权。Search discovers raw content; Dataset Contracts establish reference meaning。Reference resolution 不得退化成 unconstrained workspace-wide content search；Incoming References 必须来自 explicit contract semantics，不能由 raw equality 生成边。
+
+**停止的 Search 工作：no Search Foundation authorized；no S1 implementation planned；no compact follow-up。** Workspace-wide raw Exact/Contains/Field/Text、ID/hash occurrence search、relational S1 / persistent content cache、FTS/trigram 与 dedicated Search Utility 为 DEFER；compact typed hash + Contains dictionary 为 DROP from current V1 candidate set。停止 production schema、full build、partial coverage、background/query-assisted indexing、generation/cache lifecycle 和 compact direct-from-raw validation。S1 可行性证据保留，不是永久 rejected。
+
+**FEFF：OPEN / RAW ACCESS CORRECTNESS DEFECT / REQUIRES INDEPENDENT AUTHORIZATION。** 生产 segmented TextDecoder 丢 U+FEFF，真实来源为 `TextMap/TextMapJP.json`、Pointer `/7505878640962067595`，见 [全库调查](investigations/phase-2-search-architecture-full-dataset-investigation.md) 与 [Round 2 保真说明](investigations/phase-2-search-candidate-source-index-investigation.md#25-feff--duplicate-key-prerequisites)。这是近期独立 raw fidelity 任务，关系未来 TextMap/reference preview；未修复，不因 Search defer 关闭。
+
+**Search 历史证据保留，不再等待继续 Search architecture investigation。** [全库调查](investigations/phase-2-search-architecture-full-dataset-investigation.md) 与 [measurements](investigations/evidence/phase-2-search-measurements.json)、[S1/Controlled Retry](investigations/phase-2-search-candidate-source-index-investigation.md) 与 [retry evidence](investigations/evidence/phase-2-search-candidate-source-controlled-retry.json)、[execution-lane validation](investigations/phase-2-search-execution-lane-validation.md) 与 [lane evidence](investigations/evidence/phase-2-search-execution-lane-measurements.json) 均原样保留。全库测量、membership、冻结查询、空间/lifecycle/spool、Browser-under-Search、取消与执行隔离结果继续有效；若未来恢复重型 Search/indexing，可复用 Raw Utility + dedicated Search Utility 的 isolation evidence。历史 `0xC0000409` 根因、重复键 partial coverage、native/平台边界仍按原报告保留，Windows 私有 prototype 不等同 production / macOS / packaging 验收；不因旧 OPEN / UNKNOWN / AWAITING REVIEW 重启调查。
+
+**下一架构焦点：Phase 3A — Dataset Contract architecture / investigation。** 当前收尾完成后 STOP / WAIT FOR REVIEW；Phase 3A、FEFF fix、Source Locator、Find in Source 均未自动授权。Workspace-wide content search 与 Tabs/History/Compare/Diff 不作为 Phase 3 前置条件；现有 Source Browser 的待评审状态及平台限制按下文保留。
 
 **Source Browser Slice E：IMPLEMENTED；Windows x64 native full gate VALIDATED；macOS arm64 PASS WITH FIXES；AWAITING REVIEW。** active-source polling、唯一 stale、显式 Reload、新 revision 同 Pointer 恢复、application-level LOCATION_MISSING/Return to Root 已实现。Windows A/B/C/D shared watcher preflight 在实现前以单次完整 runner exit 0 关闭；最终版本 230 ordinary tests/types/独立真实数据/dev/built/packaged 全过；单次 11 阶段 runner exit 0、production build 恰一次。generic browsing foundation 功能完成不等于整个 Phase 2 或未来功能完成。macOS 定向验收最终单次 11 阶段 runner exit 0、production build 恰一次，三态 polling/stale/reload/recovery 与真实 minimize/hide/resume 通过；仅 harness 修复/增强，无共享产品行为改动，不要求本轮 Windows native 补验。原生 minimize 的通过范围为台前调度关闭，开启组合保留限制。见 [Windows 实现报告](investigations/phase-2-source-browser-slice-e-change-reload-integration.md) 与 [Mac 定向报告](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md)。
 
@@ -64,8 +72,9 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 - [ADR-0006](decisions/ADR-0006-electron-build-and-packaging-toolchain.md)：接受 electron-vite + electron-builder 为当前长期构建/打包路线，不永久冻结版本或决定正式发布配置。
 - [ADR-0007](decisions/ADR-0007-node-addressing-and-source-lifecycle.md)：Node 物理地址、结构浏览角色、只读来源及 revision 失效。
 - [ADR-0008](decisions/ADR-0008-parser-capability-contract-and-source-ranges.md)：可替换 parser 能力契约、一致 raw semantics 及版本绑定的可重建范围。
-- [ADR-0009](decisions/ADR-0009-search-completeness-and-optional-acceleration.md)：完整搜索覆盖、可重建 SQLite、可观察回退与可选 accelerator。
+- [ADR-0009](decisions/ADR-0009-search-completeness-and-optional-acceleration.md)：完整性、可重建 SQLite、可观察回退与可选 accelerator；产品搜索范围由 ADR-0011 部分替代，历史正文保留。
 - [ADR-0010](decisions/ADR-0010-ui-localization-boundary.md)：UI-only 类型化 localization、稳定协议 code、raw 数据不本地化及测试边界。
+- [ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md)：Source Locator / active-source Find、全库内容搜索 defer、Search/Reference 分层与显式契约 incoming references。
 
 ## Phase 1A 收尾与平台验收
 
@@ -78,7 +87,7 @@ format/typecheck、6 文件 / 42 项测试、文档检查、dev/built/packaged s
 | Windows x64 | 通过 | ASAR 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 | macOS arm64 | 通过 | ASAR .app 目录包通过 | 通过 | 通过 | 开发/构建/打包态通过 |
 
-Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则已接受；本轮已实现 raw types、窄 Query API、固定版 parser adapter、工程预算、source revision 与内存范围缓存。SQLite schema、搜索和 accelerator coverage 仍未实现。Dataset Contract、全量生产索引与持久索引增量刷新尚未实现；Source Explorer shell 与当前 revision 的 Node Browser/Inspector 已实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，真实采样与隔离传输实验保留在原调查报告。
+Phase 2A 的 Node/浏览、parser/range 和 UI localization 原则继续有效；原完整 workspace 搜索产品范围已由 ADR-0011 部分替代；本轮已实现 raw types、窄 Query API、固定版 parser adapter、工程预算、source revision 与内存范围缓存。Workspace-wide content search、S1/content cache/FTS-trigram/Search Utility 已 defer，compact hash 已退出当前候选；Source Locator、Find 和 Dataset Contract 尚未实现；Source Explorer shell 与当前 revision 的 Node Browser/Inspector 已实现；可见窗口帧率与正式签名/公证未测。基础 IPC 口径见 [PERFORMANCE](PERFORMANCE.md)，真实采样与隔离传输实验保留在原调查报告。
 
 ## Phase 1 最终收尾与 Phase 2A 调查历史
 
@@ -92,7 +101,7 @@ Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则
 
 - 正式接受用户确认的原则，新增四份职责独立的 ADR；ADR-0002/0004 仅增加补记，历史决定正文保留。
 - 明确 JSON Node ≠ Structural Record ≠ Logical Entity；SourceAddress + Pointer 为物理地址，SourceRange 为失效可重建的访问元数据。
-- 接受 parser capability contract、raw 搜索完整覆盖、只读来源与 revision invalidation；不锁定库、schema、匹配选项、预算或 trigram 默认覆盖。
+- 当时接受 parser capability contract、raw 搜索完整覆盖、只读来源与 revision invalidation；不锁定库、schema、匹配选项、预算或 trigram 默认覆盖。原全库搜索产品范围已由本次 ADR-0011 部分替代，其他原则继续有效。
 - 接受从第一批 Phase 2 production UI 起统一类型化 localization；更新功能测试与专项 localization 测试边界，本轮不实现 runtime。
 - 同步产品、架构、流程和入口，原调查仅追加日期明确的评审补记。报告记录实际文档/格式/diff 验证及最终变更清单；未改生产代码、依赖、配置、工具和证据。
 
@@ -108,4 +117,4 @@ Phase 2A 的 Node/浏览、parser/range、完整搜索及 UI localization 原则
 
 Slice A 已评审，Slice B localization 已获授权并实现；最终 Windows gate 与评审状态见本页顶部及 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。Slice A/B/C/D 新实现的 macOS arm64 累计原生 gate 已完成，证据见本页顶部，不借用旧 Raw Foundation 结果。
 
-下一节点是 Slice E Mac 定向报告 review；平台 gate 已在上述范围关闭。generic browsing foundation 能力已齐备；Search、History、Dataset Contract、References/Graph 和发布工作未实现，不自动进入后续阶段。
+本次 Search scope architecture closeout 完成后 STOP / WAIT FOR REVIEW；generic browsing foundation 平台 gate 已在上述范围关闭，Slice E 报告评审及限制保留。下一架构焦点为另行授权的 Phase 3A — Dataset Contract architecture / investigation，不继续 Search Foundation 或 compact follow-up。FEFF 是近期独立 OPEN Raw Access correctness task；Source Locator / Find in Source 为小范围 Phase 2 UX 方向，分别授权。Workspace-wide content search、Tabs/History/Compare/Diff 不阻塞 Phase 3；本次不自动开始 FEFF fix、Source Locator、Find、契约、References/Graph 或发布工作。

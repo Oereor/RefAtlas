@@ -1,12 +1,16 @@
 # 调查与证据
 
-- [Search Round 2 Closeout：Electron ACL 与 execution lane](phase-2-search-execution-lane-validation.md)：Windows sandboxed built smoke、三通道探针、Worker/独立 Utility 竞争、取消和故障恢复已验收；架构证据足以提交 review，推荐独立 Search Utility。受限执行身份、历史 native 根因和生产 FEFF/平台前置条件保留。
+- [Phase 2 Search 搜索范围架构收尾](phase-2-search-scope-architecture-closeout.md)：2026-10-05 产品决定进入 ADR-0011；Search investigation line completed / closed，证据保留；workspace content search / S1 / content cache / FTS-trigram / dedicated Search Utility 为 DEFER，compact hash 退出当前 V1 candidate set。Source Locator / active-source Find 尚未实现，下一架构焦点为另行授权的 Phase 3A Dataset Contract；FEFF 仍是 OPEN Raw Access correctness defect。
+
+下列 Search 报告正文保持调查时点，不以其旧 OPEN / UNKNOWN / AWAITING REVIEW 启动后续工作。新的当前方向以 [ADR-0011](../decisions/ADR-0011-search-scope-and-reference-first-direction.md) 和 [STATUS](../STATUS.md) 为准；技术未知项未被宣称解决。
+
+- [Search Round 2 Closeout：Electron ACL 与 execution lane](phase-2-search-execution-lane-validation.md)：Windows sandboxed built smoke、三通道探针、Worker/独立 Utility 竞争、取消和故障恢复已验收；保留当时独立 Search Utility recommendation，当前生产 utility 已 defer；未来重启重型 Search 可复用。受限执行身份、历史 native 根因和平台局限保留，FEFF 归类为独立 Raw Access correctness work。
 - [Execution lane 紧凑证据](evidence/phase-2-search-execution-lane-measurements.json)：ACL 差异、执行身份、安全断言、192 独立 Browser RPC、终态与清理；非 accepted architecture。
 - [Phase 2 Search Round 2 Candidate-Source 调查](phase-2-search-candidate-source-index-investigation.md)：保留 Controlled Retry #2 PASS 及当时的 ACL native stop 历史；完整 S1、独立 membership proof、Exact/Contains、空间、生命周期/spool 证据复用，后续 lane closeout 见上述新报告。
 - [Round 2 首次失败证据](evidence/phase-2-search-candidate-source-measurements.json)：原字节保留 Attempt #1。
 - [Round 2 Controlled Retry 证据](evidence/phase-2-search-candidate-source-controlled-retry.json)：完整重试验收、冻结查询 identity/timing、空间/生命周期、后续 native stop、来源与清理审计；不是 accepted architecture。
 
-- [Phase 2 Search 全库调查](phase-2-search-architecture-full-dataset-investigation.md)：INVESTIGATION / AWAITING REVIEW；137,916 来源全量 occurrence census、三种完整 schema、独立 truth、literal/FTS/fallback、生命周期与 Node/Utility 浏览竞争；15个重复键来源使 workspace coverage partial，生产 FEFF 缺陷需后续修复。候选不作为 accepted architecture。
+- [Phase 2 Search 全库调查](phase-2-search-architecture-full-dataset-investigation.md)：INVESTIGATION COMPLETED / RETAINED AS HISTORICAL EVIDENCE；137,916 来源全量 occurrence census、三种完整 schema、独立 truth、literal/FTS/fallback、生命周期与 Node/Utility 浏览竞争；15个重复键来源使 workspace coverage partial，生产 FEFF 缺陷需后续修复。候选不作为 accepted architecture。
 - [Phase 2 Search 紧凑证据](evidence/phase-2-search-measurements.json)：全量测量与集合差分、来源指纹、失败及未测边界；Windows数字不是macOS SLA。
 
 - [Source Browser Slice E macOS arm64 定向验收](phase-2-source-browser-slice-e-macos-arm64-validation.md)：PASS WITH FIXES（仅 harness）；三态 polling、原生窗口、stale/reload/位置恢复与最终 11 阶段 runner；台前调度关闭为 minimize 通过范围，开启组合保留限制，无本轮 Windows 补验要求。
