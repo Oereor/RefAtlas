@@ -1,5 +1,34 @@
 # Phase 0 / Phase 2A / Phase 2 Search 非生产调查工具
 
+## Phase 2 Search Round 2：停止报告与复现
+
+这是调查工具，不进入 production bundle。报告见 [Round 2](../../docs/investigations/phase-2-search-candidate-source-index-investigation.md)，紧凑证据见 [measurements](../../docs/investigations/evidence/phase-2-search-candidate-source-measurements.json)。本次三来源预检成功，随后全库 S1 原生退出 `0xC0000409`，已按明确 stop condition 停止；未完成 hashed/packed/hybrid、真实 Exact/Contains 或隔离 lane benchmark。
+
+产物全部位于 ignored `artifacts/search-round2/`。复用已安装依赖；不改生产/调查 package 和 lockfile、不下载、不写 TurnBasedGameData。每次大型阶段先检查磁盘并保留 30 GiB 调查安全余量；来源 scanner 与整体 RSS/time guard 复用 Round 1 调查预算，不改变生产限制。32 MiB 去重记账触发自有 staging spill，记账不是实际 JS heap。
+
+以下为本次实际顺序。预检与完整构建各一次，无自动 retry/resume；原生退出后不得机械继续统计或更多大库。重新执行大型调查须先评审失败并确认新诊断假设，工具拒绝覆盖现有 DB：
+
+```powershell
+node search2-run.mjs search2-build.mjs --pilot
+node search2-run.mjs search2-build.mjs
+# 本次上一步退出非零；只读取证，不恢复失败库。
+node search2-run.mjs search2-forensic.mjs
+# 小型自有 fixture 验证，不是新全库性能阶段。
+node search2-run.mjs search2-tests.mjs
+# 审计并导出 STOPPED evidence，清理已核实的自有 DB/清单。
+node search2-delivery.mjs
+# 在应用根目录另执行 npm.cmd run format:check 后，补齐轻量最终检查。
+node search2-checks.mjs
+```
+
+`search2-run.mjs` 串行监督单个 child，保存 exit/wall、100ms 可命名文件长度高水位和 RSS 检查点；45分钟 guard 是有限保护，强制退出不能称合作取消。未命名/快速删除的 temp 和瞬时 RSS 不保证观察。各文件高水位不一定同时发生。
+
+`search2-stats.mjs` 只在完整成功 build/census 与全库来源数一致后才可执行；本次没有运行它，也没有生成冻结的 df benchmark set。`search2-resolve.mjs` 为小型 fixture 通过的调查原型，包含字典分批候选、流式 raw verify、provisional/verified 来源结果和临时 spool；还未通过真实全库/Browser/取消压力 gate，不是 production Query API。
+
+独立 stream-json fixture 比较完整 typed literal/Pointer 身份序列，生产 `src` 不变。原 `search-lib.mjs` 的 FIELD 观察仅补 associated-value type，FEFF 修正继续是已有调查观察层；production FEFF defect 未修。重复键仍拒绝发布唯一可导航地址。
+
+交付脚本只导出本次停止状态，要求外部 HEAD/status/16代表hash及全库metadata与 baseline 一致，要求 production src/package/lockfile 无变更、所有监督 child 已退出。关闭 handle 后逐个检查自有普通文件，删除 DB/sidecar 与完成审计后的 baseline；不会递归删除来源、依赖或工作区。已清理后的完整构建/forensic/delivery 不能直接再次运行；小型 fixture checks 可单独重复，但没有新失败或代码变化时无需机械复验。
+
 ## Phase 2 Search 全库调查
 
 这是独立 investigation，不提供正式 Search API/IPC/UI。只读同级 TurnBasedGameData；全部 DB、truth、fixtures、日志与 Electron profile 写入被忽略的 `artifacts/search/`。不要在来源目录创建缓存或复制全量数据。本轮工具复用已安装的独立依赖，生产 package/lockfile 不变。

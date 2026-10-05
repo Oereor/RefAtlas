@@ -1,8 +1,10 @@
 # 性能政策与 Phase 0 / Phase 1A 基线
 
-更新日期：2026-10-04（UTC+8）。本文件拥有性能口径与基线；结构及技术取舍见 [调查报告](investigations/phase-0-feasibility.md)。Phase 0 数字来自 [环境与样本证据](investigations/evidence/phase-0-measurements.json) 和 [全部运行结果](investigations/evidence/phase-0-benchmarks.json)，新增 production raw-access 观察见第 7 节。
+更新日期：2026-10-05（UTC+8）。本文件拥有性能口径与基线；结构及技术取舍见 [调查报告](investigations/phase-0-feasibility.md)。Phase 0 数字来自 [环境与样本证据](investigations/evidence/phase-0-measurements.json) 和 [全部运行结果](investigations/evidence/phase-0-benchmarks.json)，新增 production raw-access 观察见第 7 节。
 
 ## 1. 环境与口径
+
+2026-10-05 Search Round 2 新观察：三个明确选择的真实来源（AvatarConfig、SpecialAvatarRelicMainValue、TextMapCHS）合计 106,282,775 raw bytes、3,083,019 occurrences，直接构建得到 904,983 term-source memberships，main DB 206,512,128 bytes（含反向索引），build wall 23,435.90ms。它是一次非代表性预检，不能外推全库容量/延迟。随后全库 S1 在 127,122.29ms 后原生退出 `0xC0000409`；部分库有 22,355 ready 来源、1,422,473 memberships，未完成 reverse index/census。按停止条件未继续真实 query/lane 或 hash/packed 对照，**没有新增完整 Search 性能基线**。失败与 WAL/staging、sampling 局限见 [Round 2 报告](investigations/phase-2-search-candidate-source-index-investigation.md)，机器证据见 [measurements](investigations/evidence/phase-2-search-candidate-source-measurements.json)。生产性能行为未改。
 
 - Windows 10.0.26300 x64，Intel(R) Core(TM) i9-14900HX，32 逻辑 CPU，总内存 31.64 GiB，扫描时可用 12.93 GiB。
 - Node 24.21.0、npm 11.16.0、stream-json 3.7.0、better-sqlite3 13.0.3；两驱动 SQLite 均为 3.53.4。Electron 44.5.1 utilityProcess 另行验证 Node 24.21.0；系统 Node 成绩不是 Electron 性能。

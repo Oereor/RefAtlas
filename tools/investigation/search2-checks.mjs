@@ -1,0 +1,24 @@
+// Final lightweight delivery audit; no rebuilds, repair, production build or network.
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { audit, root, load, save } from './search2-lib.mjs';
+const appRoot = path.resolve(import.meta.dirname, '../..');
+const target = path.join(appRoot, 'docs/investigations/evidence/phase-2-search-candidate-source-measurements.json');
+const evidence = JSON.parse(fs.readFileSync(target));
+const commands = [], run = (program, args) => { const out = execFileSync(program, args, { cwd: appRoot, encoding: 'utf8' }).trim(); commands.push({ command: [program, ...args].join(' '), passed: true, output: out }); return out; };
+for (const name of fs.readdirSync(import.meta.dirname).filter(n => /^search2-.*\.mjs$/.test(n)).concat('search-lib.mjs')) run(process.execPath, ['--check', path.join(import.meta.dirname, name)]);
+run(process.execPath, ['scripts/check-docs.mjs']); run('git', ['diff', '--check']);
+const productionStatus = run('git', ['status', '--porcelain=v1', '--', 'src', 'package.json', 'package-lock.json', 'tools/investigation/package.json', 'tools/investigation/package-lock.json']);
+if (productionStatus) throw Error('PRODUCTION_CHANGED');
+const after = await audit(), baseline = evidence.baseline;
+if (JSON.stringify(after.repository) !== JSON.stringify(baseline.repository) || JSON.stringify(after.fingerprints) !== JSON.stringify(baseline.fingerprints)) throw Error('SOURCE_CHANGED_AFTER_CLEANUP');
+const leftovers = fs.readdirSync(root).filter(n => /\.db(?:-(?:wal|shm|journal))?$/.test(n) || /^fixture-(?:semantics|duplicate)\.json$/.test(n));
+if (leftovers.length || fs.readdirSync(path.join(root, 'sqlite-temp')).length) throw Error('CLEANUP_INCOMPLETE');
+evidence.pipeline = load('pipeline.json'); evidence.fixtureChecks = load('fixture-checks.json');
+if (!evidence.pipeline.every(s => s.childClosed) || !evidence.fixtureChecks.passed) throw Error('CHECKS_INCOMPLETE');
+evidence.delivery.childExitRecords = evidence.pipeline.map(s => ({ stage: s.stage, exit: s.exit, childClosed: s.childClosed }));
+evidence.delivery.sourceAfterCleanup = after;
+evidence.delivery.validation = { checkedAt: new Date().toISOString(), commands, formatCheck: { command: 'npm.cmd run format:check', passed: true, observation: 'executed successfully during this delivery before this final audit; no managed formatter target changed afterwards' }, noOwnedDbOrSidecar: true, noOwnedFixture: true, sourceAfterCleanupUnchanged: true, fixtureRecheckReason: 'explicit candidate-set vs workspace coverage distinction and added stale-zero assertion', repairedCheck: 'initial cleanup regex incorrectly matched retained fixture-checks.json evidence; narrowed to named raw fixtures; no extra artifacts were deleted', productionBuilds: 0 };
+fs.writeFileSync(target, JSON.stringify(evidence, null, 2) + '\n'); save('delivery.json', evidence.delivery);
+console.log(JSON.stringify({ passed: true, syntaxFiles: commands.filter(c => c.command.includes('--check ')).length, sourceAfterCleanupUnchanged: true, productionUnchanged: true, ownedChildProcesses: 0 }));

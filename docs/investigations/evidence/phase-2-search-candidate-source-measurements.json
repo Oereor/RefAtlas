@@ -1,0 +1,1047 @@
+{
+  "status": "STOPPED / REQUIRES ROUND 3 / AWAITING REVIEW",
+  "generatedAt": "2026-10-05T00:52:56.121Z",
+  "applicationHead": "c3a3702f0e3a5e01a2bd3b9e08bd2d544d34901c",
+  "architectureAccepted": false,
+  "architectureConclusion": "NO / REQUIRES ROUND 3",
+  "architectureDisproved": false,
+  "baseline": {
+    "sourceCount": 137916,
+    "rawBytes": 2617263428,
+    "repository": {
+      "head": "724b139d8c9c32d12552eb95745a4fee72bfe48b",
+      "status": "",
+      "diff": ""
+    },
+    "fingerprints": [
+      {
+        "path": "ExcelOutput/AvatarConfig.json",
+        "sha256": "d8f3c9f55078611ad010751f82333735eb7bc732e22df6b8ad235021658e0456",
+        "stamp": "449736055:3659174700046206:240466:1790920441202489600:1790930153968784500"
+      },
+      {
+        "path": "ExcelOutput/EquipmentConfig.json",
+        "sha256": "74ea91580ab4a251ee16c3b491be46465f37ec2f6178982a92a6cbf4c0086ebc",
+        "stamp": "449736055:3096224746625340:132304:1790920441439138200:1790930154015904300"
+      },
+      {
+        "path": "ExcelOutput/RelicConfig.json",
+        "sha256": "d8e841f21ce7593c40537fdf9b262057b4e7d8abae04a4199f5ad38bb152dc15",
+        "stamp": "449736055:2533274793205177:209615:1790920442141594700:1790930154183502100"
+      },
+      {
+        "path": "ExcelOutput/MonsterConfig.json",
+        "sha256": "dfdfe23c803419c4fd96e8ef3a7bf1028c985d64135c89f5f7a43123eec703c8",
+        "stamp": "449736055:3659174700047511:4534605:1790920441934080100:1790930154133880100"
+      },
+      {
+        "path": "ExcelOutput/MonsterSkillConfig.json",
+        "sha256": "3ac3104d788e0ce956500900025764d99f3d09903a85a3f4839914600734755f",
+        "stamp": "449736055:3377699723336867:2742427:1790920441953504100:1790930154133880100"
+      },
+      {
+        "path": "ExcelOutput/AvatarMazeBuff.json",
+        "sha256": "a9475d112cc20d677af69f5494a797fdb3fd1960f0ab9e298e8d433b8d9ebaeb",
+        "stamp": "449736055:3940649676756887:104193:1790920441208576800:1790930153971975200"
+      },
+      {
+        "path": "ExcelOutput/ChallengeMazeConfig.json",
+        "sha256": "40875c24a297a0c88e7d55ea263ab5437b46b9d1dcf865916a667042d2097479",
+        "stamp": "449736055:3377699723335739:584102:1790920441362812200:1790930153992077600"
+      },
+      {
+        "path": "ExcelOutput/ChallengePeakConfig.json",
+        "sha256": "9ab1d353a5222409fc906fb2ace8385e338a14709857711f29d590c78713ea87",
+        "stamp": "449736055:3377699723335745:19676:1790920441366881100:1790930153992077600"
+      },
+      {
+        "path": "ExcelOutput/AvatarSkillConfig.json",
+        "sha256": "552f36efa00798ea7a733041c656dd7169739b986f973cb424f2417009f63839",
+        "stamp": "449736055:3659174700046251:11438925:1790920441260177400:1790930153973497900"
+      },
+      {
+        "path": "ExcelOutput/StageConfig.json",
+        "sha256": "dcc420635ee03361fef7ffb71b2957037166c3539536bbb5ae9b1b45a3f7baf2",
+        "stamp": "449736055:3096224746626831:26939432:1790920442529870500:1790930154226234100"
+      },
+      {
+        "path": "ExcelOutput/SpecialAvatarRelicMainValue.json",
+        "sha256": "d481e4283f66c7ce0a948060c5b52c3cb7d0870505b83211e3d27f653d2390de",
+        "stamp": "449736055:3096224746626820:53642663:1790920442435874400:1790930154226234100"
+      },
+      {
+        "path": "TextMap/TextMapCHS.json",
+        "sha256": "a9028313c772e684c91359b467b398a1ded2079de67a191dff80d9adf43dfca4",
+        "stamp": "449736055:1688849863084298:52399646:1790920447463894800:1790930155146459800"
+      },
+      {
+        "path": "TextMap/TextMapVI.json",
+        "sha256": "868123b467169ffcaee3cca1fd6cdc4c87ec5790b9252f5b16136067ba34803e",
+        "stamp": "449736055:1407374886373670:73607269:1790920451177734300:1790930155149804700"
+      },
+      {
+        "path": "Config/LevelOutput_Baked/Floor/P10401_F10401001_Baked.json",
+        "sha256": "7d588e77a1f70ca2af342d4b7d2f9056c324f3e62e70dbea4c1df8e50f4d56df",
+        "stamp": "449736055:2814749769910038:29480186:1790920438402432100:1790930153672078000"
+      },
+      {
+        "path": "Config/SoundBankLookUp.json",
+        "sha256": "9c01464ab35491da9b264431ebbd06967dfe96b51d79a5c8dd90c46cefee4d02",
+        "stamp": "449736055:3096224746624622:10920724:1790920441057999000:1790930153941849600"
+      },
+      {
+        "path": "TextMap/TextMapJP.json",
+        "sha256": "b1078b11eaaf28d21638a9df8ed04021d2e33e087e6e2e7afd39814137e1811b",
+        "stamp": "449736055:1688849863084305:69174020:1790920449416548700:1790930155147803300"
+      }
+    ],
+    "environment": {
+      "date": "2026-10-05",
+      "platform": "win32",
+      "release": "10.0.26300",
+      "arch": "x64",
+      "cpu": "Intel(R) Core(TM) i9-14900HX",
+      "logicalCpus": 32,
+      "totalMemoryBytes": 33970466816,
+      "availableMemoryBytes": 16664240128,
+      "node": "24.21.0",
+      "v8": "13.6.233.17-node.53",
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "workspace": "C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project"
+    }
+  },
+  "reusedRound1": {
+    "evidence": "phase-2-search-measurements.json",
+    "fullRawOccurrences": 83533059,
+    "navigableOccurrences": 83513357,
+    "navigableTerms": 8827401,
+    "oldCBytes": 11712999424,
+    "statValidationMs": 7320,
+    "strictHashValidationMs": 83200,
+    "validationTimesApproximateFromPriorReport": true,
+    "feffPrerequisite": "production fix required separately",
+    "duplicateSources": 15
+  },
+  "pilot": {
+    "build": {
+      "directFromRaw": true,
+      "completed": true,
+      "files": 3,
+      "memberships": 904983,
+      "terms": 904981,
+      "wallMs": 23435.902,
+      "parseMs": 14613.461499999976,
+      "readMs": 285.5435999999818,
+      "insertMs": 4170.49229999853,
+      "inverseMs": 188.21289999999863,
+      "beforeInverse": {
+        "db": 191930368,
+        "-wal": 10909792,
+        "-shm": 32768
+      },
+      "final": {
+        "db": 206512128,
+        "-wal": 0,
+        "-shm": 32768
+      },
+      "staging": {
+        "db": 211501056,
+        "-wal": 0,
+        "-shm": 327680
+      },
+      "maxRss": 398061568,
+      "resourceUsage": {
+        "userCPUTime": 18078000,
+        "systemCPUTime": 9703000,
+        "maxRSS": 428440,
+        "sharedMemorySize": 0,
+        "unsharedDataSize": 0,
+        "unsharedStackSize": 0,
+        "minorPageFault": 0,
+        "majorPageFault": 284806,
+        "swappedOut": 0,
+        "fsRead": 1204591,
+        "fsWrite": 1348383,
+        "ipcSent": 0,
+        "ipcReceived": 0,
+        "signalsCount": 0,
+        "voluntaryContextSwitches": 0,
+        "involuntaryContextSwitches": 0
+      },
+      "integrity": [
+        {
+          "quick_check": "ok"
+        }
+      ],
+      "pilot": true
+    },
+    "census": {
+      "rawOccurrences": {
+        "field": 1766249,
+        "number": 454109,
+        "string": 862567,
+        "boolean": 94
+      },
+      "rawMemberships": {
+        "field": 474240,
+        "number": 66158,
+        "string": 364584,
+        "boolean": 1
+      },
+      "navigableMemberships": {
+        "field": 474240,
+        "number": 66158,
+        "string": 364584,
+        "boolean": 1
+      },
+      "sources": [
+        {
+          "id": 1,
+          "path": "ExcelOutput/AvatarConfig.json",
+          "bytes": 240466,
+          "counts": {
+            "field": 42,
+            "number": 1376,
+            "string": 1526,
+            "boolean": 1
+          },
+          "occurrences": {
+            "field": 4056,
+            "number": 3309,
+            "string": 1974,
+            "boolean": 94
+          },
+          "duplicateKeys": 0,
+          "sha256": "d8f3c9f55078611ad010751f82333735eb7bc732e22df6b8ad235021658e0456",
+          "parseMs": 30.71520000000055,
+          "wallMs": 53.38079999999991,
+          "spilled": false
+        },
+        {
+          "id": 2,
+          "path": "ExcelOutput/SpecialAvatarRelicMainValue.json",
+          "bytes": 53642663,
+          "counts": {
+            "field": 5,
+            "number": 64782,
+            "string": 19
+          },
+          "occurrences": {
+            "field": 1288000,
+            "number": 450800,
+            "string": 386400
+          },
+          "duplicateKeys": 0,
+          "sha256": "d481e4283f66c7ce0a948060c5b52c3cb7d0870505b83211e3d27f653d2390de",
+          "parseMs": 2833.4146999999784,
+          "wallMs": 3376.7571,
+          "spilled": false
+        },
+        {
+          "id": 3,
+          "path": "TextMap/TextMapCHS.json",
+          "bytes": 52399646,
+          "counts": {
+            "field": 474193,
+            "string": 363039
+          },
+          "occurrences": {
+            "field": 474193,
+            "string": 474193
+          },
+          "duplicateKeys": 0,
+          "sha256": "a9028313c772e684c91359b467b398a1ded2079de67a191dff80d9adf43dfca4",
+          "parseMs": 11749.331599999996,
+          "wallMs": 19486.9974,
+          "spilled": true
+        }
+      ],
+      "errors": [],
+      "spillSources": 1,
+      "peakDedupAccountedBytes": 33554862,
+      "pendingSourcePublication": true
+    },
+    "selectedNotRepresentative": true
+  },
+  "failure": {
+    "stopCondition": "native crash in non-FTS candidate path",
+    "fullDatasetComplete": false,
+    "nativeExitDecimal": 3221226505,
+    "nativeExitHex": "0xC0000409",
+    "rootCause": "NOT ESTABLISHED; exit code alone does not identify defective component",
+    "restartAttempted": false,
+    "schema": [
+      {
+        "type": "table",
+        "name": "files",
+        "sql": "CREATE TABLE files(id INTEGER PRIMARY KEY,path TEXT UNIQUE,stamp TEXT,sha256 TEXT,bytes INTEGER,state TEXT)"
+      },
+      {
+        "type": "table",
+        "name": "terms",
+        "sql": "CREATE TABLE terms(id INTEGER PRIMARY KEY,class TEXT,kind TEXT,exact_key TEXT,scan_text TEXT,df INTEGER DEFAULT 0,occurrences INTEGER DEFAULT 0,UNIQUE(class,kind,exact_key))"
+      },
+      {
+        "type": "table",
+        "name": "memberships",
+        "sql": "CREATE TABLE memberships(term_id INTEGER,source_id INTEGER,n INTEGER,PRIMARY KEY(term_id,source_id)) WITHOUT ROWID"
+      }
+    ],
+    "integrity": [
+      {
+        "quick_check": "ok"
+      }
+    ],
+    "states": [
+      {
+        "state": "building",
+        "sources": 1,
+        "sourceBytes": 1779064
+      },
+      {
+        "state": "ready",
+        "sources": 22355,
+        "sourceBytes": 331316843
+      }
+    ],
+    "memberships": {
+      "n": 1422473,
+      "occurrences": 10009459
+    },
+    "termCount": 273991,
+    "lastSources": [
+      {
+        "id": 22356,
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_LightningCity.json",
+        "stamp": "449736055:2533274792847594:1779064:1790920403256488300:1790930142212590200",
+        "sha256": null,
+        "bytes": 1779064,
+        "state": "building"
+      },
+      {
+        "id": 22355,
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_LeaveSafeHouse.json",
+        "stamp": "449736055:2533274792847593:283121:1790920403252450600:1790930142212590200",
+        "sha256": "f00bfe35632e7fe2c1f16a8e880aebe11bd6d9898baf11f64b22b84e0f3618b1",
+        "bytes": 283121,
+        "state": "ready"
+      },
+      {
+        "id": 22354,
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_GhostStreet.json",
+        "stamp": "449736055:2533274792847592:1056149:1790920403252450600:1790930142212590200",
+        "sha256": "46b6bd0c8d5b72a3c3b742c8439503075e6050ab68d4bd257b80d536f0b2850e",
+        "bytes": 1056149,
+        "state": "ready"
+      },
+      {
+        "id": 22353,
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_FlyMe2TheMoon.json",
+        "stamp": "449736055:2533274792847591:562412:1790920403249941500:1790930142211591000",
+        "sha256": "8c5dfa2be02e13837c6b8351de53963e0adb2c1f444eeb81ed9367033fd08a88",
+        "bytes": 562412,
+        "state": "ready"
+      },
+      {
+        "id": 22352,
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_Flute.json",
+        "stamp": "449736055:2533274792847590:149006:1790920403247415400:1790930142211591000",
+        "sha256": "289e772efec17e6640d394ff70d58a72545297741b6212951d324c9dd9c41b82",
+        "bytes": 149006,
+        "state": "ready"
+      },
+      {
+        "id": 22351,
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_Down2SafeHouse.json",
+        "stamp": "449736055:2533274792847589:359981:1790920403247415400:1790930142211591000",
+        "sha256": "43603e25788a2dd32d91a024dd648116ed31aacc7f9a3b96006ac6b4b18fa935",
+        "bytes": 359981,
+        "state": "ready"
+      }
+    ],
+    "lastSourceReadOnlyProbes": [
+      {
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_LightningCity.json",
+        "state": "building",
+        "rawScanSucceeded": true,
+        "rawMemberships": 2562,
+        "indexedMemberships": 0,
+        "differingPresentMemberships": 0,
+        "publishedSetEqual": false,
+        "sha256": "7784d9490c7a26f58a04633a112115ddfb3d2887567c58f8c9bbe174ef5b72c6",
+        "baselineStampMatches": true,
+        "duplicateKeys": 0
+      },
+      {
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_LeaveSafeHouse.json",
+        "state": "ready",
+        "rawScanSucceeded": true,
+        "rawMemberships": 790,
+        "indexedMemberships": 790,
+        "differingPresentMemberships": 0,
+        "publishedSetEqual": true,
+        "sha256": "f00bfe35632e7fe2c1f16a8e880aebe11bd6d9898baf11f64b22b84e0f3618b1",
+        "baselineStampMatches": true,
+        "duplicateKeys": 0
+      },
+      {
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_GhostStreet.json",
+        "state": "ready",
+        "rawScanSucceeded": true,
+        "rawMemberships": 1477,
+        "indexedMemberships": 1477,
+        "differingPresentMemberships": 0,
+        "publishedSetEqual": true,
+        "sha256": "46b6bd0c8d5b72a3c3b742c8439503075e6050ab68d4bd257b80d536f0b2850e",
+        "baselineStampMatches": true,
+        "duplicateKeys": 0
+      },
+      {
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_FlyMe2TheMoon.json",
+        "state": "ready",
+        "rawScanSucceeded": true,
+        "rawMemberships": 1533,
+        "indexedMemberships": 1533,
+        "differingPresentMemberships": 0,
+        "publishedSetEqual": true,
+        "sha256": "8c5dfa2be02e13837c6b8351de53963e0adb2c1f444eeb81ed9367033fd08a88",
+        "baselineStampMatches": true,
+        "duplicateKeys": 0
+      },
+      {
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_Flute.json",
+        "state": "ready",
+        "rawScanSucceeded": true,
+        "rawMemberships": 678,
+        "indexedMemberships": 678,
+        "differingPresentMemberships": 0,
+        "publishedSetEqual": true,
+        "sha256": "289e772efec17e6640d394ff70d58a72545297741b6212951d324c9dd9c41b82",
+        "baselineStampMatches": true,
+        "duplicateKeys": 0
+      },
+      {
+        "path": "Config/Gameplays/LittleGame/FiveDim/Level/Version_440/Map_B401/B401_Down2SafeHouse.json",
+        "state": "ready",
+        "rawScanSucceeded": true,
+        "rawMemberships": 927,
+        "indexedMemberships": 927,
+        "differingPresentMemberships": 0,
+        "publishedSetEqual": true,
+        "sha256": "43603e25788a2dd32d91a024dd648116ed31aacc7f9a3b96006ac6b4b18fa935",
+        "baselineStampMatches": true,
+        "duplicateKeys": 0
+      }
+    ],
+    "disk": {
+      "db": 69693440,
+      "-wal": 14111032,
+      "-shm": 32768
+    },
+    "stagingDisk": {
+      "db": 8192,
+      "-wal": 4152,
+      "-shm": 32768
+    },
+    "sourceAudit": {
+      "externalUnchanged": true,
+      "metadataUnchanged": true,
+      "sourceCount": 137916,
+      "repository": {
+        "head": "724b139d8c9c32d12552eb95745a4fee72bfe48b",
+        "status": "",
+        "diff": ""
+      },
+      "fingerprints": [
+        {
+          "path": "ExcelOutput/AvatarConfig.json",
+          "sha256": "d8f3c9f55078611ad010751f82333735eb7bc732e22df6b8ad235021658e0456",
+          "stamp": "449736055:3659174700046206:240466:1790920441202489600:1790930153968784500"
+        },
+        {
+          "path": "ExcelOutput/EquipmentConfig.json",
+          "sha256": "74ea91580ab4a251ee16c3b491be46465f37ec2f6178982a92a6cbf4c0086ebc",
+          "stamp": "449736055:3096224746625340:132304:1790920441439138200:1790930154015904300"
+        },
+        {
+          "path": "ExcelOutput/RelicConfig.json",
+          "sha256": "d8e841f21ce7593c40537fdf9b262057b4e7d8abae04a4199f5ad38bb152dc15",
+          "stamp": "449736055:2533274793205177:209615:1790920442141594700:1790930154183502100"
+        },
+        {
+          "path": "ExcelOutput/MonsterConfig.json",
+          "sha256": "dfdfe23c803419c4fd96e8ef3a7bf1028c985d64135c89f5f7a43123eec703c8",
+          "stamp": "449736055:3659174700047511:4534605:1790920441934080100:1790930154133880100"
+        },
+        {
+          "path": "ExcelOutput/MonsterSkillConfig.json",
+          "sha256": "3ac3104d788e0ce956500900025764d99f3d09903a85a3f4839914600734755f",
+          "stamp": "449736055:3377699723336867:2742427:1790920441953504100:1790930154133880100"
+        },
+        {
+          "path": "ExcelOutput/AvatarMazeBuff.json",
+          "sha256": "a9475d112cc20d677af69f5494a797fdb3fd1960f0ab9e298e8d433b8d9ebaeb",
+          "stamp": "449736055:3940649676756887:104193:1790920441208576800:1790930153971975200"
+        },
+        {
+          "path": "ExcelOutput/ChallengeMazeConfig.json",
+          "sha256": "40875c24a297a0c88e7d55ea263ab5437b46b9d1dcf865916a667042d2097479",
+          "stamp": "449736055:3377699723335739:584102:1790920441362812200:1790930153992077600"
+        },
+        {
+          "path": "ExcelOutput/ChallengePeakConfig.json",
+          "sha256": "9ab1d353a5222409fc906fb2ace8385e338a14709857711f29d590c78713ea87",
+          "stamp": "449736055:3377699723335745:19676:1790920441366881100:1790930153992077600"
+        },
+        {
+          "path": "ExcelOutput/AvatarSkillConfig.json",
+          "sha256": "552f36efa00798ea7a733041c656dd7169739b986f973cb424f2417009f63839",
+          "stamp": "449736055:3659174700046251:11438925:1790920441260177400:1790930153973497900"
+        },
+        {
+          "path": "ExcelOutput/StageConfig.json",
+          "sha256": "dcc420635ee03361fef7ffb71b2957037166c3539536bbb5ae9b1b45a3f7baf2",
+          "stamp": "449736055:3096224746626831:26939432:1790920442529870500:1790930154226234100"
+        },
+        {
+          "path": "ExcelOutput/SpecialAvatarRelicMainValue.json",
+          "sha256": "d481e4283f66c7ce0a948060c5b52c3cb7d0870505b83211e3d27f653d2390de",
+          "stamp": "449736055:3096224746626820:53642663:1790920442435874400:1790930154226234100"
+        },
+        {
+          "path": "TextMap/TextMapCHS.json",
+          "sha256": "a9028313c772e684c91359b467b398a1ded2079de67a191dff80d9adf43dfca4",
+          "stamp": "449736055:1688849863084298:52399646:1790920447463894800:1790930155146459800"
+        },
+        {
+          "path": "TextMap/TextMapVI.json",
+          "sha256": "868123b467169ffcaee3cca1fd6cdc4c87ec5790b9252f5b16136067ba34803e",
+          "stamp": "449736055:1407374886373670:73607269:1790920451177734300:1790930155149804700"
+        },
+        {
+          "path": "Config/LevelOutput_Baked/Floor/P10401_F10401001_Baked.json",
+          "sha256": "7d588e77a1f70ca2af342d4b7d2f9056c324f3e62e70dbea4c1df8e50f4d56df",
+          "stamp": "449736055:2814749769910038:29480186:1790920438402432100:1790930153672078000"
+        },
+        {
+          "path": "Config/SoundBankLookUp.json",
+          "sha256": "9c01464ab35491da9b264431ebbd06967dfe96b51d79a5c8dd90c46cefee4d02",
+          "stamp": "449736055:3096224746624622:10920724:1790920441057999000:1790930153941849600"
+        },
+        {
+          "path": "TextMap/TextMapJP.json",
+          "sha256": "b1078b11eaaf28d21638a9df8ed04021d2e33e087e6e2e7afd39814137e1811b",
+          "stamp": "449736055:1688849863084305:69174020:1790920449416548700:1790930155147803300"
+        }
+      ]
+    },
+    "wallMs": 3981.9006,
+    "noCompleteCandidateSizeOrTiming": true
+  },
+  "fixtureChecks": {
+    "scope": "small synthetic fixtures only; no full-dataset proof or performance gate",
+    "independentParser": "stream-json 3.7.0",
+    "checks": [
+      {
+        "name": "independent parser: types, lexemes, FEFF, escaping, Unicode and container FIELD",
+        "passed": true
+      },
+      {
+        "name": "typed fingerprint domains and forced collision candidate union",
+        "passed": true
+      },
+      {
+        "name": "candidate lookup and raw resolver match independent identity sets",
+        "passed": true
+      },
+      {
+        "name": "cancelled work does not become complete",
+        "passed": true
+      },
+      {
+        "name": "source change invalidates candidate",
+        "passed": true
+      },
+      {
+        "name": "stale coverage excludes source without claiming workspace complete",
+        "passed": true
+      },
+      {
+        "name": "duplicate keys remain an explicit navigation failure",
+        "passed": true
+      }
+    ],
+    "cleanup": [
+      {
+        "name": "query-spool.db",
+        "bytes": 8192
+      },
+      {
+        "name": "query-spool.db",
+        "bytes": 8192
+      },
+      {
+        "name": "query-spool.db",
+        "bytes": 8192
+      },
+      {
+        "name": "query-spool.db",
+        "bytes": 8192
+      },
+      {
+        "name": "query-spool.db",
+        "bytes": 8192
+      },
+      {
+        "name": "query-spool.db",
+        "bytes": 8192
+      },
+      {
+        "name": "query-spool.db",
+        "bytes": 8192
+      },
+      {
+        "name": "query-spool.db",
+        "bytes": 8192
+      },
+      {
+        "name": "fixture-duplicate.json",
+        "bytes": 13
+      }
+    ],
+    "passed": true
+  },
+  "pipeline": [
+    {
+      "stage": "search2-build-pilot",
+      "args": [
+        "--pilot"
+      ],
+      "exit": 0,
+      "wallMs": 29571.757899999997,
+      "sampledDiskHighWater": {
+        "search2-build-pilot.log": 12100,
+        "pilot-staging.db": 211501056,
+        "pilot-staging.db-journal": 512,
+        "pilot.db": 206512128,
+        "pilot-staging.db-shm": 327680,
+        "pilot-staging.db-wal": 155929672,
+        "pilot.db-progress.json": 60,
+        "pilot.db-shm": 32768,
+        "pilot.db-wal": 15070992,
+        "pilot.db-census.json": 1975,
+        "pilot.db-build.json": 1041
+      },
+      "rssCheckpointsMax": 404197376,
+      "samplingMs": 100,
+      "deletedOrUnnamedSqliteTempNotObservable": true,
+      "childClosed": true
+    },
+    {
+      "stage": "search2-build",
+      "args": [],
+      "exit": 3221226505,
+      "wallMs": 127122.288,
+      "sampledDiskHighWater": {
+        "pilot-staging.db": 211501056,
+        "pilot.db": 206512128,
+        "pilot.db-build.json": 1041,
+        "pilot.db-census.json": 1975,
+        "pilot.db-progress.json": 60,
+        "pipeline.json": 698,
+        "search2-build-pilot.log": 12100,
+        "search2-build.log": 1195,
+        "baseline.json": 29480298,
+        "s1-staging.db": 8192,
+        "s1-staging.db-shm": 32768,
+        "s1-staging.db-wal": 4152,
+        "s1.db": 69693440,
+        "s1.db-progress.json": 65,
+        "s1.db-shm": 32768,
+        "s1.db-wal": 14111032
+      },
+      "rssCheckpointsMax": 354648064,
+      "samplingMs": 100,
+      "deletedOrUnnamedSqliteTempNotObservable": true,
+      "childClosed": true
+    },
+    {
+      "stage": "search2-forensic",
+      "args": [],
+      "exit": 0,
+      "wallMs": 4059.7628999999997,
+      "sampledDiskHighWater": {
+        "baseline.json": 29480298,
+        "pilot-staging.db": 211501056,
+        "pilot.db": 206512128,
+        "pilot.db-build.json": 1041,
+        "pilot.db-census.json": 1975,
+        "pilot.db-progress.json": 60,
+        "pipeline.json": 1491,
+        "s1-staging.db": 8192,
+        "s1-staging.db-shm": 32768,
+        "s1-staging.db-wal": 4152,
+        "s1.db": 69693440,
+        "s1.db-progress.json": 65,
+        "s1.db-shm": 32768,
+        "s1.db-wal": 14111032,
+        "search2-build-pilot.log": 12100,
+        "search2-build.log": 1195,
+        "search2-forensic.log": 8615,
+        "failure-forensic.json": 10607
+      },
+      "rssCheckpointsMax": 0,
+      "samplingMs": 100,
+      "deletedOrUnnamedSqliteTempNotObservable": true,
+      "childClosed": true
+    },
+    {
+      "stage": "search2-tests",
+      "args": [],
+      "exit": 0,
+      "wallMs": 682.3052,
+      "sampledDiskHighWater": {
+        "baseline.json": 29480298,
+        "failure-forensic.json": 10607,
+        "pilot-staging.db": 211501056,
+        "pilot.db": 206512128,
+        "pilot.db-build.json": 1041,
+        "pilot.db-census.json": 1975,
+        "pilot.db-progress.json": 60,
+        "pipeline.json": 2353,
+        "s1-staging.db": 8192,
+        "s1-staging.db-shm": 32768,
+        "s1-staging.db-wal": 4152,
+        "s1.db": 69693440,
+        "s1.db-progress.json": 65,
+        "s1.db-shm": 32768,
+        "s1.db-wal": 14111032,
+        "search2-build-pilot.log": 12100,
+        "search2-build.log": 1195,
+        "search2-forensic.log": 8615,
+        "search2-tests.log": 607,
+        "fixture-candidate.db": 4096,
+        "fixture-candidate.db-shm": 32768,
+        "fixture-candidate.db-wal": 226632,
+        "fixture-semantics.json": 184,
+        "query-spool.db": 4096,
+        "query-spool.db-shm": 32768,
+        "query-spool.db-wal": 32,
+        "fixture-checks.json": 1542
+      },
+      "rssCheckpointsMax": 0,
+      "samplingMs": 100,
+      "deletedOrUnnamedSqliteTempNotObservable": true,
+      "childClosed": true
+    },
+    {
+      "stage": "search2-tests",
+      "args": [],
+      "exit": 0,
+      "wallMs": 159.5718,
+      "sampledDiskHighWater": {
+        "delivery.json": 1585,
+        "failure-forensic.json": 10607,
+        "fixture-candidate.db": 4096,
+        "fixture-candidate.db-shm": 32768,
+        "fixture-candidate.db-wal": 226632,
+        "fixture-checks.json": 1542,
+        "fixture-semantics.json": 184,
+        "pilot.db-build.json": 1041,
+        "pilot.db-census.json": 1975,
+        "pilot.db-progress.json": 60,
+        "pipeline.json": 3522,
+        "query-spool.db": 0,
+        "query-spool.db-journal": 512,
+        "s1.db-progress.json": 65,
+        "search2-build-pilot.log": 12100,
+        "search2-build.log": 1195,
+        "search2-forensic.log": 8615,
+        "search2-tests.log": 1214
+      },
+      "rssCheckpointsMax": 0,
+      "samplingMs": 100,
+      "deletedOrUnnamedSqliteTempNotObservable": true,
+      "childClosed": true
+    }
+  ],
+  "deferred": {
+    "fullMembershipCensus": "native-crash stop",
+    "fullDFCardinality": "native-crash stop",
+    "completeS1Space": "native-crash stop",
+    "countVariants": "native-crash stop",
+    "hash8And16FullBuild": "native-crash stop",
+    "S2": "no completed S1 evidence warrants continuation",
+    "S3": "no completed tail evidence warrants continuation",
+    "exactRealBenchmarks": "no complete candidate",
+    "containsRealBenchmarks": "no complete candidate",
+    "fullIndependentMembershipProof": "no complete candidate",
+    "executionLane": "stopped before Stage 6",
+    "lifecyclePerformanceAndSpoolStress": "stopped"
+  },
+  "delivery": {
+    "externalUnchanged": true,
+    "metadataUnchanged": true,
+    "representativeHashesUnchanged": true,
+    "sourceCount": 137916,
+    "productionUnchanged": true,
+    "packageAndLockUnchanged": true,
+    "allDbHandlesClosed": true,
+    "ownedChildProcesses": 0,
+    "childExitRecords": [
+      {
+        "stage": "search2-build-pilot",
+        "exit": 0,
+        "childClosed": true
+      },
+      {
+        "stage": "search2-build",
+        "exit": 3221226505,
+        "childClosed": true
+      },
+      {
+        "stage": "search2-forensic",
+        "exit": 0,
+        "childClosed": true
+      },
+      {
+        "stage": "search2-tests",
+        "exit": 0,
+        "childClosed": true
+      },
+      {
+        "stage": "search2-tests",
+        "exit": 0,
+        "childClosed": true
+      }
+    ],
+    "cleanup": {
+      "removed": [
+        {
+          "name": "baseline.json",
+          "bytes": 29480298
+        },
+        {
+          "name": "pilot-staging.db",
+          "bytes": 211501056
+        },
+        {
+          "name": "pilot.db",
+          "bytes": 206512128
+        },
+        {
+          "name": "s1-staging.db",
+          "bytes": 8192
+        },
+        {
+          "name": "s1-staging.db-shm",
+          "bytes": 32768
+        },
+        {
+          "name": "s1-staging.db-wal",
+          "bytes": 4152
+        },
+        {
+          "name": "s1.db",
+          "bytes": 69693440
+        },
+        {
+          "name": "s1.db-shm",
+          "bytes": 32768
+        },
+        {
+          "name": "s1.db-wal",
+          "bytes": 14111032
+        }
+      ],
+      "removedBytes": 531375834,
+      "validatedOwnedRoot": "C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\artifacts\\search-round2"
+    },
+    "noProductionSearch": true,
+    "noCommitPushOrPR": true,
+    "sourceAfterCleanup": {
+      "repository": {
+        "head": "724b139d8c9c32d12552eb95745a4fee72bfe48b",
+        "status": "",
+        "diff": ""
+      },
+      "fingerprints": [
+        {
+          "path": "ExcelOutput/AvatarConfig.json",
+          "sha256": "d8f3c9f55078611ad010751f82333735eb7bc732e22df6b8ad235021658e0456",
+          "stamp": "449736055:3659174700046206:240466:1790920441202489600:1790930153968784500"
+        },
+        {
+          "path": "ExcelOutput/EquipmentConfig.json",
+          "sha256": "74ea91580ab4a251ee16c3b491be46465f37ec2f6178982a92a6cbf4c0086ebc",
+          "stamp": "449736055:3096224746625340:132304:1790920441439138200:1790930154015904300"
+        },
+        {
+          "path": "ExcelOutput/RelicConfig.json",
+          "sha256": "d8e841f21ce7593c40537fdf9b262057b4e7d8abae04a4199f5ad38bb152dc15",
+          "stamp": "449736055:2533274793205177:209615:1790920442141594700:1790930154183502100"
+        },
+        {
+          "path": "ExcelOutput/MonsterConfig.json",
+          "sha256": "dfdfe23c803419c4fd96e8ef3a7bf1028c985d64135c89f5f7a43123eec703c8",
+          "stamp": "449736055:3659174700047511:4534605:1790920441934080100:1790930154133880100"
+        },
+        {
+          "path": "ExcelOutput/MonsterSkillConfig.json",
+          "sha256": "3ac3104d788e0ce956500900025764d99f3d09903a85a3f4839914600734755f",
+          "stamp": "449736055:3377699723336867:2742427:1790920441953504100:1790930154133880100"
+        },
+        {
+          "path": "ExcelOutput/AvatarMazeBuff.json",
+          "sha256": "a9475d112cc20d677af69f5494a797fdb3fd1960f0ab9e298e8d433b8d9ebaeb",
+          "stamp": "449736055:3940649676756887:104193:1790920441208576800:1790930153971975200"
+        },
+        {
+          "path": "ExcelOutput/ChallengeMazeConfig.json",
+          "sha256": "40875c24a297a0c88e7d55ea263ab5437b46b9d1dcf865916a667042d2097479",
+          "stamp": "449736055:3377699723335739:584102:1790920441362812200:1790930153992077600"
+        },
+        {
+          "path": "ExcelOutput/ChallengePeakConfig.json",
+          "sha256": "9ab1d353a5222409fc906fb2ace8385e338a14709857711f29d590c78713ea87",
+          "stamp": "449736055:3377699723335745:19676:1790920441366881100:1790930153992077600"
+        },
+        {
+          "path": "ExcelOutput/AvatarSkillConfig.json",
+          "sha256": "552f36efa00798ea7a733041c656dd7169739b986f973cb424f2417009f63839",
+          "stamp": "449736055:3659174700046251:11438925:1790920441260177400:1790930153973497900"
+        },
+        {
+          "path": "ExcelOutput/StageConfig.json",
+          "sha256": "dcc420635ee03361fef7ffb71b2957037166c3539536bbb5ae9b1b45a3f7baf2",
+          "stamp": "449736055:3096224746626831:26939432:1790920442529870500:1790930154226234100"
+        },
+        {
+          "path": "ExcelOutput/SpecialAvatarRelicMainValue.json",
+          "sha256": "d481e4283f66c7ce0a948060c5b52c3cb7d0870505b83211e3d27f653d2390de",
+          "stamp": "449736055:3096224746626820:53642663:1790920442435874400:1790930154226234100"
+        },
+        {
+          "path": "TextMap/TextMapCHS.json",
+          "sha256": "a9028313c772e684c91359b467b398a1ded2079de67a191dff80d9adf43dfca4",
+          "stamp": "449736055:1688849863084298:52399646:1790920447463894800:1790930155146459800"
+        },
+        {
+          "path": "TextMap/TextMapVI.json",
+          "sha256": "868123b467169ffcaee3cca1fd6cdc4c87ec5790b9252f5b16136067ba34803e",
+          "stamp": "449736055:1407374886373670:73607269:1790920451177734300:1790930155149804700"
+        },
+        {
+          "path": "Config/LevelOutput_Baked/Floor/P10401_F10401001_Baked.json",
+          "sha256": "7d588e77a1f70ca2af342d4b7d2f9056c324f3e62e70dbea4c1df8e50f4d56df",
+          "stamp": "449736055:2814749769910038:29480186:1790920438402432100:1790930153672078000"
+        },
+        {
+          "path": "Config/SoundBankLookUp.json",
+          "sha256": "9c01464ab35491da9b264431ebbd06967dfe96b51d79a5c8dd90c46cefee4d02",
+          "stamp": "449736055:3096224746624622:10920724:1790920441057999000:1790930153941849600"
+        },
+        {
+          "path": "TextMap/TextMapJP.json",
+          "sha256": "b1078b11eaaf28d21638a9df8ed04021d2e33e087e6e2e7afd39814137e1811b",
+          "stamp": "449736055:1688849863084305:69174020:1790920449416548700:1790930155147803300"
+        }
+      ],
+      "environment": {
+        "date": "2026-10-05",
+        "platform": "win32",
+        "release": "10.0.26300",
+        "arch": "x64",
+        "cpu": "Intel(R) Core(TM) i9-14900HX",
+        "logicalCpus": 32,
+        "totalMemoryBytes": 33970466816,
+        "availableMemoryBytes": 16180322304,
+        "node": "24.21.0",
+        "v8": "13.6.233.17-node.53",
+        "executable": "C:\\Program Files\\nodejs\\node.exe",
+        "workspace": "C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project"
+      }
+    },
+    "validation": {
+      "checkedAt": "2026-10-05T01:04:12.343Z",
+      "commands": [
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search2-build.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search2-checks.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search2-delivery.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search2-forensic.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search2-lib.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search2-resolve.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search2-run.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search2-stats.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search2-tests.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe --check C:\\Users\\unkn0\\Documents\\Projects\\RefAtlas-Project\\RefAtlas\\tools\\investigation\\search-lib.mjs",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "C:\\Program Files\\nodejs\\node.exe scripts/check-docs.mjs",
+          "passed": true,
+          "output": "checked 40 Markdown documents and local anchors"
+        },
+        {
+          "command": "git diff --check",
+          "passed": true,
+          "output": ""
+        },
+        {
+          "command": "git status --porcelain=v1 -- src package.json package-lock.json tools/investigation/package.json tools/investigation/package-lock.json",
+          "passed": true,
+          "output": ""
+        }
+      ],
+      "formatCheck": {
+        "command": "npm.cmd run format:check",
+        "passed": true,
+        "observation": "executed successfully during this delivery before this final audit; no managed formatter target changed afterwards"
+      },
+      "noOwnedDbOrSidecar": true,
+      "noOwnedFixture": true,
+      "sourceAfterCleanupUnchanged": true,
+      "fixtureRecheckReason": "explicit candidate-set vs workspace coverage distinction and added stale-zero assertion",
+      "repairedCheck": "initial cleanup regex incorrectly matched retained fixture-checks.json evidence; narrowed to named raw fixtures; no extra artifacts were deleted",
+      "productionBuilds": 0
+    }
+  }
+}

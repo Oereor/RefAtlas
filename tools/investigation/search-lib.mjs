@@ -118,7 +118,7 @@ export async function scan(filename, { onFact = () => {}, onContainer = () => {}
       if (parent.kind === 'object') {
         const keyText = JSON.stringify(key);
         addSerialized(keyText, Buffer.byteLength(keyText) + 1);
-        emit({ class: 'FIELD', kind: 'field', pointer, text: key, start: parent.keyStart, end: parent.keyEnd, order: parent.keyStart, depth: stack.length });
+        emit({ class: 'FIELD', kind: 'field', valueKind: kind, pointer, text: key, start: parent.keyStart, end: parent.keyEnd, order: parent.keyStart, depth: stack.length });
       }
     }
     maxDepth = Math.max(maxDepth, stack.length);
