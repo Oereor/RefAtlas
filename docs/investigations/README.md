@@ -1,7 +1,8 @@
 # 调查与证据
 
-- [Phase 2 Search Round 2 Candidate-Source 调查](phase-2-search-candidate-source-index-investigation.md)：STOPPED / REQUIRES ROUND 3 / AWAITING REVIEW；三来源直接构建预检、全库 S1 非 FTS 原生退出、失败取证、小型独立 parser/Pointer 恢复与清理。完整 membership/空间/真实查询/lane 尚未完成，未接受新架构。
-- [Round 2 紧凑证据](evidence/phase-2-search-candidate-source-measurements.json)：明确区分预检、部分库、未执行阶段和最终来源完整性；不将失败产物外推成完整候选。
+- [Phase 2 Search Round 2 Candidate-Source 调查](phase-2-search-candidate-source-index-investigation.md)：Controlled Retry #2 PASS / BLOCKED BY NATIVE STABILITY / NO / REQUIRES ROUND 3 / AWAITING REVIEW。完整 S1、独立 membership proof、Exact/Contains、空间转换、生命周期/spool 证据已取得；Electron lane 在 ready 前 native ACL fatal，三通道和 Browser 竞争未验证，首次 Node crash 根因仍未知。
+- [Round 2 首次失败证据](evidence/phase-2-search-candidate-source-measurements.json)：原字节保留 Attempt #1。
+- [Round 2 Controlled Retry 证据](evidence/phase-2-search-candidate-source-controlled-retry.json)：完整重试验收、冻结查询 identity/timing、空间/生命周期、后续 native stop、来源与清理审计；不是 accepted architecture。
 
 - [Phase 2 Search 全库调查](phase-2-search-architecture-full-dataset-investigation.md)：INVESTIGATION / AWAITING REVIEW；137,916 来源全量 occurrence census、三种完整 schema、独立 truth、literal/FTS/fallback、生命周期与 Node/Utility 浏览竞争；15个重复键来源使 workspace coverage partial，生产 FEFF 缺陷需后续修复。候选不作为 accepted architecture。
 - [Phase 2 Search 紧凑证据](evidence/phase-2-search-measurements.json)：全量测量与集合差分、来源指纹、失败及未测边界；Windows数字不是macOS SLA。

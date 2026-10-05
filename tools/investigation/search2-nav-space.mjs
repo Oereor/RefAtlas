@@ -1,0 +1,12 @@
+// 同范围物理比较：仅 ready 来源/仍可达 typed terms，转换成本不冒充 direct build。
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {db,output,save,disk,now,safety,removeOwned} from './search2-lib.mjs';
+safety(10*1024**3);const name='space-navigable.db',started=now();if(fs.existsSync(output(name)))throw Error('OUTPUT_EXISTS');const d=db(name);let result;
+try{
+ d.prepare('ATTACH DATABASE ? AS original').run(output('s1.db'));
+ d.exec("CREATE TABLE files(id INTEGER PRIMARY KEY,path TEXT UNIQUE,stamp TEXT,sha256 TEXT,bytes INTEGER,state TEXT);INSERT INTO files SELECT * FROM original.files WHERE state='ready';CREATE TABLE memberships(term_id INTEGER,source_id INTEGER,n INTEGER,PRIMARY KEY(term_id,source_id)) WITHOUT ROWID;INSERT INTO memberships SELECT p.* FROM original.memberships p JOIN files f ON f.id=p.source_id ORDER BY term_id,source_id;CREATE INDEX memberships_source ON memberships(source_id,term_id);CREATE TABLE terms(id INTEGER PRIMARY KEY,class TEXT,kind TEXT,exact_key TEXT,scan_text TEXT,df INTEGER,occurrences INTEGER,UNIQUE(class,kind,exact_key));INSERT INTO terms SELECT t.id,t.class,t.kind,t.exact_key,t.scan_text,a.df,a.n FROM original.terms t JOIN (SELECT term_id,count(*) df,sum(n) n FROM memberships GROUP BY term_id) a ON a.term_id=t.id ORDER BY t.id;");
+ d.pragma('wal_checkpoint(TRUNCATE)');assert.equal(d.pragma('quick_check',{simple:true}),'ok');const counts=d.prepare('SELECT count(*) memberships,sum(n) occurrences FROM memberships').get();assert.equal(counts.memberships,24315534);assert.equal(counts.occurrences,83513357);
+ result={complete:true,directFromRaw:false,scope:'137901 ready sources; typed terms reachable in navigable scope only',files:d.prepare('SELECT count(*) n FROM files').get().n,terms:d.prepare('SELECT count(*) n FROM terms').get().n,...counts,mainBytes:disk(name).db,objects:d.prepare('SELECT name,sum(pgsize) bytes,sum(payload) payload FROM dbstat GROUP BY name').all(),wallMs:now()-started,oldCSameScopeBytes:11712999424,rawSameScopeBytes:d.prepare('SELECT sum(bytes) n FROM files').get().n};result.eliminatedFromC=result.oldCSameScopeBytes-result.mainBytes;result.reductionFraction=result.eliminatedFromC/result.oldCSameScopeBytes;
+}finally{d.close();}
+const cleanup=[];for(const suffix of ['','-wal','-shm'])if(fs.existsSync(output(name+suffix)))cleanup.push(removeOwned(name+suffix));save('space-navigable.json',{...result,cleanup});console.log(JSON.stringify(result));

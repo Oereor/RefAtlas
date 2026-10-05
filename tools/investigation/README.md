@@ -140,3 +140,24 @@ Electron 包可能延迟下载二进制；在允许联网时执行 `node node_mo
 测试覆盖计数、嵌套、精度、非法 JSON、长记录/背压、路径边界、超时与 RSS 保护。数据库正常运行后自动移除；被强制终止可能留下自身产物，应只在确认绝对路径位于本目录 artifacts 后用 PowerShell LiteralPath 清理。
 
 文档保存紧凑证据；原始 artifacts 可复现但不提交。报告与当前状态见 [仓库内项目文档](../../docs/README.md)。Phase 0 已关闭，工具保留为非生产实验，不升级成应用模块。
+
+
+## Search Round 2 Controlled Retry（2026-10-05）
+
+本次只运行一次 S1 Attempt #2。完整重试成功，条件恢复取得全量 membership proof、真实 Exact/Contains、转换空间、生命周期和 spool 证据；Electron lane 在 ready 前因 Windows install-directory sandbox ACL 原生退出 0x80000003，随后停止新增实验。报告和当前结论见 [Controlled Retry Review](../../docs/investigations/phase-2-search-candidate-source-index-investigation.md)，[新 compact evidence](../../docs/investigations/evidence/phase-2-search-candidate-source-controlled-retry.json) 与旧 Attempt #1 evidence 分开保存。
+
+实际入口从仓库根运行，记录在 ignored artifacts/search-round2/controlled-retry/。以下是本次命令与用途档案，不授权再执行同一 S1 第三次运行；现存 attempt manifest 会拒绝重放，交付时大 DB/清单已删除。
+
+- search2-retry.mjs：保存当前 scanner，加载 c3a3702 的首次实际版本；原 builder/schema/4096 batch/Node args 不变。100ms 文件采样、30s 短只读 diagnostic、45min guard、单 child、无自动重启；finally 恢复 scanner 与旧小证据。
+- search2-retry-audit.mjs、search2-s1-census.mjs：完整 acceptance/counters/source census、类型压缩率、df≤20 等桶、source cardinality 与 dbstat。
+- search2-reference.mjs / search2-reference-fixtures.mjs：独立 stream-json 全库 per-source membership 证明，无 B.db 或永久 occurrence truth。
+- search2-benchmark.mjs exact / contains：冻结查询首次与重复、候选/Pointer recovery、独立 identity truth 单独计时；search2-canonical-benchmark.mjs 测有界 native canonical 预筛。
+- search2-resolve.mjs：调查专用 typed literal resolver、来源验证后发布、generation spool、有限页面；最终 completion stat/cache guard 新增晚于 benchmark，旧计时版本另存 artifacts，额外延迟未计入原 fullMs。
+- search2-broad-file.mjs、search2-million-spool.mjs：真实 broad 的成本/取消和独立 FILE；自有 1M fixture 验证有界页面/磁盘/spool/排序，不是全 workspace SLA。
+- search2-space.mjs：S1 count/no-count pair 实际完成，初次 hash 因 writable-connection iterator 的 JS busy exception 失败；该历史不改写。search2-hash.mjs 使用独立 readonly source，保留已知中断历史后完成 hash-only 8/16-byte 转换；Exact-only 与 Contains 总成本分别记录，不能冒充 direct build。search2-nav-space.mjs 另测与旧 C 相同 ready scope 的转换空间。
+- search2-lifecycle.mjs：自有事务发布、取消、替换/删除、已知 JS exit 23、重开/GC 与 8/16-byte 强制 collision union。search2-resolver-checks.mjs、search2-canonical-checks.mjs、search2-completion-checks.mjs 为最终相关 checks，不覆盖旧 Attempt #1 evidence。
+- search2-lane-work.mjs、search2-lane.cjs、search2-lanes-electron.cjs / search2-lanes.mjs：准备的私有 Electron 三通道及真实 Browser harness；实际仅到 native startup fatal，probe 和 4×6 matrix **未执行**。未禁用 sandbox、改 ACL 或版本。
+- search2-resume-run.mjs：独立阶段 supervisor；不自动重启、重放或绕过 unexplained native failure。只保留已查明 JS harness 修复/主动中断的明确历史例外；最新 native lane failure 阻止后续实验。
+- search2-success-closeout.mjs：名称指 S1 retry 成功分支，实际导出最终 BLOCKED 状态；来源审计后逐文件清理并保留小证据。search2-retry-closeout.mjs 为未走到的 S1 retry 失败分支，未执行。search2-delivery-checks.mjs 只做终态交付审计，不启动 native workload。
+
+没有修改 production src、全部 package/lockfile、RawBridge/Preload/public IPC/UI、外部来源或 accepted ADR。没有 production build/commit/push/PR；保留首次 native crash 根因 UNKNOWN。所有大型构建/转换串行，30 GiB reserve；100ms named-file 和 IPC RSS checkpoint 会漏短峰、匿名 SQLite temp，不能把缺测填成 0。
