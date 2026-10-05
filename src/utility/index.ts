@@ -12,21 +12,30 @@ import { runProbe } from './probe'
 import { runSqliteSmoke } from './sqlite-smoke'
 import { RawDataService } from './raw-service'
 import { rawBounded, RawError, rawFailure } from '../shared/raw'
+import { isAbsolute } from 'node:path'
+import { RawSourceCatalog } from './raw-source-catalog'
+import { workerCatalogRunner } from './raw-catalog-worker-runner'
 
 process.parentPort.once('message', (event) => {
   const config: unknown = event.data
   if (
     !object(config) ||
-    !exact(config, ['type', 'generation', 'diagnostics']) ||
+    !exact(config, ['type', 'generation', 'diagnostics', 'catalogWorkerPath']) ||
     config.type !== 'connect' ||
     !Number.isSafeInteger(config.generation) ||
     typeof config.diagnostics !== 'boolean' ||
+    typeof config.catalogWorkerPath !== 'string' ||
+    !isAbsolute(config.catalogWorkerPath) ||
+    config.catalogWorkerPath.length > 4096 ||
     event.ports.length !== 1
   )
     process.exit(2)
   const port = event.ports[0]
   const tasks = new Map<string, AbortController>()
-  const raw = new RawDataService()
+  const raw = new RawDataService(
+    undefined,
+    new RawSourceCatalog(undefined, undefined, workerCatalogRunner(config.catalogWorkerPath)),
+  )
   const reply = (response: Response): void => {
     if (!rawBounded(response)) process.exit(3)
     port.postMessage(response)

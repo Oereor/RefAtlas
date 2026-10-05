@@ -2,7 +2,7 @@
 
 中文权威项目文档位于 `RefAtlas/docs/`，与应用代码纳入同一 Git 仓库。外层 `RefAtlas-Project/` 只是本地工作区容器；同级 `TurnBasedGameData/` 仍为只读外部数据。
 
-Search investigation line 已 completed / retained as historical evidence；V1 workspace-wide raw content search 已由产品决定 defer，当前范围与引用优先方向见 [ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md)，本次 [架构收尾报告](investigations/phase-2-search-scope-architecture-closeout.md) 记录维护与验证。Source Locator / active-source Find 尚未实现，需独立授权；下一架构焦点是评审后另行授权的 Phase 3A Dataset Contract，而非 Search Foundation。Search Round 2 的 [Electron ACL/execution-lane 历史证据](investigations/phase-2-search-execution-lane-validation.md) 保留；FEFF 仍是 OPEN 的 Raw Access correctness defect。当前阶段真相见 STATUS。
+Search investigation line 已 completed / retained as historical evidence；V1 workspace-wide raw content search 已由产品决定 defer，当前范围与引用优先方向见 [ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md)，本次 [架构收尾报告](investigations/phase-2-search-scope-architecture-closeout.md) 记录维护与验证。Source Locator 本轮IMPLEMENTED，Windows必要gates累计通过/Mac NOT YET RUN，验收见 [Slice F 报告](investigations/phase-2-source-browser-slice-f-source-locator.md)与 STATUS；active-source Find 尚未实现，需独立授权；下一架构焦点是评审后另行授权的 Phase 3A Dataset Contract，而非 Search Foundation。Search Round 2 的 [Electron ACL/execution-lane 历史证据](investigations/phase-2-search-execution-lane-validation.md) 保留；FEFF 仍是 OPEN 的 Raw Access correctness defect。当前阶段真相见 STATUS。
 
 ## 权威模型
 

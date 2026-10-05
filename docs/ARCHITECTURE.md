@@ -1,8 +1,8 @@
 # 已接受架构与约束
 
-2026-10-04 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；Slice E 已补齐显式 Reload 和同 Pointer recovery；搜索与契约未实现。A/B/C/D macOS arm64 累计 gate 已 PASS WITH FIXES，shared watcher Windows 补验已在 Slice E preflight 完成，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。Slice E 的 [Mac 定向验收](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md) 已 PASS WITH FIXES，仅 harness 修改；A/B/C/D/E generic browsing foundation 平台 gate 已关闭，Mac minimize 通过范围为台前调度关闭，开启组合保留限制。
+2026-10-04 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；Slice E 已补齐显式 Reload 和同 Pointer recovery；active-source Find 与契约未实现，workspace 内容搜索仍 deferred。A/B/C/D macOS arm64 累计 gate 已 PASS WITH FIXES，shared watcher Windows 补验已在 Slice E preflight 完成，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。Slice E 的 [Mac 定向验收](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md) 已 PASS WITH FIXES，仅 harness 修改；A/B/C/D/E generic browsing foundation 平台 gate 已关闭，Mac minimize 通过范围为台前调度关闭，开启组合保留限制。
 
-2026-10-05 产品范围更新：[ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md) 已接受搜索范围与引用优先方向，部分替代 ADR-0009 的 workspace-wide content search 要求；既有 investigation evidence 保留。当前 V1 workspace discovery 仅要求 Source Locator，raw content find 限 active source，跨 source 语义导航由 Dataset Contract / Reference Resolver 承担。上述方向尚未实现，本次不改变生产拓扑或 API。
+2026-10-05 产品范围更新：[ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md) 已接受搜索范围与引用优先方向，部分替代 ADR-0009 的 workspace-wide content search 要求；既有 investigation evidence 保留。当前 V1 workspace discovery 仅要求 Source Locator，raw content find 限 active source，跨 source 语义导航由 Dataset Contract / Reference Resolver 承担。Slice F 已接入路径 catalog / Source Locator 的窄 raw API，生产拓扑保持 Raw Utility ownership；Find 与契约尚未实现，验收状态见 STATUS。
 
 ## 1. 桌面栈与进程所有权
 
@@ -85,7 +85,7 @@ Phase 1 首选 better-sqlite3，SQLite 属于 Data Service，经窄内部存储�
 | Active source | Find in Source：bounded literal Contains/find | 复用 raw/parser foundation，渐进匹配、取消、source-revision safety、previous/next navigation、有界 Renderer payload；不要求 persistent index |
 | Cross-source semantic navigation | Dataset Contract / Reference Resolver | 显式契约定义 target scope、structure、matching rule，返回目标 NodeAddress / Logical Entity |
 
-当前 Source Explorer 仍是单目录 discovery，完整 workspace source catalog 尚不存在。Source Locator 与 Find in Source 都未实现，需独立授权。Find 示例 `1407` 可匹配当前 source 的 `1407`、`140701`、`131407`，不扩展到所有 workspace source。
+Source Explorer 保持单目录 discovery；Slice F 的独立 workspace catalog 只管理 JSON 路径 metadata，服务 filename/path Locator。Find in Source 尚未实现，需独立授权。Find 示例 `1407` 可匹配当前 source 的 `1407`、`140701`、`131407`，不扩展到所有 workspace source。
 
 确定性匹配方向遵循 [ADR-0004](decisions/ADR-0004-deterministic-search-semantics.md)，具体匹配选项/API/预算不在本次设计。完整性约束声明的查询范围，progress、partial results 与 cancellation 必须可观察，未覆盖或失败不能冒充完整无结果；不再要求 V1 完整 workspace raw content coverage。raw JSON 是 source of truth，SQLite 是可重建缓存，类型、numeric lexeme、出处与 revision 边界继续有效；不因存储方案丢失大整数或 raw facts。[ADR-0009 的历史与部分替代](decisions/ADR-0009-search-completeness-and-optional-acceleration.md)
 
@@ -145,10 +145,22 @@ SOURCE_CHANGED 标记唯一 session stale，取消其他读取并保留缓存内
 
 SourceSession 只对 active current source 以请求 settled 后约 1s 的节奏 getSourceInfo，no overlap；AppShell 传 visibility，隐藏/最小化暂停，恢复可见立即检查，可见但失焦继续。普通 poll error 保留 view；reset/dispose 清 timer/listener/request。普通产品 BrowserWindow 使用 Electron 默认 backgroundThrottling=true，让 Page Visibility 正确反映窗口；smoke 也从创建时使用 true，并使用与产品一致的初始可见窗口；guard smoke 保持隐藏。没有 Main→Renderer push IPC。Session.reload 复用 reloadSource/root validation，NodeBrowser 等待新 revision Pointer recovery，source/workspace 新意图仍优先；底层 registration/queue/预算保持原实现。详见 [Slice E 报告](investigations/phase-2-source-browser-slice-e-change-reload-integration.md)。
 
-## 8. 尚未接受或产品验证
+## 8. Workspace Source Locator
+
+RawDataService 持有 RawSourceCatalog。workspace open 成功后异步启动单扫描，不占 parser/metadata scheduler，也不阻塞 open 的 IPC reply；新 generation 的 catalog / request 守卫与旧任务收尾覆盖 refresh、switch、close/dispose。Renderer 只接收 building/ready 状态或有界匹配项。新增 locateSources / refreshSourceCatalog 经现有 typed Preload/Main/MessagePort、runtime validators 和 RequestBroker。source lookup 不 acquire，只有用户选择后调用唯一 SourceSession.activate。
+
+遍历使用 opendir/lstat、安全 resolveRawPath 和目录前后 stat；不 follow symlink/junction，不读取 JSON 内容，只接受 regular exact .json。各层 .git（含大小写变体）排除；其他 hidden directories 保持可发现。发布前复核已访问目录，已知变化/权限/资源失败丢弃整次 build，须显式刷新重试；仍是 stat-based best effort traversal，不承诺严格 snapshot isolation。
+
+比较键为 locale-independent toLowerCase，不改 query/raw path；basename exact → prefix → contains → relativePath contains → raw relativePath code-unit tie-break。每次 query 维护 top 50，不全排序 matches；完整 envelope 按 64 KiB 缩减并显式 truncated，无 cursor/spool。空 query 返回空 ready 列表，UI 显示输入提示。
+
+默认 1,000,000 sources / 100,000 directories / 2,000,000 scanned entries / 128 MiB accounted metadata / 60s build；Raw Utility 内单个 builtin worker 逐目录同步 metadata I/O，复用逐组件 link/confinement/stat 策略；单目录 handle，每64项 yield。完整目录前后和最终复核，失败丢弃整次列表。worker每包≤64项/64KiB、单在途包等待ACK；Atomics取消与finally关闭handle后等待实际worker exit再换代。Main仅传入Vite编译的worker路径，不做扫描，不新增进程或依赖。query 每 1,024 项 yield，1s work。计费包括字符串、对象/遍历元数据和固定 1MiB 临时余量，非 heap/RSS 硬上限。catalog 留在 workspace lifetime 内存；没有 TTL、持久 DB 或 workspace watcher network。明确的刷新文件列表重建 catalog，Explorer refresh 保持独立。
+
+WorkspaceController 持有 SourceLocatorController；latest-intent 串行 drain、AbortController、request epoch 与 catalog generation 防迟到覆盖。building 时仅在 dialog 打开期间约 250ms poll，ready 后执行最新 query，关闭不取消共享 build。原生 dialog 管 focus/Tab，combobox + listbox/options 管 selected 与 active-descendant；Ctrl/Cmd+P、显式按钮、上下/Enter/Escape/click 已接入。选择先关闭、恢复 focus，再复用 source activation；错误沿用现有 presentation，取消保留 Explorer/Node/Inspector。en/zh-CN 文案进入 Paraglide，raw names/path/query 不翻译。验收与局限见 [Slice F 报告](investigations/phase-2-source-browser-slice-f-source-locator.md)。
+
+## 9. 尚未接受或产品验证
 
 - 正式发布配置、CI/release workflow、签名、公证、安装器/DMG、自动更新与发布节奏。工具链路线已接受，但这些发布事项不属于 ADR-0006；具体版本由 package/lockfile 管理并按风险升级验证。
-- Source Locator、active-source Find、Dataset Contract 与完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。Phase 3A 契约架构/调查是下一焦点，需独立授权。
+- active-source Find、Dataset Contract 与完整产品 UI/API 尚未实现；新增 raw query primitives 已接入现有进程链路。Phase 3A 契约架构/调查是下一焦点，需独立授权。
 - Workspace-wide content search / S1 / content cache / FTS-trigram / dedicated Search Utility 已 defer，compact hash 已退出当前候选；不是等待继续 Search Foundation 的任务清单。
 - Active-source Find 的具体匹配选项、分页/API/预算，以及契约 schema、resolver matching rule、incoming/reference navigation 仍待独立设计；child index 和更大 scalar streaming 优化尚未实现。FEFF 是独立 OPEN correctness work。
 - 台前调度开启组合的 macOS minimize/visibility 回归、完整 accessibility audit 和正式签名/公证验证；macOS A/B/C/D 累计 gate 与用户 VoiceOver sanity check 见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)，Slice E 范围见 [Mac 定向报告](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md)。

@@ -1,6 +1,7 @@
 import { MessageChannelMain, utilityProcess } from 'electron'
 import type { MessagePortMain, UtilityProcess } from 'electron'
 import utilityPath from '../utility/index.ts?modulePath'
+import catalogWorkerPath from '../utility/raw-catalog-worker.ts?modulePath'
 import { bounded, exact, FoundationError, LIMITS, object } from '../shared/protocol'
 import type { Request, Runtime, ServiceStatus, UtilityValue } from '../shared/protocol'
 import { RequestBroker } from './request-broker'
@@ -98,7 +99,10 @@ export class DataService {
         if (this.child === child) child.kill()
       })
       port1.start()
-      child.postMessage({ type: 'connect', generation, diagnostics: this.diagnostics }, [port2])
+      child.postMessage(
+        { type: 'connect', generation, diagnostics: this.diagnostics, catalogWorkerPath },
+        [port2],
+      )
     }).finally(() => {
       this.starting = null
     })

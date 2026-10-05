@@ -31,6 +31,29 @@ function storage(initial?: string) {
   }
 }
 afterEach(() => initializeLocalization('en'))
+it('provides Locator messages and localized failures without rewriting raw paths', () => {
+  const raw = 'ExcelOutput/AvatarSkillConfig.json'
+  for (const locale of ['en', 'zh-CN'] as const) {
+    const options = { locale }
+    expect(
+      [
+        messages.locator_title({}, options),
+        messages.locator_input({}, options),
+        messages.locator_results({}, options),
+        messages.locator_building({}, options),
+        messages.locator_empty({}, options),
+        messages.locator_truncated({}, options),
+        messages.locator_refresh({}, options),
+        messages.locator_failed({ reason: 'RESOURCE_LIMIT' }, options),
+      ].every((text) => text.length > 0 && !text.includes('{reason}')),
+    ).toBe(true)
+    changeUiLocale(locale)
+    expect(raw).toBe('ExcelOutput/AvatarSkillConfig.json')
+  }
+  expect(messages.locator_title({}, { locale: 'en' })).not.toBe(
+    messages.locator_title({}, { locale: 'zh-CN' }),
+  )
+})
 it('provides recovery messages in both supported locales', () => {
   for (const locale of ['en', 'zh-CN'] as const) {
     const options = { locale }

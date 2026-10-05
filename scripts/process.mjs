@@ -56,8 +56,10 @@ export function runProcess(
     })
     child.once('close', (code) => {
       cleanup()
-      if (timeoutError) reject(timeoutError)
-      else if (code !== 0) reject(new Error('进程退出码 ' + code + ': ' + stderr))
+      if (timeoutError) {
+        if (stderr) timeoutError.message += '\n' + stderr
+        reject(timeoutError)
+      } else if (code !== 0) reject(new Error('进程退出码 ' + code + ': ' + stderr))
       else resolve({ code, stderr })
     })
   })

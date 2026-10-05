@@ -5,6 +5,7 @@
   import NodeBrowser from '../browser/NodeBrowser.svelte'
   import Inspector from '../browser/Inspector.svelte'
   import SourceExplorer from '../explorer/SourceExplorer.svelte'
+  import SourceLocator from '../locator/SourceLocator.svelte'
   import { messages, uiLocale, formatRawError } from '../i18n'
   let { workspace }: { workspace: WorkspaceController } = $props()
   const view = $derived(workspace.changes)
@@ -13,9 +14,22 @@
     const visibility = () =>
       workspace.session.setMonitoringVisible(document.visibilityState === 'visible')
     document.addEventListener('visibilitychange', visibility)
+    const shortcut = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === 'p'
+      ) {
+        event.preventDefault()
+        if (workspace.snapshot.status === 'open') workspace.locator.open()
+      }
+    }
+    document.addEventListener('keydown', shortcut)
     visibility()
     return () => {
       document.removeEventListener('visibilitychange', visibility)
+      document.removeEventListener('keydown', shortcut)
       void workspace.dispose()
     }
   })
@@ -23,6 +37,7 @@
 
 <div class="app-shell" data-workspace-state={$view.status}>
   <WorkspaceToolbar {workspace} />
+  <SourceLocator locator={workspace.locator} />
   {#if $view.workspaceId}
     <div
       class="workspace-layout"

@@ -159,6 +159,8 @@ for (const kind of [
   'segment',
   'directory',
   'release',
+  'locate',
+  'catalog',
 ] as const)
   registerRaw(RAW_CHANNELS[kind], async (event, input) => {
     const command = commandFromInput(kind, input)
@@ -310,10 +312,23 @@ async function launch(): Promise<void> {
     trustedUrl = window.webContents.getURL()
   }
   if (!smoke) return
+  if (!guardSmoke) {
+    // Foreground responsiveness is measured before Explorer's native input stages.
+    window.show()
+    window.focus()
+    window.webContents.focus()
+  }
   const rendererReport: unknown = await window.webContents.executeJavaScript(
     guardSmoke ? 'window.runFoundationGuardSmoke()' : 'window.runFoundationSmoke()',
   )
   if (!guardSmoke && reportPath && object(rendererReport)) {
+    const nativeStarted = performance.now()
+    const progress = async (stage: string) => {
+      await writeFile(
+        join(dirname(reportPath), 'progress.json'),
+        JSON.stringify({ stage, elapsedMs: performance.now() - nativeStarted }),
+      )
+    }
     const rawReports: unknown[] = []
     rawReports.push(await window.webContents.executeJavaScript('window.runRawSmoke("initial")'))
     await writeFile(join(dirname(reportPath), 'raw-fixtures/sample.json'), '{"n":2}', 'utf8')
@@ -428,6 +443,7 @@ async function launch(): Promise<void> {
     const nodeNavigation = () => nodeNavigations++
     window.webContents.on('did-start-navigation', nodeNavigation)
     const nodeStage = async (stage: string, visibilityAction?: 'minimize' | 'hide') => {
+      await progress('NodeBrowser ' + stage)
       try {
         const result: unknown = await window!.webContents.executeJavaScript(
           'window.runNodeBrowserSmoke(' + JSON.stringify(stage) + ')',
@@ -600,10 +616,125 @@ async function launch(): Promise<void> {
     window.webContents.removeListener('did-start-navigation', nodeNavigation)
     if (nodeNavigations !== 0) throw new Error('Slice E lifecycle caused page navigation')
     nodeReports.push({ stage: 'lifecycle-navigation', count: nodeNavigations })
+    const locatorReports: unknown[] = []
+    const locatorStarted = performance.now()
+    const locatorStage = async (stage: string) => {
+      await progress('Locator ' + stage)
+      const observation =
+        stage === 'real-data'
+          ? setInterval(() => {
+              void window!.webContents
+                .executeJavaScript('window.runSourceLocatorSmoke("diagnostics")')
+                .then((state: unknown) => progress('Locator real-data ' + JSON.stringify(state)))
+                .catch(() => {})
+            }, 5000)
+          : null
+      console.warn(
+        'Locator stage ' + stage + ' at ' + Math.round(performance.now() - locatorStarted) + 'ms',
+      )
+      try {
+        locatorReports.push(
+          await window!.webContents.executeJavaScript(
+            'window.runSourceLocatorSmoke(' + JSON.stringify(stage) + ')',
+          ),
+        )
+      } catch (error) {
+        throw new Error(
+          'Locator stage ' +
+            stage +
+            ': ' +
+            (error instanceof Error ? error.message : String(error)),
+        )
+      } finally {
+        if (observation) clearInterval(observation)
+      }
+    }
+    await locatorStage('prepare')
+    const shortcutModifiers: ('control' | 'meta')[] = [
+      process.platform === 'darwin' ? 'meta' : 'control',
+    ]
+    window.webContents.sendInputEvent({
+      type: 'keyDown',
+      keyCode: 'P',
+      modifiers: shortcutModifiers,
+    })
+    window.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'P', modifiers: shortcutModifiers })
+    await locatorStage('opened')
+    window.webContents.insertText('json')
+    await locatorStage('results')
+    key('Down')
+    await locatorStage('down')
+    key('Up')
+    await locatorStage('up')
+    key('Tab')
+    await locatorStage('tab-refresh')
+    key('Tab')
+    await locatorStage('tab-close')
+    key('Tab')
+    await locatorStage('tab-input')
+    await locatorStage('locale-layout')
+    const locatorScreenshot = async (suffix = '') => {
+      await window!.webContents.executeJavaScript(
+        'new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))',
+      )
+      await writeFile(
+        resolve(
+          process.cwd(),
+          'artifacts/source-locator-' +
+            (process.env.ELECTRON_RENDERER_URL ? 'dev' : app.isPackaged ? 'packaged' : 'built') +
+            suffix +
+            '.png',
+        ),
+        (await window!.webContents.capturePage()).toPNG(),
+      )
+    }
+    await locatorScreenshot()
+    window.setSize(900, 600)
+    await locatorStage('locale-layout')
+    await locatorScreenshot('-narrow')
+    window.setSize(1280, 800)
+    key('Escape')
+    await locatorStage('cancelled')
+    await locatorStage('enter-ready')
+    key('Return')
+    await locatorStage('enter-activated')
+    const locatorClick = async (selector: string) => {
+      const point: unknown = await window!.webContents.executeJavaScript(
+        '(() => { const rect = document.querySelector(' +
+          JSON.stringify(selector) +
+          ').getBoundingClientRect(); return { x: Math.round(rect.x + rect.width / 2), y: Math.round(rect.y + rect.height / 2) }; })()',
+      )
+      if (!object(point) || typeof point.x !== 'number' || typeof point.y !== 'number')
+        throw new Error('Locator native click coordinates missing')
+      window!.webContents.sendInputEvent({
+        type: 'mouseDown',
+        x: point.x,
+        y: point.y,
+        button: 'left',
+        clickCount: 1,
+      })
+      window!.webContents.sendInputEvent({
+        type: 'mouseUp',
+        x: point.x,
+        y: point.y,
+        button: 'left',
+        clickCount: 1,
+      })
+    }
+    await locatorStage('click-ready')
+    await locatorClick('[data-action="refresh-locator"]')
+    await locatorStage('click-refreshed')
+    await locatorClick('[data-locator-source="bad.json"]')
+    await locatorStage('click-failed')
+    await locatorClick('[data-locator-source]')
+    await locatorStage('click-refresh')
     if (process.argv.includes('--explorer-real-data')) {
       smokeWorkspaceSelections = [resolve(process.cwd(), '../TurnBasedGameData')]
       await nodeStage('real-data')
+      await locatorStage('real-data')
     }
+    await locatorStage('finish')
+    rendererReport.locator = locatorReports
     rendererReport.nodeBrowser = nodeReports
     window.hide()
     rendererReport.explorer = explorerReports

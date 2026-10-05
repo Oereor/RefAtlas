@@ -1,6 +1,8 @@
 # 调查与证据
 
-- [Phase 2 Search 搜索范围架构收尾](phase-2-search-scope-architecture-closeout.md)：2026-10-05 产品决定进入 ADR-0011；Search investigation line completed / closed，证据保留；workspace content search / S1 / content cache / FTS-trigram / dedicated Search Utility 为 DEFER，compact hash 退出当前 V1 candidate set。Source Locator / active-source Find 尚未实现，下一架构焦点为另行授权的 Phase 3A Dataset Contract；FEFF 仍是 OPEN Raw Access correctness defect。
+- [Source Browser Slice F — Workspace Source Locator](phase-2-source-browser-slice-f-source-locator.md)：Raw Utility path-only catalog、typed lookup/refresh、bounded Quick Open、唯一 source activation、取消/代次/安全、本机真实数据与 Windows 原生验收；macOS arm64 本轮未运行。
+
+- [Phase 2 Search 搜索范围架构收尾](phase-2-search-scope-architecture-closeout.md)：2026-10-05 产品决定进入 ADR-0011；Search investigation line completed / closed，证据保留；workspace content search / S1 / content cache / FTS-trigram / dedicated Search Utility 为 DEFER，compact hash 退出当前 V1 candidate set。收尾时 Source Locator / active-source Find 尚未实现；本轮 Locator 验收见 Slice F，active-source Find 仍未实现，下一架构焦点为另行授权的 Phase 3A Dataset Contract；FEFF 仍是 OPEN Raw Access correctness defect。
 
 下列 Search 报告正文保持调查时点，不以其旧 OPEN / UNKNOWN / AWAITING REVIEW 启动后续工作。新的当前方向以 [ADR-0011](../decisions/ADR-0011-search-scope-and-reference-first-direction.md) 和 [STATUS](../STATUS.md) 为准；技术未知项未被宣称解决。
 

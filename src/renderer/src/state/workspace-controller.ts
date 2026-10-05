@@ -5,6 +5,7 @@ import { SourceSession } from './source-session'
 import { NodeBrowserController } from '../browser/node-browser-controller'
 import { errorOf, RequestFailure } from './requests'
 import type { UiError } from './requests'
+import { SourceLocatorController } from '../locator/source-locator-controller'
 
 export type WorkspaceState = {
   status: 'closed' | 'opening' | 'open' | 'error'
@@ -26,10 +27,12 @@ export class WorkspaceController {
   readonly explorer: ExplorerController
   readonly session: SourceSession
   readonly browser: NodeBrowserController
+  readonly locator: SourceLocatorController
   constructor(private readonly bridge: RawBridge) {
     this.explorer = new ExplorerController(bridge)
     this.session = new SourceSession(bridge)
     this.browser = new NodeBrowserController(bridge, this.session)
+    this.locator = new SourceLocatorController(bridge, this.session)
   }
   get snapshot(): WorkspaceState {
     return this.state
@@ -41,6 +44,7 @@ export class WorkspaceController {
   async dispose(): Promise<void> {
     this.browser.dispose()
     this.explorer.reset(null)
+    this.locator.reset(null)
     await this.session.dispose()
   }
   async open(): Promise<void> {
@@ -55,6 +59,7 @@ export class WorkspaceController {
         return
       }
       this.session.reset()
+      this.locator.reset(result.value.workspaceId)
       this.publish({
         status: 'open',
         epoch: previous.epoch + 1,
@@ -66,6 +71,7 @@ export class WorkspaceController {
     } catch (error) {
       this.explorer.reset(null)
       this.session.reset()
+      this.locator.reset(null)
       this.publish({
         status: 'error',
         epoch: previous.epoch + 1,

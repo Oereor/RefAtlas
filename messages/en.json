@@ -97,5 +97,16 @@
   "node_type_boolean": "boolean",
   "node_type_null": "null",
   "node_pointer": "Pointer",
-  "node_segment_limits": "Segments show parsed scalar values and remain subject to parser and resource limits."
+  "node_segment_limits": "Segments show parsed scalar values and remain subject to parser and resource limits.",
+  "locator_title": "Quick Open",
+  "locator_close": "Close",
+  "locator_input": "Enter a file name or relative path",
+  "locator_placeholder": "Find JSON files by name or path",
+  "locator_results": "Matching sources",
+  "locator_building": "Building workspace file list…",
+  "locator_failed": "Could not locate sources: {reason} Refresh the file list to retry.",
+  "locator_truncated": "More matches exist. Keep typing to narrow the results.",
+  "locator_empty": "No matching JSON files",
+  "locator_refresh": "Refresh file list",
+  "locator_shortcut": "Quick Open (Ctrl+P / Cmd+P)"
 }

@@ -41,6 +41,16 @@ beforeEach(async () => {
   const opened = await service.execute({ kind: 'open', root }, signal())
   expect(opened).toMatchObject({ status: 'opened', displayName: root.split(/[\\/]/).at(-1) })
   workspaceId = (opened as { workspaceId: WorkspaceId }).workspaceId
+  // Finish eager catalog discovery before injecting single-directory filesystem failures.
+  while (
+    (
+      (await service.execute(
+        { kind: 'locate', workspaceId, query: '', limit: 1, catalogGeneration: null },
+        signal(),
+      )) as { status: string }
+    ).status === 'building'
+  )
+    await new Promise<void>((resolve) => setImmediate(resolve))
 })
 afterEach(async () => {
   vi.restoreAllMocks()

@@ -50,6 +50,16 @@ beforeEach(async () => {
     workspaceId: WorkspaceId
   }
   workspaceId = opened.workspaceId
+  // Source-only fault injection must not overlap the independent startup traversal.
+  while (
+    (
+      (await service.execute(
+        { kind: 'locate', workspaceId, query: '', limit: 1, catalogGeneration: null },
+        signal(),
+      )) as { status: string }
+    ).status === 'building'
+  )
+    await new Promise<void>((resolve) => setImmediate(resolve))
 })
 afterEach(async () => {
   vi.restoreAllMocks()

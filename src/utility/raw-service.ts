@@ -8,6 +8,7 @@ import { LIMITS } from '../shared/protocol'
 import { filesystemError, resolveRawPath, statStamp as stamp } from './raw-filesystem'
 import { RawDirectory } from './raw-directory'
 import { RawScheduler } from './raw-scheduler'
+import { RawSourceCatalog } from './raw-source-catalog'
 import type {
   ChildrenResult,
   NodeAddress,
@@ -81,7 +82,10 @@ export class RawDataService {
   private polling = false
   private opening = false
   private timer: ReturnType<typeof setInterval>
-  constructor(private readonly observe?: (work: { bytesRead: number; tokens: number }) => void) {
+  constructor(
+    private readonly observe?: (work: { bytesRead: number; tokens: number }) => void,
+    private readonly catalog = new RawSourceCatalog(),
+  ) {
     this.timer = setInterval(() => {
       void this.poll()
     }, 1000)
@@ -122,7 +126,7 @@ export class RawDataService {
     this.rangeBytes = 0
     this.cursors.clear()
     this.directories.clear()
-    return Promise.all(tasks.map((task) => task.done)).then(() => {})
+    return Promise.all([this.catalog.clear(), ...tasks.map((task) => task.done)]).then(() => {})
   }
   dispose(): void {
     clearInterval(this.timer)
@@ -159,6 +163,7 @@ export class RawDataService {
           throw new RawError('RESOURCE_LIMIT', { limit: 'ADDRESS_BYTES' })
         const id = randomUUID() as WorkspaceId
         this.workspace = { id, root, generation }
+        this.catalog.rebuild(this.workspace)
         const value = { status: 'opened' as const, workspaceId: id, displayName }
         publish?.(value)
         return value
@@ -169,7 +174,7 @@ export class RawDataService {
       }
     }
     const workspace = this.requireWorkspace(
-      command.kind === 'directory'
+      command.kind === 'directory' || command.kind === 'locate' || command.kind === 'catalog'
         ? command.workspaceId
         : 'source' in command
           ? command.source.workspaceId
@@ -185,7 +190,7 @@ export class RawDataService {
       workspace,
       controller,
       sourceKey:
-        command.kind === 'directory'
+        command.kind === 'directory' || command.kind === 'locate' || command.kind === 'catalog'
           ? null
           : keyOf('source' in command ? command.source : command.address.source),
       done: new Promise<void>((resolve) => {
@@ -200,6 +205,9 @@ export class RawDataService {
         value = await this.metadataQueue.run(controller.signal, () =>
           this.directories.list(command, workspace, () => this.check(task)),
         )
+      else if (command.kind === 'locate')
+        value = await this.catalog.locate(command, () => this.check(task))
+      else if (command.kind === 'catalog') value = this.catalog.rebuild(workspace)
       else if (command.kind === 'release') {
         const source = this.sources.get(task.sourceKey!)
         const released = Boolean(source && !source.retiring && source.delivered)

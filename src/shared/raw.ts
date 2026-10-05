@@ -54,7 +54,61 @@ export const RAW_CHANNELS = Object.freeze({
   cancel: 'raw:cancel',
   directory: 'raw:directory',
   release: 'raw:release',
+  locate: 'raw:locate',
+  catalog: 'raw:catalog',
 })
+export const LOCATOR_LIMITS = Object.freeze({
+  page: 50,
+  sources: 1_000_000,
+  directories: 100_000,
+  entries: 2_000_000,
+  bytes: 128 * 1024 * 1024,
+  buildMs: 60_000,
+  queryMs: 1000,
+  yieldEvery: 64,
+  queryYieldEvery: 1024,
+})
+export type LocatorItem = { name: string; source: SourceAddress }
+export type LocatorInput = RequestIdInput & {
+  workspaceId: WorkspaceId
+  query: string
+  limit: number
+  catalogGeneration: string | null
+}
+export type CatalogResult = { workspaceId: WorkspaceId; catalogGeneration: string }
+export type LocatorResult = CatalogResult & {
+  query: string
+  status: 'building' | 'ready'
+  items: LocatorItem[]
+  truncated: boolean
+}
+export function sourceMatchRank(path: string, name: string, query: string): number {
+  if (!query) return 4
+  const key = query.toLowerCase(),
+    base = name.toLowerCase()
+  return base === key
+    ? 0
+    : base.startsWith(key)
+      ? 1
+      : base.includes(key)
+        ? 2
+        : path.toLowerCase().includes(key)
+          ? 3
+          : 4
+}
+export function compareLocatorItems(left: LocatorItem, right: LocatorItem, query: string): number {
+  const rank =
+    sourceMatchRank(left.source.relativePath, left.name, query) -
+    sourceMatchRank(right.source.relativePath, right.name, query)
+  return (
+    rank ||
+    (left.source.relativePath < right.source.relativePath
+      ? -1
+      : left.source.relativePath > right.source.relativePath
+        ? 1
+        : 0)
+  )
+}
 export const DIRECTORY_LIMITS = Object.freeze({
   page: 200,
   scan: 20_000,
@@ -228,6 +282,14 @@ export type RawCommand =
   | { kind: 'info'; source: SourceAddress }
   | { kind: 'reload'; source: SourceAddress }
   | { kind: 'release'; source: SourceAddress }
+  | { kind: 'catalog'; workspaceId: WorkspaceId }
+  | {
+      kind: 'locate'
+      workspaceId: WorkspaceId
+      query: string
+      limit: number
+      catalogGeneration: string | null
+    }
   | {
       kind: 'directory'
       workspaceId: WorkspaceId
@@ -286,6 +348,8 @@ export type RawOutput =
   | ChildrenResult
   | SegmentResult
   | DirectoryResult
+  | LocatorResult
+  | CatalogResult
   | { released: boolean }
 export interface RawBridge {
   openWorkspace(input: RequestIdInput): Promise<RawResult<OpenResult>>
@@ -295,6 +359,10 @@ export interface RawBridge {
   getSourceInfo(input: SourceInput): Promise<RawResult<SourceInfo>>
   reloadSource(input: SourceInput): Promise<RawResult<SourceInfo>>
   listDirectory(input: DirectoryInput): Promise<RawResult<DirectoryResult>>
+  locateSources(input: LocatorInput): Promise<RawResult<LocatorResult>>
+  refreshSourceCatalog(
+    input: RequestIdInput & { workspaceId: WorkspaceId },
+  ): Promise<RawResult<CatalogResult>>
   releaseSource(input: SourceInput): Promise<RawResult<{ released: boolean }>>
   readNode(input: NodeInput): Promise<RawResult<NodeResult>>
   listNodeChildren(input: PageInput): Promise<RawResult<ChildrenResult>>
@@ -312,6 +380,18 @@ export function validCommand(value: unknown): value is RawCommand {
     )
   if (value.kind === 'close')
     return exact(value, ['kind', 'workspaceId']) && validId(value.workspaceId)
+  if (value.kind === 'catalog')
+    return exact(value, ['kind', 'workspaceId']) && validId(value.workspaceId)
+  if (value.kind === 'locate')
+    return (
+      exact(value, ['kind', 'workspaceId', 'query', 'limit', 'catalogGeneration']) &&
+      validId(value.workspaceId) &&
+      typeof value.query === 'string' &&
+      Number.isInteger(value.limit) &&
+      Number(value.limit) >= 1 &&
+      Number(value.limit) <= LOCATOR_LIMITS.page &&
+      cursor(value.catalogGeneration)
+    )
   if (value.kind === 'info' || value.kind === 'reload' || value.kind === 'release')
     return exact(value, ['kind', 'source']) && validSource(value.source)
   if (value.kind === 'directory')
@@ -458,6 +538,55 @@ export function validRawResult(value: unknown, command: RawCommand): value is Ra
       !/[/\x00]/.test(result.displayName)
     )
   if (command.kind === 'close') return exact(result, ['closed']) && result.closed === true
+  if (command.kind === 'catalog')
+    return (
+      exact(result, ['workspaceId', 'catalogGeneration']) &&
+      result.workspaceId === command.workspaceId &&
+      validId(result.catalogGeneration)
+    )
+  if (command.kind === 'locate') {
+    if (
+      !exact(result, [
+        'workspaceId',
+        'catalogGeneration',
+        'query',
+        'status',
+        'items',
+        'truncated',
+      ]) ||
+      result.workspaceId !== command.workspaceId ||
+      !validId(result.catalogGeneration) ||
+      (command.catalogGeneration !== null &&
+        result.catalogGeneration !== command.catalogGeneration) ||
+      result.query !== command.query ||
+      !['building', 'ready'].includes(String(result.status)) ||
+      !Array.isArray(result.items) ||
+      result.items.length > command.limit ||
+      typeof result.truncated !== 'boolean'
+    )
+      return false
+    if (result.status === 'building' || !command.query)
+      return result.items.length === 0 && !result.truncated
+    return (
+      (!result.truncated || result.items.length > 0) &&
+      result.items.every(
+        (item, index, items) =>
+          object(item) &&
+          exact(item, ['name', 'source']) &&
+          typeof item.name === 'string' &&
+          validSource(item.source) &&
+          item.source.workspaceId === command.workspaceId &&
+          item.name === item.source.relativePath.split('/').at(-1) &&
+          sourceMatchRank(item.source.relativePath, item.name, command.query) < 4 &&
+          (index === 0 ||
+            compareLocatorItems(
+              items[index - 1] as LocatorItem,
+              item as LocatorItem,
+              command.query,
+            ) < 0),
+      )
+    )
+  }
   if (command.kind === 'release')
     return exact(result, ['released']) && typeof result.released === 'boolean'
   if (command.kind === 'directory') {

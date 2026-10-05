@@ -63,7 +63,8 @@ try {
     env,
     capture: true,
     ownGroup: false,
-    timeoutMs: 90000,
+    // Opt-in locator traversal adds up to 60s to the existing native story.
+    timeoutMs: realBefore ? 150000 : 90000,
   })
   const content = JSON.parse(await readFile(report, 'utf8'))
   if (realBefore) {
@@ -133,6 +134,32 @@ try {
     throw new Error('真实 NodeBrowser/controller/UI gate 缺失')
   const forbiddenRuntime =
     /@inlang|@lix-js|unplugin-paraglide-js|Fallback ready|源文件已发生变化，请重新加载。|@zag-js|@tanstack|TREE\.TYPEAHEAD|BRANCH_NODE\.ARROW/
+  if (
+    !Array.isArray(content.renderer.locator) ||
+    ![
+      'opened',
+      'results',
+      'down',
+      'up',
+      'tab-refresh',
+      'tab-close',
+      'tab-input',
+      'locale-layout',
+      'cancelled',
+      'enter-activated',
+      'click-refresh',
+      'finish',
+    ].every((stage) => content.renderer.locator.some((result) => result.stage === stage)) ||
+    (realBefore && !content.renderer.locator.some((result) => result.stage === 'real-data')) ||
+    !content.renderer.locator.some(
+      (result) =>
+        result.stage === 'finish' &&
+        result.prints === 0 &&
+        result.shortcuts === result.prevented &&
+        result.shortcuts > 0,
+    )
+  )
+    throw new Error('Source Locator UI/native shortcut/Print/activation 证明缺失')
   if (mode !== 'dev') {
     for (const folder of ['main', 'preload']) {
       const files = await readdir(resolve(root, 'out', folder), { recursive: true })
@@ -245,6 +272,9 @@ try {
   console.log('checks: ' + content.renderer.checks.join(', '))
   console.log('report: ' + saved)
 } catch (error) {
+  const progress = join(reportDirectory, 'progress.json')
+  if (existsSync(progress))
+    console.error('last native stage: ' + (await readFile(progress, 'utf8')))
   if (existsSync(report)) console.error(await readFile(report, 'utf8'))
   console.error(error)
   process.exitCode = 1

@@ -6,6 +6,8 @@ import { resolve } from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { RawDataService } from '../src/utility/raw-service'
+import { RawSourceCatalog } from '../src/utility/raw-source-catalog'
+import { workerCatalogRunner } from '../src/utility/raw-catalog-worker-runner'
 import { byteSize, RAW_LIMITS } from '../src/shared/raw'
 import type {
   ChildrenResult,
@@ -14,6 +16,7 @@ import type {
   JsonPointer,
   NodeAddress,
   NodeResult,
+  LocatorResult,
   RelativePath,
   SourceInfo,
   WorkspaceId,
@@ -39,9 +42,20 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
       status: await git(['status', '--porcelain']),
     }
     let work = { bytesRead: 0, tokens: 0 }
+    let parserCalls = 0
+    const catalog = new RawSourceCatalog(
+      undefined,
+      undefined,
+      workerCatalogRunner(new URL('../src/utility/raw-catalog-worker.ts', import.meta.url), [
+        '--experimental-transform-types',
+        '--import',
+        new URL('./helpers/source-catalog-loader.mjs', import.meta.url).href,
+      ]),
+    )
     const service = new RawDataService((metrics) => {
         work = metrics
-      }),
+        parserCalls++
+      }, catalog),
       signal = new AbortController().signal
     const samples = [
       ['ExcelOutput/AvatarConfig.json', '/0', '/0/AvatarName/Hash', '6186714091647966180'],
@@ -58,6 +72,7 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
     ] as const
     const measurements = []
     const directories = []
+    const memoryBeforeCatalog = process.memoryUsage()
     try {
       const { workspaceId } = (await service.execute({ kind: 'open', root }, signal)) as {
         workspaceId: WorkspaceId
@@ -71,6 +86,7 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
         const started = performance.now(),
           pageBytes: number[] = [],
           discovered = new Set<string>()
+        const catalogStatus = catalog.metrics?.status
         let cursor: string | null = null
         let previous: DirectoryResult['items'][number] | null = null
         let sources = 0
@@ -116,6 +132,7 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
         } while (cursor)
         expect(discovered).toEqual(expected)
         directories.push({
+          catalogStatus,
           directory,
           entries: discovered.size,
           sources,
@@ -208,6 +225,7 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
           released: true,
         })
         measurements.push({
+          catalogStatus: catalog.metrics?.status,
           file,
           sourceBytes: before.size,
           sha256: before.hash,
@@ -219,6 +237,66 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
           responseBytes: byteSize(cold),
           memory: process.memoryUsage(),
         })
+      }
+      const locatorQueries = []
+      const locate = async (query: string, signal = new AbortController().signal) =>
+        service.execute(
+          { kind: 'locate', workspaceId, query, limit: 50, catalogGeneration: null },
+          signal,
+        ) as Promise<LocatorResult>
+      while ((await locate('')).status === 'building')
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(catalog.metrics?.sources).toBe(137916)
+      expect(catalog.metrics?.excludedGit).toBeGreaterThanOrEqual(1)
+      const callsBeforeLocator = parserCalls
+      for (const query of ['AvatarSkill', 'MonsterSkill', 'TextMapCHS', 'json', 'Config', 'a']) {
+        const started = performance.now(),
+          result = await locate(query)
+        const latencyMs = performance.now() - started
+        expect(result.status).toBe('ready')
+        expect(result.items.length).toBeLessThanOrEqual(50)
+        const payloadBytes = byteSize({
+          type: 'response',
+          id: randomUUID(),
+          result: { ok: true, value: result },
+        })
+        expect(payloadBytes).toBeLessThanOrEqual(RAW_LIMITS.responseBytes)
+        if (['json', 'Config', 'a'].includes(query)) expect(result.truncated).toBe(true)
+        else
+          expect(
+            result.items.some(
+              (item) =>
+                item.source.relativePath ===
+                (query === 'TextMapCHS'
+                  ? 'TextMap/TextMapCHS.json'
+                  : 'ExcelOutput/' + query + 'Config.json'),
+            ),
+          ).toBe(true)
+        for (const item of result.items)
+          expect(await service.execute({ kind: 'release', source: item.source }, signal)).toEqual({
+            released: false,
+          })
+        locatorQueries.push({
+          query,
+          latencyMs,
+          payloadBytes,
+          truncated: result.truncated,
+          paths: result.items.map((item) => item.source.relativePath),
+        })
+      }
+      expect(parserCalls).toBe(callsBeforeLocator)
+      const locatorCancelled = new AbortController(),
+        cancellationStarted = performance.now()
+      const pending = locate('json', locatorCancelled.signal)
+      locatorCancelled.abort()
+      await expect(pending).rejects.toMatchObject({ code: 'CANCELLED' })
+      const locator = {
+        catalog: catalog.metrics,
+        queries: locatorQueries,
+        cancelMs: performance.now() - cancellationStarted,
+        parserCallsDuringLookup: parserCalls - callsBeforeLocator,
+        memoryBeforeCatalog,
+        memoryAfterCatalog: process.memoryUsage(),
       }
       const repositoryAfter = {
         head: await git(['rev-parse', 'HEAD']),
@@ -238,6 +316,7 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
             versions: process.versions,
             measurements,
             directories,
+            locator,
             repositoryBefore,
             repositoryAfter,
             maxRssKiB: process.resourceUsage().maxRSS,
@@ -248,6 +327,7 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
       )
       console.log('real-data report: ' + output)
     } finally {
+      console.log('catalog diagnostics: ' + JSON.stringify(catalog.metrics))
       service.dispose()
     }
   }, 120000)

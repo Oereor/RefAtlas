@@ -96,5 +96,16 @@
   "node_type_boolean": "布尔值",
   "node_type_null": "空值",
   "node_pointer": "Pointer",
-  "node_segment_limits": "片段显示解析后的标量值，仍受解析器和资源上限约束。"
+  "node_segment_limits": "片段显示解析后的标量值，仍受解析器和资源上限约束。",
+  "locator_title": "快速打开",
+  "locator_close": "关闭",
+  "locator_input": "输入文件名或相对路径",
+  "locator_placeholder": "按名称或路径查找 JSON 文件",
+  "locator_results": "匹配的来源",
+  "locator_building": "正在建立工作区文件列表…",
+  "locator_failed": "无法查找来源：{reason} 请刷新文件列表后重试。",
+  "locator_truncated": "还有更多匹配结果，请继续输入以缩小范围。",
+  "locator_empty": "没有匹配的 JSON 文件",
+  "locator_refresh": "刷新文件列表",
+  "locator_shortcut": "快速打开（Ctrl+P / Cmd+P）"
 }

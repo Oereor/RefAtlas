@@ -23,6 +23,14 @@
       ? messages.workspace_change({}, { locale: $uiLocale })
       : messages.workspace_open({}, { locale: $uiLocale })}
   </button>
+  <button
+    data-action="open-locator"
+    disabled={$view.status !== 'open'}
+    onclick={() => workspace.locator.open()}
+    title={messages.locator_shortcut({}, { locale: $uiLocale })}
+  >
+    {messages.locator_title({}, { locale: $uiLocale })}
+  </button>
   <label class="locale-control">
     <span aria-hidden="true">文/A</span>
     <select

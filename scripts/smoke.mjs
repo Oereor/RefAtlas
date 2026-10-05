@@ -11,7 +11,7 @@ const directory = await mkdtemp(join(parent, 'refatlas-smoke-run-'))
 try {
   await runProcess(process.execPath, [resolve(root, 'scripts/smoke-worker.mjs'), mode, directory], {
     cwd: root,
-    timeoutMs: 120000,
+    timeoutMs: process.env.REFATLAS_SOURCE_EXPLORER_REAL_DATA === '1' ? 180000 : 120000,
   })
 } catch (error) {
   console.error(error)

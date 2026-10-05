@@ -8,7 +8,7 @@ export function validationSteps(npmCli, platform, arch, realData = false) {
   const smokeStep = (mode) => ({
     name: 'smoke:' + mode,
     args: [resolve(import.meta.dirname, 'smoke.mjs'), mode],
-    timeoutMs: 150000,
+    timeoutMs: realData ? 210000 : 150000,
   })
   const [build, builder] = packageSteps(platform, arch)
   return [

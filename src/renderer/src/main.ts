@@ -6,6 +6,7 @@ import { initializeBrowserLocalization } from './i18n'
 import { runLocalizationSmoke } from './localization-smoke'
 import { runExplorerSmoke } from './explorer-smoke'
 import { runNodeBrowserSmoke } from './node-browser-smoke'
+import { runSourceLocatorSmoke } from './source-locator-smoke'
 
 initializeBrowserLocalization()
 
@@ -16,6 +17,7 @@ if (new URLSearchParams(location.search).get('smoke') === '1') {
   window.runLocalizationSmoke = runLocalizationSmoke
   window.runExplorerSmoke = runExplorerSmoke
   window.runNodeBrowserSmoke = runNodeBrowserSmoke
+  window.runSourceLocatorSmoke = runSourceLocatorSmoke
 }
 if (new URLSearchParams(location.search).get('smoke') === 'guard')
   window.runFoundationGuardSmoke = runFoundationGuardSmoke

@@ -14,6 +14,10 @@ export async function runFoundationGuardSmoke(): Promise<unknown> {
   assert(typeof window.runExplorerSmoke === 'undefined', '普通打包态不得暴露 explorer smoke')
   assert(typeof window.runNodeBrowserSmoke === 'undefined', '普通打包态不得暴露 NodeBrowser smoke')
   assert(
+    typeof window.runSourceLocatorSmoke === 'undefined',
+    '普通打包态不得暴露 SourceLocator smoke',
+  )
+  assert(
     typeof window.runLocalizationSmoke === 'undefined',
     '普通打包态不得暴露 localization smoke',
   )
@@ -158,7 +162,16 @@ export async function runFoundationSmoke(): Promise<unknown> {
   const advancedHeartbeat =
     Number(document.getElementById('heartbeat')!.textContent) - beforeHeartbeat
   const advancedClicks = Number(document.getElementById('interactions')!.textContent) - beforeClicks
-  assert(advancedHeartbeat >= 10 && advancedClicks >= 3, '数据工作时 Renderer 必须保持更新及交互')
+  assert(
+    advancedHeartbeat >= 10 && advancedClicks >= 3,
+    '数据工作时 Renderer 必须保持更新及交互：' +
+      JSON.stringify({
+        advancedHeartbeat,
+        advancedClicks,
+        advancedFrames,
+        visibility: document.visibilityState,
+      }),
+  )
   const restartMs: number[] = []
   const startupMs = [initial.startupMs]
   let generation = initial.generation

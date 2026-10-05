@@ -45,6 +45,8 @@ export async function runRawSmoke(stage: string): Promise<unknown> {
           'getSourceInfo',
           'reloadSource',
           'listDirectory',
+          'locateSources',
+          'refreshSourceCatalog',
           'releaseSource',
           'readNode',
           'listNodeChildren',
