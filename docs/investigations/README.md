@@ -1,5 +1,8 @@
 # 调查与证据
 
+- [Phase 3A — Dataset Contract Identity / Reference Taxonomy](phase-3a-dataset-contract-reference-taxonomy.md)：五个真实案例的 typed 值、物理/逻辑身份、基数、nested/context/path 与 TextMap localization 调查；FACT/OBSERVATION/HYPOTHESIS 分离，最小候选能力 M1–M8 待评审。没有 production Contract/Resolver/index/UI 或 FEFF 修复，交付后 STOP / WAIT FOR REVIEW。
+- [Phase 3A 紧凑证据](evidence/phase-3a-dataset-contract-reference-taxonomy.json)：source/target Pointers、原始类型与数值词法、完整选定目标集合、历史计数复用及 11 个外部文件的起止只读审计；非 Contract schema 或生产关系真相。
+
 - [Source Browser Slice G — Find in Source](phase-2-source-browser-slice-g-find-in-source.md)：当前 source/revision 的 structured raw-fact Find、共享暂停 token walk、有界 cursor/history、取消、native 输入与 Windows 必要 gates累计VALIDATED（完整runner预算失败限制保留）；macOS arm64 NOT YET RUN。
 
 - [Slice G 紧凑测量证据](evidence/phase-2-source-browser-slice-g-measurements.json)：五源 Find/read/token/payload/memory、三态 native proof、包体与外部只读审计；不是单次11阶段runner成功记录。

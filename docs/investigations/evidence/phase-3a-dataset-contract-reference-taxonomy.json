@@ -1,0 +1,1903 @@
+{
+  "investigation": "Phase 3A identity/reference taxonomy",
+  "evidenceVersion": 1,
+  "nonProduction": true,
+  "startedAtUtc": "2026-10-06T02:40:31.827065+00:00",
+  "runtime": {
+    "python": "3.13.5"
+  },
+  "baseline": {
+    "app": {
+      "head": "93843fab250662ecfb9bd67669b9c22dec51f967",
+      "branch": "main",
+      "statusPorcelain": ""
+    },
+    "dataset": {
+      "head": "724b139d8c9c32d12552eb95745a4fee72bfe48b",
+      "branch": "main",
+      "statusPorcelain": ""
+    }
+  },
+  "files": [
+    {
+      "relativePath": "README.md",
+      "before": {
+        "sizeBytes": 983,
+        "mtimeNs": "1790920442815901400",
+        "sha256": "1f102bd706663854d50dbd99ff496b8ecd2a77cb84fdc3abac5b42d1402390d7"
+      },
+      "after": {
+        "sizeBytes": 983,
+        "mtimeNs": "1790920442815901400",
+        "sha256": "1f102bd706663854d50dbd99ff496b8ecd2a77cb84fdc3abac5b42d1402390d7"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "ExcelOutput/AvatarConfig.json",
+      "before": {
+        "sizeBytes": 240466,
+        "mtimeNs": "1790920441202489600",
+        "sha256": "d8f3c9f55078611ad010751f82333735eb7bc732e22df6b8ad235021658e0456"
+      },
+      "after": {
+        "sizeBytes": 240466,
+        "mtimeNs": "1790920441202489600",
+        "sha256": "d8f3c9f55078611ad010751f82333735eb7bc732e22df6b8ad235021658e0456"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+      "before": {
+        "sizeBytes": 11438925,
+        "mtimeNs": "1790920441260177400",
+        "sha256": "552f36efa00798ea7a733041c656dd7169739b986f973cb424f2417009f63839"
+      },
+      "after": {
+        "sizeBytes": 11438925,
+        "mtimeNs": "1790920441260177400",
+        "sha256": "552f36efa00798ea7a733041c656dd7169739b986f973cb424f2417009f63839"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "ExcelOutput/StageConfig.json",
+      "before": {
+        "sizeBytes": 26939432,
+        "mtimeNs": "1790920442529870500",
+        "sha256": "dcc420635ee03361fef7ffb71b2957037166c3539536bbb5ae9b1b45a3f7baf2"
+      },
+      "after": {
+        "sizeBytes": 26939432,
+        "mtimeNs": "1790920442529870500",
+        "sha256": "dcc420635ee03361fef7ffb71b2957037166c3539536bbb5ae9b1b45a3f7baf2"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "ExcelOutput/MonsterConfig.json",
+      "before": {
+        "sizeBytes": 4534605,
+        "mtimeNs": "1790920441934080100",
+        "sha256": "dfdfe23c803419c4fd96e8ef3a7bf1028c985d64135c89f5f7a43123eec703c8"
+      },
+      "after": {
+        "sizeBytes": 4534605,
+        "mtimeNs": "1790920441934080100",
+        "sha256": "dfdfe23c803419c4fd96e8ef3a7bf1028c985d64135c89f5f7a43123eec703c8"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "ExcelOutput/RelicSetConfig.json",
+      "before": {
+        "sizeBytes": 23815,
+        "mtimeNs": "1790920442143518100",
+        "sha256": "92f387b962a37422753fea88f92890a7e94b5cf0be75b85344e6342fcccc5eb9"
+      },
+      "after": {
+        "sizeBytes": 23815,
+        "mtimeNs": "1790920442143518100",
+        "sha256": "92f387b962a37422753fea88f92890a7e94b5cf0be75b85344e6342fcccc5eb9"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "ExcelOutput/RelicSetSkillConfig.json",
+      "before": {
+        "sizeBytes": 33688,
+        "mtimeNs": "1790920442144618800",
+        "sha256": "77b680e926dc0d720a0f5de4e7c6abd015622aab2b16e6225f7b67aba0d9c8e9"
+      },
+      "after": {
+        "sizeBytes": 33688,
+        "mtimeNs": "1790920442144618800",
+        "sha256": "77b680e926dc0d720a0f5de4e7c6abd015622aab2b16e6225f7b67aba0d9c8e9"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "Config/ConfigCharacter/Avatar/Avatar_Mar_7th_00_Config.json",
+      "before": {
+        "sizeBytes": 10681,
+        "mtimeNs": "1790920399743225000",
+        "sha256": "cb6dfa822b5b3853b423379fe0d94a17046a35604467093ba585a92050df3905"
+      },
+      "after": {
+        "sizeBytes": 10681,
+        "mtimeNs": "1790920399743225000",
+        "sha256": "cb6dfa822b5b3853b423379fe0d94a17046a35604467093ba585a92050df3905"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "TextMap/TextMapCHS.json",
+      "before": {
+        "sizeBytes": 52399646,
+        "mtimeNs": "1790920447463894800",
+        "sha256": "a9028313c772e684c91359b467b398a1ded2079de67a191dff80d9adf43dfca4"
+      },
+      "after": {
+        "sizeBytes": 52399646,
+        "mtimeNs": "1790920447463894800",
+        "sha256": "a9028313c772e684c91359b467b398a1ded2079de67a191dff80d9adf43dfca4"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "TextMap/TextMapEN.json",
+      "before": {
+        "sizeBytes": 59061007,
+        "mtimeNs": "1790920448276091100",
+        "sha256": "74cd54c47df1f8cffb53b63d8744ddbb8db7aebf7fe9f7934d9a8e1e39aa7532"
+      },
+      "after": {
+        "sizeBytes": 59061007,
+        "mtimeNs": "1790920448276091100",
+        "sha256": "74cd54c47df1f8cffb53b63d8744ddbb8db7aebf7fe9f7934d9a8e1e39aa7532"
+      },
+      "unchanged": true
+    },
+    {
+      "relativePath": "TextMap/TextMapJP.json",
+      "before": {
+        "sizeBytes": 69174020,
+        "mtimeNs": "1790920449416548700",
+        "sha256": "b1078b11eaaf28d21638a9df8ed04021d2e33e087e6e2e7afd39814137e1811b"
+      },
+      "after": {
+        "sizeBytes": 69174020,
+        "mtimeNs": "1790920449416548700",
+        "sha256": "b1078b11eaaf28d21638a9df8ed04021d2e33e087e6e2e7afd39814137e1811b"
+      },
+      "unchanged": true
+    }
+  ],
+  "cases": {
+    "A": {
+      "rawClassification": "FACT",
+      "semanticClassification": "HYPOTHESIS",
+      "source": {
+        "relativePath": "ExcelOutput/AvatarConfig.json",
+        "pointer": "/0/AvatarName/Hash"
+      },
+      "sourceValue": {
+        "kind": "number",
+        "lexeme": "6186714091647966180"
+      },
+      "context": {
+        "AvatarID": {
+          "kind": "number",
+          "lexeme": "1001"
+        },
+        "AvatarVOTag": {
+          "kind": "string",
+          "value": "mar7th"
+        }
+      },
+      "targets": [
+        {
+          "target": {
+            "relativePath": "TextMap/TextMapCHS.json",
+            "pointer": "/6186714091647966180"
+          },
+          "key": {
+            "kind": "string",
+            "value": "6186714091647966180"
+          },
+          "value": {
+            "kind": "string",
+            "value": "三月七"
+          },
+          "line": 11233
+        },
+        {
+          "target": {
+            "relativePath": "TextMap/TextMapEN.json",
+            "pointer": "/6186714091647966180"
+          },
+          "key": {
+            "kind": "string",
+            "value": "6186714091647966180"
+          },
+          "value": {
+            "kind": "string",
+            "value": "March 7th"
+          },
+          "line": 4325
+        }
+      ],
+      "semanticEvidence": {
+        "README": "TextMap Hashing documents xxhash generally, not per-field binding",
+        "corroboration": "CHS name and EN March 7th are consistent with AvatarVOTag mar7th; not a formal reference declaration"
+      },
+      "observationClassification": "OBSERVATION"
+    },
+    "B": {
+      "rawClassification": "FACT",
+      "semanticClassification": "HYPOTHESIS",
+      "sourceContainer": {
+        "relativePath": "ExcelOutput/AvatarConfig.json",
+        "pointer": "/0/SkillList"
+      },
+      "references": [
+        {
+          "source": {
+            "relativePath": "ExcelOutput/AvatarConfig.json",
+            "pointer": "/0/SkillList/0"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "100101"
+          },
+          "targetCount": 10,
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3983"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "1"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3984"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "2"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3985"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "3"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3986"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "4"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3987"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "5"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3988"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "6"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3989"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "7"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3990"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "8"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3991"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "9"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4571"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100101"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "10"
+              }
+            }
+          ]
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/AvatarConfig.json",
+            "pointer": "/0/SkillList/1"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "100102"
+          },
+          "targetCount": 15,
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2219"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "1"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2220"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "2"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2221"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "3"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2222"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "4"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2223"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "5"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2224"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "6"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2225"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "7"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2226"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "8"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2227"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "9"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2228"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "10"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2229"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "11"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2230"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "12"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2231"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "13"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2232"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "14"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/2233"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100102"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "15"
+              }
+            }
+          ]
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/AvatarConfig.json",
+            "pointer": "/0/SkillList/2"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "100103"
+          },
+          "targetCount": 15,
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3992"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "1"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3993"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "2"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3994"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "3"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3995"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "4"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3996"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "5"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3997"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "6"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3998"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "7"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/3999"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "8"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4000"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "9"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4001"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "10"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4002"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "11"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4003"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "12"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4004"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "13"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4005"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "14"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4006"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100103"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "15"
+              }
+            }
+          ]
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/AvatarConfig.json",
+            "pointer": "/0/SkillList/3"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "100104"
+          },
+          "targetCount": 15,
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4007"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "1"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4008"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "2"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4009"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "3"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4010"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "4"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4011"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "5"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4012"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "6"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4013"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "7"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4014"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "8"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4015"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "9"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4016"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "10"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4017"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "11"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4018"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "12"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4019"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "13"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4020"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "14"
+              }
+            },
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/4021"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100104"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "15"
+              }
+            }
+          ]
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/AvatarConfig.json",
+            "pointer": "/0/SkillList/4"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "100106"
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/0"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100106"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "1"
+              }
+            }
+          ]
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/AvatarConfig.json",
+            "pointer": "/0/SkillList/5"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "100107"
+          },
+          "targetCount": 1,
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+                "pointer": "/1"
+              },
+              "SkillID": {
+                "kind": "number",
+                "lexeme": "100107"
+              },
+              "Level": {
+                "kind": "number",
+                "lexeme": "1"
+              }
+            }
+          ]
+        }
+      ],
+      "discriminatorObservation": "Level distinguishes records in each selected SkillID group; pointers need not be contiguous",
+      "candidateLogicalIdentity": {
+        "classification": "HYPOTHESIS",
+        "scope": "ExcelOutput/AvatarSkillConfig.json",
+        "keyField": "SkillID",
+        "oneToManyPhysicalNodes": true
+      },
+      "levelVariation": {
+        "first": {
+          "target": {
+            "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+            "pointer": "/3983"
+          },
+          "Level": {
+            "kind": "number",
+            "lexeme": "1"
+          },
+          "ParamList": {
+            "kind": "array",
+            "items": [
+              {
+                "kind": "object",
+                "entries": [
+                  {
+                    "key": "Value",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "0.5"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "MaxLevel": {
+            "kind": "number",
+            "lexeme": "10"
+          }
+        },
+        "last": {
+          "target": {
+            "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+            "pointer": "/4571"
+          },
+          "Level": {
+            "kind": "number",
+            "lexeme": "10"
+          },
+          "ParamList": {
+            "kind": "array",
+            "items": [
+              {
+                "kind": "object",
+                "entries": [
+                  {
+                    "key": "Value",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "1.4"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "MaxLevel": {
+            "kind": "number",
+            "lexeme": "10"
+          }
+        },
+        "differingFields": [
+          "Level",
+          "ParamList",
+          "SimpleParamList"
+        ]
+      },
+      "defaultLevelEvidence": "source SkillList has no Level; no per-reference Level=1 policy found in inspected sources",
+      "observationClassification": "OBSERVATION"
+    },
+    "C": {
+      "rawClassification": "FACT",
+      "semanticClassification": "HYPOTHESIS",
+      "StageID": {
+        "kind": "number",
+        "lexeme": "103201"
+      },
+      "occurrences": [
+        {
+          "source": {
+            "relativePath": "ExcelOutput/StageConfig.json",
+            "pointer": "/0/MonsterList/0/Monster0"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "1022020"
+          },
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/MonsterConfig.json",
+                "pointer": "/502"
+              },
+              "MonsterID": {
+                "kind": "number",
+                "lexeme": "1022020"
+              },
+              "MonsterName": {
+                "kind": "object",
+                "entries": [
+                  {
+                    "key": "Hash",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "10247983769183018110"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/StageConfig.json",
+            "pointer": "/0/MonsterList/0/Monster1"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "1023010"
+          },
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/MonsterConfig.json",
+                "pointer": "/532"
+              },
+              "MonsterID": {
+                "kind": "number",
+                "lexeme": "1023010"
+              },
+              "MonsterName": {
+                "kind": "object",
+                "entries": [
+                  {
+                    "key": "Hash",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "3319612321481484338"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/StageConfig.json",
+            "pointer": "/0/MonsterList/0/Monster2"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "1022020"
+          },
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/MonsterConfig.json",
+                "pointer": "/502"
+              },
+              "MonsterID": {
+                "kind": "number",
+                "lexeme": "1022020"
+              },
+              "MonsterName": {
+                "kind": "object",
+                "entries": [
+                  {
+                    "key": "Hash",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "10247983769183018110"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "occurrenceCount": 3,
+      "distinctTargetNodeCount": 2,
+      "boundedContext": [
+        {
+          "source": {
+            "relativePath": "ExcelOutput/StageConfig.json",
+            "pointer": "/0"
+          },
+          "StageID": {
+            "kind": "number",
+            "lexeme": "103201"
+          },
+          "MonsterList": {
+            "kind": "array",
+            "items": [
+              {
+                "kind": "object",
+                "entries": [
+                  {
+                    "key": "Monster0",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "1022020"
+                    }
+                  },
+                  {
+                    "key": "Monster1",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "1023010"
+                    }
+                  },
+                  {
+                    "key": "Monster2",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "1022020"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/StageConfig.json",
+            "pointer": "/1"
+          },
+          "StageID": {
+            "kind": "number",
+            "lexeme": "103202"
+          },
+          "MonsterList": {
+            "kind": "array",
+            "items": [
+              {
+                "kind": "object",
+                "entries": [
+                  {
+                    "key": "Monster0",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "1022010"
+                    }
+                  },
+                  {
+                    "key": "Monster1",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "8003010"
+                    }
+                  },
+                  {
+                    "key": "Monster2",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "1022010"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/StageConfig.json",
+            "pointer": "/2"
+          },
+          "StageID": {
+            "kind": "number",
+            "lexeme": "103203"
+          },
+          "MonsterList": {
+            "kind": "array",
+            "items": [
+              {
+                "kind": "object",
+                "entries": [
+                  {
+                    "key": "Monster0",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "8001050"
+                    }
+                  },
+                  {
+                    "key": "Monster1",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "8003050"
+                    }
+                  },
+                  {
+                    "key": "Monster2",
+                    "value": {
+                      "kind": "number",
+                      "lexeme": "8001050"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "selectorBoundary": "only explicitly observed Monster0/Monster1/Monster2; no all-numeric-child rule",
+      "observationClassification": "OBSERVATION"
+    },
+    "D": {
+      "rawClassification": "FACT",
+      "semanticClassification": "HYPOTHESIS",
+      "references": [
+        {
+          "source": {
+            "relativePath": "ExcelOutput/RelicSetConfig.json",
+            "pointer": "/0/SetSkillList/0"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "2"
+          },
+          "contextSource": {
+            "relativePath": "ExcelOutput/RelicSetConfig.json",
+            "pointer": "/0/SetID"
+          },
+          "contextValue": {
+            "kind": "number",
+            "lexeme": "101"
+          },
+          "valueOnlyTargetCount": 62,
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/RelicSetSkillConfig.json",
+                "pointer": "/0"
+              },
+              "SetID": {
+                "kind": "number",
+                "lexeme": "101"
+              },
+              "RequireNum": {
+                "kind": "number",
+                "lexeme": "2"
+              },
+              "SkillDesc": {
+                "kind": "string",
+                "value": "RelicDesc_1012"
+              }
+            }
+          ]
+        },
+        {
+          "source": {
+            "relativePath": "ExcelOutput/RelicSetConfig.json",
+            "pointer": "/0/SetSkillList/1"
+          },
+          "sourceValue": {
+            "kind": "number",
+            "lexeme": "4"
+          },
+          "contextSource": {
+            "relativePath": "ExcelOutput/RelicSetConfig.json",
+            "pointer": "/0/SetID"
+          },
+          "contextValue": {
+            "kind": "number",
+            "lexeme": "101"
+          },
+          "valueOnlyTargetCount": 34,
+          "targets": [
+            {
+              "target": {
+                "relativePath": "ExcelOutput/RelicSetSkillConfig.json",
+                "pointer": "/1"
+              },
+              "SetID": {
+                "kind": "number",
+                "lexeme": "101"
+              },
+              "RequireNum": {
+                "kind": "number",
+                "lexeme": "4"
+              },
+              "SkillDesc": {
+                "kind": "string",
+                "value": "RelicDesc_1014"
+              }
+            }
+          ]
+        }
+      ],
+      "counterexample": [
+        {
+          "target": {
+            "relativePath": "ExcelOutput/RelicSetSkillConfig.json",
+            "pointer": "/0"
+          },
+          "SetID": {
+            "kind": "number",
+            "lexeme": "101"
+          },
+          "RequireNum": {
+            "kind": "number",
+            "lexeme": "2"
+          }
+        },
+        {
+          "target": {
+            "relativePath": "ExcelOutput/RelicSetSkillConfig.json",
+            "pointer": "/1"
+          },
+          "SetID": {
+            "kind": "number",
+            "lexeme": "101"
+          },
+          "RequireNum": {
+            "kind": "number",
+            "lexeme": "4"
+          }
+        },
+        {
+          "target": {
+            "relativePath": "ExcelOutput/RelicSetSkillConfig.json",
+            "pointer": "/2"
+          },
+          "SetID": {
+            "kind": "number",
+            "lexeme": "102"
+          },
+          "RequireNum": {
+            "kind": "number",
+            "lexeme": "2"
+          }
+        },
+        {
+          "target": {
+            "relativePath": "ExcelOutput/RelicSetSkillConfig.json",
+            "pointer": "/3"
+          },
+          "SetID": {
+            "kind": "number",
+            "lexeme": "102"
+          },
+          "RequireNum": {
+            "kind": "number",
+            "lexeme": "4"
+          }
+        }
+      ],
+      "matchingObservation": "parent SetID plus member value selects (SetID, RequireNum); RequireNum alone is not globally unique",
+      "observationClassification": "OBSERVATION"
+    },
+    "E": {
+      "rawClassification": "FACT",
+      "semanticClassification": "HYPOTHESIS",
+      "source": {
+        "relativePath": "ExcelOutput/AvatarConfig.json",
+        "pointer": "/0/JsonPath"
+      },
+      "sourceValue": {
+        "kind": "string",
+        "value": "Config/ConfigCharacter/Avatar/Avatar_Mar_7th_00_Config.json"
+      },
+      "target": {
+        "relativePath": "Config/ConfigCharacter/Avatar/Avatar_Mar_7th_00_Config.json",
+        "pointer": ""
+      },
+      "targetRootKind": "object",
+      "targetTypeField": {
+        "kind": "string",
+        "value": "RPG.GameCore.CharacterConfig"
+      },
+      "context": {
+        "AvatarVOTag": {
+          "kind": "string",
+          "value": "mar7th"
+        },
+        "targetSomatoType": {
+          "kind": "string",
+          "value": "MiddleAvatar"
+        }
+      },
+      "contrast": {
+        "source": {
+          "relativePath": "ExcelOutput/AvatarConfig.json",
+          "pointer": "/0/DefaultAvatarModelPath"
+        },
+        "value": {
+          "kind": "string",
+          "value": "Characters/CharacterPrefabs/Avatar/Mar_7th_00/Avatar_Mar_7th_00.prefab"
+        },
+        "localFileExists": false,
+        "classification": "FACT",
+        "note": "absent prefab asset path is not automatically a JSON reference"
+      },
+      "observationClassification": "OBSERVATION"
+    }
+  },
+  "presenceEvidence": {
+    "classification": "FACT",
+    "avatarFields": [
+      {
+        "field": "AvatarName",
+        "inspectedRecords": 94,
+        "missingCount": 0,
+        "nullCount": 0,
+        "emptyContainerOrStringCount": 0
+      },
+      {
+        "field": "AvatarFullName",
+        "inspectedRecords": 94,
+        "missingCount": 0,
+        "nullCount": 0,
+        "emptyContainerOrStringCount": 0
+      },
+      {
+        "field": "SkillList",
+        "inspectedRecords": 94,
+        "missingCount": 0,
+        "nullCount": 0,
+        "emptyContainerOrStringCount": 0
+      },
+      {
+        "field": "JsonPath",
+        "inspectedRecords": 94,
+        "missingCount": 0,
+        "nullCount": 0,
+        "emptyContainerOrStringCount": 0
+      }
+    ],
+    "simpleSkillDesc": [
+      {
+        "source": {
+          "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+          "pointer": "/0/SimpleSkillDesc"
+        },
+        "exists": false
+      },
+      {
+        "source": {
+          "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+          "pointer": "/1/SimpleSkillDesc/Hash"
+        },
+        "exists": true,
+        "value": {
+          "kind": "number",
+          "lexeme": "5424063220840392374"
+        },
+        "targets": [
+          {
+            "target": {
+              "relativePath": "TextMap/TextMapCHS.json",
+              "pointer": "/5424063220840392374"
+            },
+            "key": {
+              "kind": "string",
+              "value": "5424063220840392374"
+            },
+            "value": {
+              "kind": "string",
+              "value": "攻击敌人，进战后大概率使敌方随机单体陷入冻结状态。"
+            },
+            "line": 13251
+          },
+          {
+            "target": {
+              "relativePath": "TextMap/TextMapEN.json",
+              "pointer": "/5424063220840392374"
+            },
+            "key": {
+              "kind": "string",
+              "value": "5424063220840392374"
+            },
+            "value": {
+              "kind": "string",
+              "value": "Attacks the enemy. After entering battle, there is a high chance of inflicting Freeze on a random enemy."
+            },
+            "line": 92942
+          }
+        ]
+      }
+    ],
+    "boundary": "absence is evidenced; optional business semantics and nullable/sentinel rules are not established"
+  },
+  "feff": {
+    "classification": "FACT",
+    "rawEntry": {
+      "target": {
+        "relativePath": "TextMap/TextMapJP.json",
+        "pointer": "/7505878640962067595"
+      },
+      "key": {
+        "kind": "string",
+        "value": "7505878640962067595"
+      },
+      "value": {
+        "kind": "string",
+        "value": "﻿{F#私}{M#俺}が大魔王？マジで？"
+      },
+      "line": 230079
+    },
+    "firstCodePoint": "U+FEFF",
+    "productionStatus": "OPEN; historical production defect reused, no repair or new production fidelity acceptance",
+    "dependencyCode": "bufferedString.js constructs TextDecoder(utf-8,{fatal:true}) without ignoreBOM:true; raw-parser.ts imports library Tokenizer"
+  },
+  "historicalReuse": {
+    "source": "phase-0-measurements.json",
+    "counts": {
+      "rows": 7040,
+      "distinctSkillIds": 711,
+      "compoundUnique": 7040,
+      "duplicateIdExamples": [
+        [
+          "100201",
+          [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        ],
+        [
+          "100202",
+          [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15"
+          ]
+        ],
+        [
+          "100203",
+          [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15"
+          ]
+        ]
+      ]
+    },
+    "fingerprints": [
+      {
+        "relativePath": "ExcelOutput/AvatarConfig.json",
+        "matchesPhase0": true
+      },
+      {
+        "relativePath": "ExcelOutput/AvatarSkillConfig.json",
+        "matchesPhase0": true
+      },
+      {
+        "relativePath": "ExcelOutput/StageConfig.json",
+        "matchesPhase0": true
+      },
+      {
+        "relativePath": "ExcelOutput/MonsterConfig.json",
+        "matchesPhase0": true
+      },
+      {
+        "relativePath": "TextMap/TextMapCHS.json",
+        "matchesPhase0": true
+      }
+    ],
+    "note": "reuse 7040 / 711 / 7040 after matching file fingerprints; no new full-table distinct census"
+  },
+  "method": {
+    "networkAccess": false,
+    "wholeDatasetScan": false,
+    "wholeSourceMaterialization": [
+      "AvatarConfig",
+      "AvatarSkillConfig",
+      "MonsterConfig",
+      "RelicSetConfig",
+      "RelicSetSkillConfig",
+      "selected CharacterConfig"
+    ],
+    "stagePrefixCodePoints": 65536,
+    "stageRecordsInspected": 3,
+    "textMapMethod": "stream lines to EOF for exact selected keys, parse candidate member lines, verify braces and selected-key multiplicity; not full-source grammar validation",
+    "numericTokenMethod": "json.loads(parse_int=Num,parse_float=Num); Num subclass emitted as typed number/lexeme; raw strings remain strings",
+    "duplicateKeyBoundary": "duplicate object keys rejected in fully parsed tables and selected member objects; no universal TextMap uniqueness claim",
+    "writes": "only RefAtlas evidence/report and necessary documentation",
+    "scope": "selected relationships, no production API/schema/registry/index"
+  },
+  "capturedAtUtc": "2026-10-06T02:44:09.284774+00:00",
+  "verificationNotes": [
+    {
+      "classification": "FACT",
+      "message": "Initial evidence assembly stopped on incorrect historical JSON field path fingerprints; inspected historical layout and corrected to scan.fingerprints before publication; baseline file preserved, no dataset writes."
+    },
+    {
+      "classification": "FACT",
+      "message": "Address/type/selected-set replay passed before final audit stopped: helper strip() removed first leading porcelain status space, mis-parsing first changed path. Inspected raw status and corrected to rstrip(CR/LF), then exact four-path audit passed. Dataset fingerprints unchanged throughout; no production change."
+    }
+  ],
+  "audit": {
+    "completedAtUtc": "2026-10-06T02:52:35.331711+00:00",
+    "datasetUnchanged": true,
+    "fingerprintedFilesUnchanged": 11,
+    "app": {
+      "head": "93843fab250662ecfb9bd67669b9c22dec51f967",
+      "branch": "main",
+      "statusPorcelain": " M docs/STATUS.md\n M docs/investigations/README.md\n?? docs/investigations/evidence/phase-3a-dataset-contract-reference-taxonomy.json\n?? docs/investigations/phase-3a-dataset-contract-reference-taxonomy.md",
+      "cachedDiffNames": ""
+    },
+    "dataset": {
+      "head": "724b139d8c9c32d12552eb95745a4fee72bfe48b",
+      "branch": "main",
+      "statusPorcelain": "",
+      "diffNames": ""
+    },
+    "allowedChangedPaths": [
+      "docs/STATUS.md",
+      "docs/investigations/README.md",
+      "docs/investigations/phase-3a-dataset-contract-reference-taxonomy.md",
+      "docs/investigations/evidence/phase-3a-dataset-contract-reference-taxonomy.json"
+    ]
+  },
+  "validation": {
+    "evidenceAddressTypeAndFullSelectedTargetSets": "PASS; independent pointer replay and typed bounded-set comparison",
+    "textMapSelectedEntryValueAndMultiplicity": "PASS",
+    "pathConfinementAndNoLinksForSelectedTarget": "PASS",
+    "lfAndNoTrailingWhitespace": "PASS",
+    "typedLexemeEncoding": "PASS",
+    "historicalFingerprintReuse": "PASS",
+    "docsCheck": {
+      "result": "PASS",
+      "markdownDocuments": 46,
+      "command": "npm.cmd run docs:check"
+    },
+    "formatCheck": {
+      "result": "PASS",
+      "command": "npm.cmd run format:check"
+    },
+    "gitDiffCheck": {
+      "result": "PASS",
+      "command": "git diff --check"
+    },
+    "productionTestsBuildPackage": "NOT RUN; no production behavior changes",
+    "wholeDatasetScan": "NOT RUN"
+  }
+}
