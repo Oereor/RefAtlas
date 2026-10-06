@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte'
   import type { NodeBrowserController } from './node-browser-controller'
+  import FindBar from './FindBar.svelte'
   import SourceHeader from './SourceHeader.svelte'
   import Breadcrumb from './Breadcrumb.svelte'
   import ChildrenTable from './ChildrenTable.svelte'
@@ -18,7 +19,7 @@
   let region = $state<HTMLElement>()
   let navigationFocus = $state(false)
   $effect(() => {
-    if ($changes.pendingPointer !== null) navigationFocus = true
+    if ($changes.pendingPointer !== null) navigationFocus = !$changes.preserveNavigationFocus
     if (navigationFocus && !$changes.busy) {
       navigationFocus = false
       untrack(
@@ -86,6 +87,7 @@
       busy={$source.reloading || $changes.location === 'RECOVERING'}
       onreload={() => void browser.reload()}
     />
+    <FindBar {browser} />
     {#if $changes.current}<Breadcrumb {browser} />{/if}
     {#if stale}<p class="notice stale" role="alert">
         {messages.node_stale_boundary({}, { locale: $uiLocale })}

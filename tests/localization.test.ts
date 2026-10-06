@@ -199,3 +199,20 @@ describe('localized presentation and immutable raw facts', () => {
     }
   })
 })
+
+describe('Find localization', () => {
+  it('localizes Find controls, progress and errors while keeping raw query parameters', () => {
+    for (const locale of ['en', 'zh-CN'] as const) {
+      expect(messages.find_title({}, { locale })).toBe(
+        locale === 'en' ? 'Find in source' : '在来源中查找',
+      )
+      expect(messages.find_match({ number: '1407' }, { locale })).toContain('1407')
+      expect(messages.find_failed({ reason: 'RESOURCE_LIMIT' }, { locale })).toContain(
+        'RESOURCE_LIMIT',
+      )
+    }
+    expect(messages.find_next({}, { locale: 'en' })).not.toBe(
+      messages.find_next({}, { locale: 'zh-CN' }),
+    )
+  })
+})

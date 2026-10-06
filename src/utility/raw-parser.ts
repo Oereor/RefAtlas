@@ -75,14 +75,16 @@ class LexemeTokenizer extends Tokenizer {
 }
 const whitespace = (byte: number): boolean =>
   byte === 32 || byte === 9 || byte === 10 || byte === 13
-export async function scanJson(
-  handle: FileHandle,
+export function createJsonWalk(
   size: number,
-  budget: WorkBudget,
+  initialBudget: WorkBudget,
   options: ScanOptions,
   range: SourceRange | null = null,
   basePointer: JsonPointer = '' as JsonPointer,
-): Promise<ScanResult> {
+  onFact?: (pointer: JsonPointer, kind: 'key' | 'value', text: string) => void,
+  onNode?: (node: ParsedNode) => void,
+) {
+  let budget = initialBudget
   budget.check()
   const begin = range?.startByte ?? 0
   const end = range?.endByteExclusive ?? size
@@ -143,6 +145,7 @@ export async function scanJson(
     }
   }
   const complete = (node: ParsedNode, value?: RawValue): void => {
+    onNode?.(node)
     if (node.pointer === options.pointer) {
       target = node
       targetValue = collecting ? (value ?? null) : null
@@ -239,6 +242,7 @@ export async function scanJson(
       return
     }
     const address = location()
+    if (frame?.kind === 'object') onFact?.(address.pointer, 'key', frame.key!)
     if (token === T.LEFT_BRACE || token === T.LEFT_BRACKET) {
       if (stack.length >= budget.limits.depth) budget.fail('DEPTH')
       const kind = token === T.LEFT_BRACE ? 'object' : 'array'
@@ -278,6 +282,7 @@ export async function scanJson(
           : scalar.kind === 'boolean'
             ? String(scalar.value)
             : 'null'
+    onFact?.(address.pointer, 'value', text)
     pending = {
       node: {
         ...address,
@@ -289,56 +294,89 @@ export async function scanJson(
       scalar,
     }
   }
-  try {
-    if (!range) {
-      const prefix = Buffer.alloc(3)
-      const { bytesRead } = await handle.read(prefix, 0, 3, 0)
-      budget.read(bytesRead)
-      if (bytesRead === 3 && prefix[0] === 239 && prefix[1] === 187 && prefix[2] === 191) {
-        bom = 3
-        examined = 3
-        windowStart = 3
-        lastTokenStart = 3
+  let initialized = false,
+    done = false
+  let result: ScanResult | null = null
+  const step = async (handle: FileHandle, nextBudget: WorkBudget): Promise<boolean> => {
+    budget = nextBudget
+    if (done) return true
+    try {
+      if (!initialized && !range) {
+        const prefix = Buffer.alloc(3)
+        const { bytesRead } = await handle.read(prefix, 0, 3, 0)
+        budget.read(bytesRead)
+        if (bytesRead === 3 && prefix[0] === 239 && prefix[1] === 187 && prefix[2] === 191) {
+          bom = 3
+          examined = 3
+          windowStart = 3
+          lastTokenStart = 3
+        }
       }
-    }
-    while (position < end) {
-      budget.check()
-      const chunk = Buffer.alloc(Math.min(budget.limits.chunkBytes, end - position))
-      const { bytesRead } = await handle.read(chunk, 0, chunk.length, position)
-      budget.read(bytesRead)
-      if (!bytesRead) throw new RawError('SOURCE_CHANGED')
-      const bytes = chunk.subarray(0, bytesRead)
-      hash?.update(bytes)
-      const skip = !range && position < bom ? Math.min(bytes.length, bom - position) : 0
-      window = Buffer.concat([window, bytes.subarray(skip)])
-      tokenizer.write(bytes.subarray(skip))
+      initialized = true
+      if (position < end) {
+        budget.check()
+        const chunk = Buffer.alloc(Math.min(budget.limits.chunkBytes, end - position))
+        const { bytesRead } = await handle.read(chunk, 0, chunk.length, position)
+        budget.read(bytesRead)
+        if (!bytesRead) throw new RawError('SOURCE_CHANGED')
+        const bytes = chunk.subarray(0, bytesRead)
+        hash?.update(bytes)
+        const skip = !range && position < bom ? Math.min(bytes.length, bom - position) : 0
+        window = Buffer.concat([window, bytes.subarray(skip)])
+        tokenizer.write(bytes.subarray(skip))
+        if (parseError) throw parseError
+        position += bytesRead
+        if (position - lastTokenStart > budget.limits.tokenBytes) budget.fail('TOKEN_BYTES')
+        const remove = examined - windowStart
+        window = window.subarray(remove)
+        windowStart = examined
+        await yieldTurn()
+      }
+      if (position < end) return false
+      tokenizer.end()
       if (parseError) throw parseError
-      position += bytesRead
-      if (position - lastTokenStart > budget.limits.tokenBytes) budget.fail('TOKEN_BYTES')
-      const remove = examined - windowStart
-      window = window.subarray(remove)
-      windowStart = examined
-      await yieldTurn()
+      advance(end)
+      flush()
+      if (!grammar.isEnded) grammar.end()
+      if (parseError) throw parseError
+      if (stack.length) throw new RawError('INVALID_JSON')
+      budget.check()
+      if (targetValue && byteSize(targetValue) > budget.limits.valueBytes) targetValue = null
+      result = {
+        node: target,
+        value: targetValue,
+        children,
+        scalar: targetScalar,
+        hash: hash?.digest('hex') ?? null,
+      }
+      done = true
+      return true
+    } catch (error) {
+      if (error instanceof RawError) throw error
+      if (parseError) throw new RawError('INVALID_JSON')
+      throw new RawError('PARSER_FAILURE')
     }
-    tokenizer.end()
-    if (parseError) throw parseError
-    advance(end)
-    flush()
-    if (!grammar.isEnded) grammar.end()
-    if (parseError) throw parseError
-    if (stack.length) throw new RawError('INVALID_JSON')
-    budget.check()
-    if (targetValue && byteSize(targetValue) > budget.limits.valueBytes) targetValue = null
-    return {
-      node: target,
-      value: targetValue,
-      children,
-      scalar: targetScalar,
-      hash: hash?.digest('hex') ?? null,
-    }
-  } catch (error) {
-    if (error instanceof RawError) throw error
-    if (parseError) throw new RawError('INVALID_JSON')
-    throw new RawError('PARSER_FAILURE')
   }
+  return {
+    step,
+    get position() {
+      return position
+    },
+    get result() {
+      return result
+    },
+  }
+}
+
+export async function scanJson(
+  handle: FileHandle,
+  size: number,
+  budget: WorkBudget,
+  options: ScanOptions,
+  range: SourceRange | null = null,
+  basePointer: JsonPointer = '' as JsonPointer,
+): Promise<ScanResult> {
+  const walk = createJsonWalk(size, budget, options, range, basePointer)
+  while (!(await walk.step(handle, budget))) {}
+  return walk.result!
 }

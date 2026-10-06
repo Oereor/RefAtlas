@@ -3,7 +3,14 @@ import { watch } from 'node:fs'
 import type { FSWatcher } from 'node:fs'
 import { open, realpath, stat } from 'node:fs/promises'
 import { basename, dirname, isAbsolute, parse } from 'node:path'
-import { byteSize, DIRECTORY_LIMITS, RAW_LIMITS, RawError, validCommand } from '../shared/raw'
+import {
+  byteSize,
+  DIRECTORY_LIMITS,
+  FIND_LIMITS,
+  RAW_LIMITS,
+  RawError,
+  validCommand,
+} from '../shared/raw'
 import { LIMITS } from '../shared/protocol'
 import { filesystemError, resolveRawPath, statStamp as stamp } from './raw-filesystem'
 import { RawDirectory } from './raw-directory'
@@ -11,6 +18,8 @@ import { RawScheduler } from './raw-scheduler'
 import { RawSourceCatalog } from './raw-source-catalog'
 import type {
   ChildrenResult,
+  FindMatch,
+  FindResult,
   NodeAddress,
   NodeSummary,
   RawCommand,
@@ -20,7 +29,7 @@ import type {
   SourceRevision,
   WorkspaceId,
 } from '../shared/raw'
-import { scanJson, WorkBudget } from './raw-parser'
+import { createJsonWalk, scanJson, WorkBudget } from './raw-parser'
 import type { ParsedNode, ScanResult } from './raw-parser'
 
 type Source = {
@@ -35,6 +44,20 @@ type Source = {
   stale: boolean
   validated: boolean
   hash: string | null
+}
+type FindSession = {
+  source: Source
+  workspace: Workspace
+  query: string
+  cursor: string
+  walk: ReturnType<typeof createJsonWalk>
+  pending: FindMatch[]
+  pendingBytes: number
+  ordinal: number
+  bytes: number
+  tokens: number
+  activeMs: number
+  done: boolean
 }
 type Cursor = {
   address: NodeAddress
@@ -67,6 +90,7 @@ const addressKey = (address: NodeAddress, revision: SourceRevision): string =>
   ])
 
 export class RawDataService {
+  private findSession: FindSession | null = null
   private workspace: Workspace | null = null
   private generation = 0
   private sources = new Map<string, Source>()
@@ -104,6 +128,7 @@ export class RawDataService {
   }
   private invalidate(source: Source): void {
     if (!this.current(source)) return
+    if (this.findSession?.source === source) this.findSession = null
     source.stale = true
     source.validated = false
     source.hash = null
@@ -115,6 +140,7 @@ export class RawDataService {
   }
   private reset(): Promise<void> {
     ++this.generation
+    this.findSession = null
     this.workspace = null
     const tasks = [...this.tasks]
     for (const task of tasks) task.controller.abort()
@@ -208,7 +234,17 @@ export class RawDataService {
       else if (command.kind === 'locate')
         value = await this.catalog.locate(command, () => this.check(task))
       else if (command.kind === 'catalog') value = this.catalog.rebuild(workspace)
-      else if (command.kind === 'release') {
+      else if (command.kind === 'find-close') {
+        const find = this.findSession
+        const released = Boolean(
+          find &&
+          find.cursor === command.cursor &&
+          find.source.revision === command.expectedRevision &&
+          keyOf(find.source.address) === task.sourceKey,
+        )
+        if (released) this.findSession = null
+        value = { released }
+      } else if (command.kind === 'release') {
         const source = this.sources.get(task.sourceKey!)
         const released = Boolean(source && !source.retiring && source.delivered)
         if (source) source.retiring = true
@@ -243,7 +279,9 @@ export class RawDataService {
         if (!source || !source.delivered || !this.current(source))
           throw new RawError('SOURCE_CHANGED')
         task.source = source
-        value = await this.parserQueue.run(controller.signal, () => this.query(command, task))
+        value = await this.parserQueue.run(controller.signal, () =>
+          command.kind === 'find' ? this.find(command, task) : this.query(command, task),
+        )
       }
       this.check(task)
       if (task.source && !this.current(task.source)) throw new RawError('SOURCE_CHANGED')
@@ -272,7 +310,7 @@ export class RawDataService {
     )
       throw new RawError('CANCELLED')
     if (task.source && !this.current(task.source)) throw new RawError('SOURCE_CHANGED')
-    if (task.source?.stale && ['read', 'children', 'segment'].includes(task.kind))
+    if (task.source?.stale && ['read', 'children', 'segment', 'find'].includes(task.kind))
       throw new RawError('SOURCE_CHANGED')
   }
   private current(source: Source): boolean {
@@ -311,6 +349,7 @@ export class RawDataService {
     return work
   }
   private drop(source: Source): void {
+    if (this.findSession?.source === source) this.findSession = null
     source.retiring = true
     const key = keyOf(source.address)
     if (this.sources.get(key) === source) this.sources.delete(key)
@@ -478,6 +517,150 @@ export class RawDataService {
     )
       throw new RawError('STALE_CURSOR')
     return cursor.after
+  }
+  private async find(
+    command: Extract<RawCommand, { kind: 'find' }>,
+    task: Task,
+  ): Promise<FindResult> {
+    const source = task.source!
+    this.check(task)
+    if (source.stale || source.revision !== command.expectedRevision)
+      throw new RawError('SOURCE_CHANGED')
+    if (!source.validated) throw new RawError('INVALID_INPUT')
+    let find = this.findSession
+    if (command.cursor) {
+      if (
+        !find ||
+        find.cursor !== command.cursor ||
+        find.source !== source ||
+        find.workspace !== task.workspace ||
+        find.query !== command.query
+      )
+        throw new RawError('STALE_CURSOR')
+    } else find = null
+    const started = performance.now()
+    const budget = new WorkBudget(task.controller.signal, {
+      ...RAW_LIMITS,
+      readBytes: RAW_LIMITS.readBytes - (find?.bytes ?? 0),
+      tokens: RAW_LIMITS.tokens - (find?.tokens ?? 0),
+      workMs: RAW_LIMITS.workMs - (find?.activeMs ?? 0),
+    })
+    task.budget = budget
+    let handle: Awaited<ReturnType<typeof open>> | null = null
+    try {
+      await this.verify(source)
+      this.check(task)
+      handle = await open(source.path, 'r')
+      if (stamp(await handle.stat({ bigint: true })) !== source.stamp) {
+        this.invalidate(source)
+        throw new RawError('SOURCE_CHANGED')
+      }
+      this.check(task)
+      if (!find) {
+        const candidate: FindSession = {
+          source,
+          workspace: task.workspace,
+          query: command.query,
+          cursor: randomUUID(),
+          walk: null!,
+          pending: [],
+          pendingBytes: 0,
+          ordinal: 0,
+          bytes: 0,
+          tokens: 0,
+          activeMs: 0,
+          done: false,
+        }
+        candidate.walk = createJsonWalk(
+          source.size,
+          budget,
+          { pointer: '' as NodeAddress['pointer'], materialize: false },
+          null,
+          undefined,
+          (pointer, kind, text) => {
+            if (!text.includes(candidate.query)) return
+            const match: FindMatch = {
+              address: { source: source.address, pointer },
+              kind,
+              ordinal: ++candidate.ordinal,
+            }
+            candidate.pendingBytes += byteSize(match)
+            if (candidate.pendingBytes > FIND_LIMITS.pendingBytes) budget.fail('FIND_PENDING_BYTES')
+            candidate.pending.push(match)
+          },
+          (node) => {
+            if (candidate.pending.some((match) => match.address.pointer === node.pointer))
+              this.remember(node, source)
+          },
+        )
+        find = candidate
+        this.findSession = candidate
+      }
+      while (
+        !find.pending.length &&
+        !find.done &&
+        performance.now() - started < FIND_LIMITS.quantumMs
+      ) {
+        find.done = await find.walk.step(handle, budget)
+        this.check(task)
+      }
+      await this.verify(source)
+      if (stamp(await handle.stat({ bigint: true })) !== source.stamp) {
+        this.invalidate(source)
+        throw new RawError('SOURCE_CHANGED')
+      }
+      this.check(task)
+      if (this.findSession !== find) throw new RawError('CANCELLED')
+      const result: FindResult = {
+        source: source.address,
+        revision: source.revision,
+        query: command.query,
+        matches: [],
+        scannedBytes: find.walk.position,
+        sizeBytes: source.size,
+        nextCursor: randomUUID(),
+        complete: false,
+      }
+      for (const match of find.pending.slice(0, command.limit)) {
+        if (
+          byteSize({ ...result, matches: [...result.matches, match] }) >
+          RAW_LIMITS.responseBytes - 1024
+        )
+          break
+        result.matches.push(match)
+      }
+      if (find.pending.length && !result.matches.length) budget.fail('RESPONSE_BYTES')
+      find.pending.splice(0, result.matches.length)
+      for (const match of result.matches) find.pendingBytes -= byteSize(match)
+      result.complete = find.done && !find.pending.length
+      if (result.complete) {
+        result.nextCursor = null
+        this.findSession = null
+      } else find.cursor = result.nextCursor!
+      return result
+    } catch (error) {
+      if (!command.cursor || this.findSession === find) this.findSession = null
+      if (error instanceof RawError && error.code === 'STALE_CURSOR') throw error
+      await this.verify(source)
+      throw filesystemError(error)
+    } finally {
+      await handle?.close()
+      if (find) {
+        find.bytes += budget.bytes
+        find.tokens += budget.tokens
+      }
+      this.observe?.({ bytesRead: budget.bytes, tokens: budget.tokens })
+      try {
+        this.check(task)
+        await this.verify(source)
+        budget.check()
+      } catch (error) {
+        if (this.findSession === find) this.findSession = null
+        throw error
+      } finally {
+        if (find) find.activeMs += performance.now() - started
+      }
+    }
   }
   private async query(
     command: Extract<RawCommand, { kind: 'read' } | { kind: 'children' | 'segment' }>,

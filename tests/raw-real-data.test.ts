@@ -1,3 +1,4 @@
+import { findRealData } from './helpers/find-real-data'
 import { describe, expect, it } from 'vitest'
 import { createHash, randomUUID } from 'node:crypto'
 import { createReadStream } from 'node:fs'
@@ -157,7 +158,18 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
         .catch((error) => error.code)
       setImmediate(() => cancellation.abort())
       expect(await cancelled).toBe('CANCELLED')
+      // 测量 Raw/Find 时隔离 catalog 遍历的 I/O；上面的 discovery 和 native gate 仍检查 building。
+      while (
+        (
+          (await service.execute(
+            { kind: 'locate', workspaceId, query: '', limit: 1, catalogGeneration: null },
+            signal,
+          )) as LocatorResult
+        ).status === 'building'
+      )
+        await new Promise((resolve) => setTimeout(resolve, 50))
       for (const [file, pointer, scalarPointer, lexeme] of samples) {
+        console.log('raw representative: ' + file)
         const before = await fingerprint(resolve(root, file))
         const source = { workspaceId, relativePath: file as RelativePath }
         const metadata = (await service.execute({ kind: 'info', source }, signal)) as SourceInfo
@@ -298,6 +310,7 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
         memoryBeforeCatalog,
         memoryAfterCatalog: process.memoryUsage(),
       }
+      const find = await findRealData(service, workspaceId, () => work)
       const repositoryAfter = {
         head: await git(['rev-parse', 'HEAD']),
         status: await git(['status', '--porcelain']),
@@ -317,6 +330,7 @@ describe.skipIf(!enabled)('read-only production real-data gate', () => {
             measurements,
             directories,
             locator,
+            find,
             repositoryBefore,
             repositoryAfter,
             maxRssKiB: process.resourceUsage().maxRSS,

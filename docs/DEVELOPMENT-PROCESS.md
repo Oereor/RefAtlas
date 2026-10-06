@@ -99,3 +99,9 @@ Slice D 扩展现有三态 smoke：真实 Controller/桥、六种 root、特殊 
 ## Source Browser change/recovery 验收
 
 Slice E 的 shared watcher Windows preflight 必须在 production implementation 前关闭；完整 runner 仍要求单次全部阶段 exit 0、production build 恰一次。三态 smoke 扩展 polling 自动 stale、同 Pointer Reload、LOCATION_MISSING/Return to Root、file-deleted error/retry、locale continuity、实际 minimize/hide/resume。原生 keyboard 每次等待实际 focus/controller 状态，不以 tick 或固定 sleep 代替事件完成。产品与 smoke 从创建时统一使用 backgroundThrottling=true；常规 smoke 初始可见，避免 Electron initially-hidden painting 对 visibility 证据的影响。mutation 只在 app-owned temp fixtures，真实数据始终只读；新 diff 的 Mac targeted gate 必须独立记录，不能沿用此前 A/B/C/D 结果。
+
+## Find in Source 验收
+
+Slice G 扩展现有普通风险测试、real-data 与三态 Electron harness。真实 Find 样本限 AvatarConfig、AvatarSkillConfig、MonsterConfig、TextMapCHS 和代表 baked Floor；旧 Raw 六来源检查保留。目录 discovery 检查 catalog building，随后等 ready 再隔离测量 Raw/Find，明确记录不同口径，保留并发失败/调查证据；native harness 仍检查 building 期间激活来源。累计 read/token/work 与首批/EOF/payload/内存/取消/正常导航分开记录，不以单次数字声明 SLA。
+
+实际 sendInputEvent/insertText 验证 Ctrl/Cmd+F defaultPrevented、Enter/Shift+Enter/Escape、按钮与 focus；findInPage instrumentation 验证 Chromium native find 未调用。只在 smoke mode 暴露 harness，normal packaged guard 检查不可用；capturePage 保存 normal/narrow 截图，保留 console/isolation/native-ASAR guards。source mutation 仅用 app-owned temp fixture，外部 HEAD/status/streaming 指纹前后必须相同。定向检查后完整 runner 保持一次 production build 与串行 gates；失败遵守既有调查政策，不放宽预算或盲目重跑。macOS Slice G 结果单列 NOT YET RUN，历史结果不代替本轮。

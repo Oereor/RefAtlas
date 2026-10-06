@@ -56,7 +56,36 @@ export const RAW_CHANNELS = Object.freeze({
   release: 'raw:release',
   locate: 'raw:locate',
   catalog: 'raw:catalog',
+  find: 'raw:find',
+  'find-close': 'raw:find-close',
 })
+export const FIND_LIMITS = Object.freeze({
+  page: 32,
+  queryBytes: 1024,
+  pendingBytes: 8 * 1024 * 1024,
+  quantumMs: 100,
+  history: 128,
+  historyBytes: 512 * 1024,
+  debounceMs: 150,
+})
+export type FindMatch = { address: NodeAddress; kind: 'key' | 'value'; ordinal: number }
+export type FindInput = SourceInput & {
+  expectedRevision: SourceRevision
+  query: string
+  limit: number
+  cursor: string | null
+}
+export type FindCloseInput = SourceInput & { expectedRevision: SourceRevision; cursor: string }
+export type FindResult = {
+  source: SourceAddress
+  revision: SourceRevision
+  query: string
+  matches: FindMatch[]
+  scannedBytes: number
+  sizeBytes: number
+  nextCursor: string | null
+  complete: boolean
+}
 export const LOCATOR_LIMITS = Object.freeze({
   page: 50,
   sources: 1_000_000,
@@ -282,6 +311,15 @@ export type RawCommand =
   | { kind: 'info'; source: SourceAddress }
   | { kind: 'reload'; source: SourceAddress }
   | { kind: 'release'; source: SourceAddress }
+  | {
+      kind: 'find'
+      source: SourceAddress
+      expectedRevision: SourceRevision
+      query: string
+      limit: number
+      cursor: string | null
+    }
+  | { kind: 'find-close'; source: SourceAddress; expectedRevision: SourceRevision; cursor: string }
   | { kind: 'catalog'; workspaceId: WorkspaceId }
   | {
       kind: 'locate'
@@ -341,6 +379,7 @@ export type SegmentResult = {
 export type OpenResult =
   { status: 'opened'; workspaceId: WorkspaceId; displayName: string } | { status: 'cancelled' }
 export type RawOutput =
+  | FindResult
   | OpenResult
   | { closed: true }
   | SourceInfo
@@ -356,6 +395,8 @@ export interface RawBridge {
   closeWorkspace(
     input: RequestIdInput & { workspaceId: WorkspaceId },
   ): Promise<RawResult<{ closed: true }>>
+  findInSource(input: FindInput): Promise<RawResult<FindResult>>
+  closeSourceFind(input: FindCloseInput): Promise<RawResult<{ released: boolean }>>
   getSourceInfo(input: SourceInput): Promise<RawResult<SourceInfo>>
   reloadSource(input: SourceInput): Promise<RawResult<SourceInfo>>
   listDirectory(input: DirectoryInput): Promise<RawResult<DirectoryResult>>
@@ -392,6 +433,21 @@ export function validCommand(value: unknown): value is RawCommand {
       Number(value.limit) <= LOCATOR_LIMITS.page &&
       cursor(value.catalogGeneration)
     )
+  if (value.kind === 'find' || value.kind === 'find-close') {
+    if (!validSource(value.source) || !validId(value.expectedRevision)) return false
+    if (value.kind === 'find-close')
+      return exact(value, ['kind', 'source', 'expectedRevision', 'cursor']) && validId(value.cursor)
+    return (
+      exact(value, ['kind', 'source', 'expectedRevision', 'query', 'limit', 'cursor']) &&
+      typeof value.query === 'string' &&
+      value.query.length > 0 &&
+      byteSize(value.query) <= FIND_LIMITS.queryBytes &&
+      Number.isInteger(value.limit) &&
+      Number(value.limit) >= 1 &&
+      Number(value.limit) <= FIND_LIMITS.page &&
+      cursor(value.cursor)
+    )
+  }
   if (value.kind === 'info' || value.kind === 'reload' || value.kind === 'release')
     return exact(value, ['kind', 'source']) && validSource(value.source)
   if (value.kind === 'directory')
@@ -587,7 +643,45 @@ export function validRawResult(value: unknown, command: RawCommand): value is Ra
       )
     )
   }
-  if (command.kind === 'release')
+  if (command.kind === 'find')
+    return (
+      exact(result, [
+        'source',
+        'revision',
+        'query',
+        'matches',
+        'scannedBytes',
+        'sizeBytes',
+        'nextCursor',
+        'complete',
+      ]) &&
+      validSource(result.source) &&
+      sameSource(result.source, command.source) &&
+      result.revision === command.expectedRevision &&
+      result.query === command.query &&
+      Array.isArray(result.matches) &&
+      result.matches.length <= command.limit &&
+      result.matches.every(
+        (match, index, items) =>
+          object(match) &&
+          exact(match, ['address', 'kind', 'ordinal']) &&
+          validAddress(match.address) &&
+          sameSource(match.address.source, command.source) &&
+          (match.kind === 'key' || match.kind === 'value') &&
+          integer(match.ordinal) &&
+          match.ordinal > 0 &&
+          (index === 0 ||
+            (object(items[index - 1]) && Number(items[index - 1].ordinal) < match.ordinal)),
+      ) &&
+      integer(result.scannedBytes) &&
+      integer(result.sizeBytes) &&
+      result.scannedBytes <= result.sizeBytes &&
+      cursor(result.nextCursor) &&
+      typeof result.complete === 'boolean' &&
+      result.complete === (result.nextCursor === null) &&
+      (!result.complete || result.scannedBytes === result.sizeBytes)
+    )
+  if (command.kind === 'release' || command.kind === 'find-close')
     return exact(result, ['released']) && typeof result.released === 'boolean'
   if (command.kind === 'directory') {
     if (

@@ -1,3 +1,4 @@
+import { FindController } from './find-controller'
 import { readonly, writable } from 'svelte/store'
 import { RAW_LIMITS, parentPointer, sameAddress, sameSource } from '../../../shared/raw'
 import type {
@@ -33,6 +34,7 @@ export type NodeBrowserState = {
   position: number
   nextCursor: string | null
   busy: boolean
+  preserveNavigationFocus: boolean
   pendingPointer: JsonPointer | null
   error: UiError | null
   epoch: number
@@ -40,7 +42,13 @@ export type NodeBrowserState = {
   recoveryPointer: JsonPointer | null
 }
 type Intent =
-  | { kind: 'navigate'; address: NodeAddress; context: NodeContext; recovering?: boolean }
+  | {
+      kind: 'navigate'
+      address: NodeAddress
+      context: NodeContext
+      recovering?: boolean
+      preserveFocus?: boolean
+    }
   | { kind: 'page'; page: PagePosition; history: PagePosition[]; position: number }
 const empty = (epoch: number): NodeBrowserState => ({
   source: null,
@@ -55,6 +63,7 @@ const empty = (epoch: number): NodeBrowserState => ({
   position: 0,
   nextCursor: null,
   busy: false,
+  preserveNavigationFocus: false,
   pendingPointer: null,
   error: null,
   epoch,
@@ -62,6 +71,7 @@ const empty = (epoch: number): NodeBrowserState => ({
   recoveryPointer: null,
 })
 export class NodeBrowserController {
+  readonly find: FindController
   private state = empty(0)
   private store = writable(this.state)
   readonly changes = readonly(this.store)
@@ -75,6 +85,7 @@ export class NodeBrowserController {
     private readonly bridge: RawBridge,
     readonly session: SourceSession,
   ) {
+    this.find = new FindController(bridge, this)
     this.unsubscribe = session.changes.subscribe(({ active }) => this.synchronize(active))
   }
   get snapshot(): NodeBrowserState {
@@ -107,6 +118,7 @@ export class NodeBrowserController {
     this.store.set(this.state)
   }
   dispose(): void {
+    this.find.dispose()
     this.unsubscribe()
     this.controller?.abort()
     this.publish({ epoch: this.state.epoch + 1, busy: false })
@@ -173,7 +185,12 @@ export class NodeBrowserController {
     if (child && !this.state.children.includes(child)) return
     this.publish({ selectedChild: child })
   }
-  navigate(address: NodeAddress, context: NodeContext = null): Promise<void> {
+  navigate(
+    address: NodeAddress,
+    context: NodeContext = null,
+    options: { preserveFocus?: boolean } = {},
+  ): Promise<void> {
+    if (!options.preserveFocus) this.find.interruptNavigation(true)
     if (
       this.stale ||
       this.session.snapshot.reloading ||
@@ -196,7 +213,18 @@ export class NodeBrowserController {
       }
       return Promise.resolve()
     }
-    return this.perform({ kind: 'navigate', address, context })
+    return this.perform({
+      kind: 'navigate',
+      address,
+      context,
+      preserveFocus: options.preserveFocus,
+    })
+  }
+  cancelFindNavigation(): void {
+    if (!this.state.preserveNavigationFocus || this.state.pendingPointer === null) return
+    this.controller?.abort()
+    this.retryIntent = null
+    this.publish({ epoch: this.state.epoch + 1, busy: false, pendingPointer: null })
   }
   openChild(child = this.state.selectedChild): Promise<void> {
     const parentKind = this.state.current?.kind
@@ -210,11 +238,13 @@ export class NodeBrowserController {
     return pointer === null ? Promise.resolve() : this.navigate({ ...current.address, pointer })
   }
   restart(): Promise<void> {
+    this.find.interruptNavigation()
     if (!this.needsPage()) return Promise.resolve()
     const page = { cursor: null, number: 1 }
     return this.perform({ kind: 'page', page, history: [page], position: 0 })
   }
   previous(): Promise<void> {
+    this.find.interruptNavigation()
     if (this.state.busy || this.state.error?.code === 'STALE_CURSOR' || this.state.position < 1)
       return Promise.resolve()
     const position = this.state.position - 1
@@ -226,6 +256,7 @@ export class NodeBrowserController {
     })
   }
   next(): Promise<void> {
+    this.find.interruptNavigation()
     if (this.state.busy || !this.state.nextCursor || this.state.error?.code === 'STALE_CURSOR')
       return Promise.resolve()
     const page = {
@@ -297,6 +328,7 @@ export class NodeBrowserController {
       epoch = this.state.epoch + 1
     this.publish({
       epoch,
+      preserveNavigationFocus: intent.kind === 'navigate' && Boolean(intent.preserveFocus),
       busy: true,
       error: null,
       pendingPointer: intent.kind === 'navigate' ? intent.address.pointer : null,

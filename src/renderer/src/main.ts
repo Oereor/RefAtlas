@@ -1,3 +1,4 @@
+import { runFindSmoke } from './find-smoke'
 import { mount } from 'svelte'
 import App from './App.svelte'
 import { runFoundationGuardSmoke, runFoundationSmoke } from './smoke'
@@ -18,6 +19,7 @@ if (new URLSearchParams(location.search).get('smoke') === '1') {
   window.runExplorerSmoke = runExplorerSmoke
   window.runNodeBrowserSmoke = runNodeBrowserSmoke
   window.runSourceLocatorSmoke = runSourceLocatorSmoke
+  window.runFindSmoke = runFindSmoke
 }
 if (new URLSearchParams(location.search).get('smoke') === 'guard')
   window.runFoundationGuardSmoke = runFoundationGuardSmoke

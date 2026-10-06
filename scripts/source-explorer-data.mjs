@@ -16,6 +16,7 @@ export async function realDataSnapshot(appRoot) {
     'ExcelOutput/AvatarConfig.json',
     'ExcelOutput/EquipmentConfig.json',
     'ExcelOutput/AvatarSkillConfig.json',
+    'ExcelOutput/MonsterConfig.json',
     'TextMap/TextMapCHS.json',
     'Config/LevelOutput_Baked/Floor/P10401_F10401001_Baked.json',
     'Config/SoundBankLookUp.json',

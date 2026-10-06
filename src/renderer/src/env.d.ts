@@ -6,6 +6,7 @@ declare global {
     foundation: FoundationBridge
     raw: RawBridge
     readonly appPresentationConfig: AppPresentationConfig
+    runFindSmoke?: (stage: string) => Promise<unknown>
     runFoundationSmoke?: () => Promise<unknown>
     runFoundationGuardSmoke?: () => Promise<unknown>
     runRawSmoke?: (stage: string) => Promise<unknown>

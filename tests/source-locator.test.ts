@@ -207,6 +207,8 @@ it('selects through the real SourceSession lifecycle, preserves Explorer/Node st
     }
   }
   const bridge: RawBridge = {
+    findInSource: async () => ({ ok: false, error: { code: 'INVALID_INPUT' } }),
+    closeSourceFind: async () => ({ ok: true, value: { released: false } }),
     openWorkspace: async () => ({
       ok: true,
       value: (await service.execute(

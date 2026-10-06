@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onMount, tick } from 'svelte'
   import type { WorkspaceController } from '../state/workspace-controller'
   import WorkspaceToolbar from './WorkspaceToolbar.svelte'
   import NodeBrowser from '../browser/NodeBrowser.svelte'
@@ -15,6 +15,23 @@
       workspace.session.setMonitoringVisible(document.visibilityState === 'visible')
     document.addEventListener('visibilitychange', visibility)
     const shortcut = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === 'f'
+      ) {
+        event.preventDefault()
+        if (!workspace.locator.snapshot.open && workspace.snapshot.status === 'open') {
+          workspace.browser.find.open()
+          void tick().then(() =>
+            document
+              .querySelector<HTMLInputElement>('[data-find-input]')
+              ?.focus({ preventScroll: true }),
+          )
+        }
+        return
+      }
       if (
         (event.ctrlKey || event.metaKey) &&
         !event.altKey &&

@@ -1,0 +1,1220 @@
+{
+  "scope": "Slice G Windows x64 local observations; not cold-disk/SLA or macOS validation",
+  "baseline": "f76b31b3a1728574276c51061db0360480b45797",
+  "validation": "Necessary gates cumulatively passed; full 11-stage runner did not exit 0 in one invocation",
+  "productionBuildCount": 1,
+  "fullRunnerLimits": [
+    "CATALOG_BUILD_MS (60s) before Find",
+    "existing Raw baked Floor WORK_MS (15s) before Find; root cause not fully isolated"
+  ],
+  "raw": {
+    "measuredAt": "2026-10-06T01:03:40.037Z",
+    "platform": "win32",
+    "arch": "x64",
+    "versions": {
+      "node": "24.21.0",
+      "acorn": "8.18.0",
+      "ada": "4.0.0",
+      "amaro": "1.1.11",
+      "ares": "1.34.8",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.3",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "137",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.70.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "3.5.8",
+      "simdjson": "4.6.7",
+      "simdutf": "6.4.0",
+      "sqlite": "3.53.4",
+      "tz": "2026c",
+      "undici": "7.29.1",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "13.6.233.17-node.53",
+      "zlib": "1.3.2.1-motley-8002e91",
+      "zstd": "1.5.7"
+    },
+    "find": [
+      {
+        "file": "ExcelOutput/AvatarConfig.json",
+        "sizeBytes": 240466,
+        "fingerprint": {
+          "hash": "d8f3c9f55078611ad010751f82333735eb7bc732e22df6b8ad235021658e0456",
+          "size": 240466,
+          "mtimeMs": 1790920441202.4895
+        },
+        "measurements": [
+          {
+            "query": "AvatarID",
+            "firstBoundedReplyMs": 3.026400000002468,
+            "timeToFirstMatchMs": 3.0270000000018626,
+            "elapsedMs": 92.19970000000103,
+            "complete": true,
+            "matchesReturned": 94,
+            "pages": 59,
+            "morePossible": false,
+            "bytesRead": 240469,
+            "tokens": 21821,
+            "maxEnvelopeBytes": 748,
+            "firstPointer": "/0/AvatarID",
+            "navigationMs": 1.6802999999999884,
+            "memory": {
+              "rss": 289071104,
+              "heapTotal": 202104832,
+              "heapUsed": 116667752,
+              "external": 7134865,
+              "arrayBuffers": 3075497
+            }
+          },
+          {
+            "query": "1001",
+            "firstBoundedReplyMs": 1.630299999997078,
+            "timeToFirstMatchMs": 1.6304999999993015,
+            "elapsedMs": 29.54109999999855,
+            "complete": true,
+            "matchesReturned": 39,
+            "pages": 9,
+            "morePossible": false,
+            "bytesRead": 240469,
+            "tokens": 21821,
+            "maxEnvelopeBytes": 5011,
+            "firstPointer": "/0/AvatarID",
+            "navigationMs": 0.9290000000000873,
+            "memory": {
+              "rss": 289165312,
+              "heapTotal": 202104832,
+              "heapUsed": 79174416,
+              "external": 5361911,
+              "arrayBuffers": 1302543
+            }
+          },
+          {
+            "query": "Avatar",
+            "firstBoundedReplyMs": 1.8842999999978929,
+            "timeToFirstMatchMs": 1.8845000000001164,
+            "elapsedMs": 1.9266999999999825,
+            "complete": false,
+            "matchesReturned": 32,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 374,
+            "maxEnvelopeBytes": 6341,
+            "firstPointer": "/0/AvatarID",
+            "navigationMs": 1.2543000000005122,
+            "memory": {
+              "rss": 289169408,
+              "heapTotal": 202104832,
+              "heapUsed": 79885216,
+              "external": 5539038,
+              "arrayBuffers": 1479670
+            }
+          },
+          {
+            "query": "__RefAtlas_missing_20261006__",
+            "firstBoundedReplyMs": 20.40179999999964,
+            "timeToFirstMatchMs": null,
+            "elapsedMs": 20.44789999999921,
+            "complete": true,
+            "matchesReturned": 0,
+            "pages": 1,
+            "morePossible": false,
+            "bytesRead": 240469,
+            "tokens": 21821,
+            "maxEnvelopeBytes": 383,
+            "firstPointer": null,
+            "navigationMs": null,
+            "memory": {
+              "rss": 289275904,
+              "heapTotal": 202104832,
+              "heapUsed": 94332808,
+              "external": 6382324,
+              "arrayBuffers": 2322956
+            }
+          },
+          {
+            "query": "1",
+            "firstBoundedReplyMs": 2.0403000000005704,
+            "timeToFirstMatchMs": 2.0403999999980442,
+            "elapsedMs": 2.0799999999981083,
+            "complete": false,
+            "matchesReturned": 32,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 374,
+            "maxEnvelopeBytes": 6299,
+            "firstPointer": "/0/AvatarID",
+            "navigationMs": 0.955999999998312,
+            "memory": {
+              "rss": 289288192,
+              "heapTotal": 202104832,
+              "heapUsed": 95052192,
+              "external": 6628923,
+              "arrayBuffers": 2569555
+            }
+          }
+        ],
+        "cancellation": null
+      },
+      {
+        "file": "ExcelOutput/AvatarSkillConfig.json",
+        "sizeBytes": 11438925,
+        "fingerprint": {
+          "hash": "552f36efa00798ea7a733041c656dd7169739b986f973cb424f2417009f63839",
+          "size": 11438925,
+          "mtimeMs": 1790920441260.1775
+        },
+        "measurements": [
+          {
+            "query": "SkillID",
+            "firstBoundedReplyMs": 3.195800000001327,
+            "timeToFirstMatchMs": 3.195900000002439,
+            "elapsedMs": 3.24829999999929,
+            "complete": false,
+            "matchesReturned": 3,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 587,
+            "maxEnvelopeBytes": 934,
+            "firstPointer": "/0/SkillID",
+            "navigationMs": 1.0817999999999302,
+            "memory": {
+              "rss": 289415168,
+              "heapTotal": 201842688,
+              "heapUsed": 83324592,
+              "external": 5558390,
+              "arrayBuffers": 1499022
+            }
+          },
+          {
+            "query": "1407",
+            "firstBoundedReplyMs": 66.51589999999851,
+            "timeToFirstMatchMs": 66.51610000000073,
+            "elapsedMs": 1033.5285000000003,
+            "complete": true,
+            "matchesReturned": 279,
+            "pages": 53,
+            "morePossible": false,
+            "bytesRead": 11438928,
+            "tokens": 1597850,
+            "maxEnvelopeBytes": 4411,
+            "firstPointer": "/496/SkillName/Hash",
+            "navigationMs": 1.138200000001234,
+            "memory": {
+              "rss": 289394688,
+              "heapTotal": 202366976,
+              "heapUsed": 109571120,
+              "external": 7097072,
+              "arrayBuffers": 3037704
+            }
+          },
+          {
+            "query": "140701",
+            "firstBoundedReplyMs": 62.01720000000205,
+            "timeToFirstMatchMs": 62.01729999999952,
+            "elapsedMs": 1014.3135000000002,
+            "complete": true,
+            "matchesReturned": 35,
+            "pages": 25,
+            "morePossible": false,
+            "bytesRead": 11438928,
+            "tokens": 1597850,
+            "maxEnvelopeBytes": 972,
+            "firstPointer": "/496/SkillName/Hash",
+            "navigationMs": 1.22099999999773,
+            "memory": {
+              "rss": 289394688,
+              "heapTotal": 202366976,
+              "heapUsed": 77280880,
+              "external": 5324891,
+              "arrayBuffers": 1265523
+            }
+          },
+          {
+            "query": "Skill",
+            "firstBoundedReplyMs": 2.3165999999982887,
+            "timeToFirstMatchMs": 2.3168000000005122,
+            "elapsedMs": 2.361799999998766,
+            "complete": false,
+            "matchesReturned": 32,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 587,
+            "maxEnvelopeBytes": 6258,
+            "firstPointer": "/0/SkillID",
+            "navigationMs": 1.4061999999976251,
+            "memory": {
+              "rss": 289406976,
+              "heapTotal": 202366976,
+              "heapUsed": 77967640,
+              "external": 5491331,
+              "arrayBuffers": 1431963
+            }
+          },
+          {
+            "query": "__RefAtlas_missing_20261006__",
+            "firstBoundedReplyMs": 100.92150000000038,
+            "timeToFirstMatchMs": null,
+            "elapsedMs": 972.0580000000009,
+            "complete": true,
+            "matchesReturned": 0,
+            "pages": 10,
+            "morePossible": false,
+            "bytesRead": 11438928,
+            "tokens": 1597850,
+            "maxEnvelopeBytes": 427,
+            "firstPointer": null,
+            "navigationMs": null,
+            "memory": {
+              "rss": 289460224,
+              "heapTotal": 202366976,
+              "heapUsed": 97628368,
+              "external": 6576801,
+              "arrayBuffers": 2517433
+            }
+          },
+          {
+            "query": "1",
+            "firstBoundedReplyMs": 2.5354000000006636,
+            "timeToFirstMatchMs": 2.535599999999249,
+            "elapsedMs": 2.5738000000019383,
+            "complete": false,
+            "matchesReturned": 32,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 587,
+            "maxEnvelopeBytes": 6369,
+            "firstPointer": "/0/SkillID",
+            "navigationMs": 0.9733999999989464,
+            "memory": {
+              "rss": 289460224,
+              "heapTotal": 202366976,
+              "heapUsed": 98335336,
+              "external": 6752163,
+              "arrayBuffers": 2692795
+            }
+          }
+        ],
+        "cancellation": null
+      },
+      {
+        "file": "ExcelOutput/MonsterConfig.json",
+        "sizeBytes": 4534605,
+        "fingerprint": {
+          "hash": "dfdfe23c803419c4fd96e8ef3a7bf1028c985d64135c89f5f7a43123eec703c8",
+          "size": 4534605,
+          "mtimeMs": 1790920441934.08
+        },
+        "measurements": [
+          {
+            "query": "MonsterID",
+            "firstBoundedReplyMs": 1.6546999999991385,
+            "timeToFirstMatchMs": 1.654899999997724,
+            "elapsedMs": 1.7026999999980035,
+            "complete": false,
+            "matchesReturned": 3,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 565,
+            "maxEnvelopeBytes": 925,
+            "firstPointer": "/0/MonsterID",
+            "navigationMs": 1.2302999999992608,
+            "memory": {
+              "rss": 289357824,
+              "heapTotal": 201842688,
+              "heapUsed": 74703872,
+              "external": 5258623,
+              "arrayBuffers": 1199255
+            }
+          },
+          {
+            "query": "Monster",
+            "firstBoundedReplyMs": 1.5384000000012747,
+            "timeToFirstMatchMs": 1.5384999999987485,
+            "elapsedMs": 1.5865000000012515,
+            "complete": false,
+            "matchesReturned": 15,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 565,
+            "maxEnvelopeBytes": 3119,
+            "firstPointer": "/0/MonsterName",
+            "navigationMs": 1.1195999999981723,
+            "memory": {
+              "rss": 289357824,
+              "heapTotal": 201842688,
+              "heapUsed": 75236584,
+              "external": 5330814,
+              "arrayBuffers": 1271446
+            }
+          },
+          {
+            "query": "__RefAtlas_missing_20261006__",
+            "firstBoundedReplyMs": 100.98359999999957,
+            "timeToFirstMatchMs": null,
+            "elapsedMs": 367.46840000000157,
+            "complete": true,
+            "matchesReturned": 0,
+            "pages": 4,
+            "morePossible": false,
+            "bytesRead": 4534608,
+            "tokens": 616682,
+            "maxEnvelopeBytes": 421,
+            "firstPointer": null,
+            "navigationMs": null,
+            "memory": {
+              "rss": 289337344,
+              "heapTotal": 201842688,
+              "heapUsed": 82721776,
+              "external": 5901415,
+              "arrayBuffers": 1842047
+            }
+          },
+          {
+            "query": "1",
+            "firstBoundedReplyMs": 2.027800000003481,
+            "timeToFirstMatchMs": 2.0280000000020664,
+            "elapsedMs": 2.071700000000419,
+            "complete": false,
+            "matchesReturned": 32,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 565,
+            "maxEnvelopeBytes": 6387,
+            "firstPointer": "/0/MonsterName/Hash",
+            "navigationMs": 1.0103000000017346,
+            "memory": {
+              "rss": 289337344,
+              "heapTotal": 201842688,
+              "heapUsed": 83409432,
+              "external": 6073860,
+              "arrayBuffers": 2014492
+            }
+          }
+        ],
+        "cancellation": null
+      },
+      {
+        "file": "TextMap/TextMapCHS.json",
+        "sizeBytes": 52399646,
+        "fingerprint": {
+          "hash": "a9028313c772e684c91359b467b398a1ded2079de67a191dff80d9adf43dfca4",
+          "size": 52399646,
+          "mtimeMs": 1790920447463.8948
+        },
+        "measurements": [
+          {
+            "query": "攻击",
+            "firstBoundedReplyMs": 1.5262000000002445,
+            "timeToFirstMatchMs": 1.526400000002468,
+            "elapsedMs": 1.577000000001135,
+            "complete": false,
+            "matchesReturned": 5,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 243,
+            "maxEnvelopeBytes": 1284,
+            "firstPointer": "/4114836937708119474",
+            "navigationMs": 0.9046999999991385,
+            "memory": {
+              "rss": 314470400,
+              "heapTotal": 229634048,
+              "heapUsed": 138467360,
+              "external": 8329707,
+              "arrayBuffers": 4270339
+            }
+          },
+          {
+            "query": "7505878640962067595",
+            "firstBoundedReplyMs": 100.59889999999723,
+            "timeToFirstMatchMs": 971.5794999999998,
+            "elapsedMs": 2131.7093000000023,
+            "complete": true,
+            "matchesReturned": 1,
+            "pages": 22,
+            "morePossible": false,
+            "bytesRead": 52399649,
+            "tokens": 1896773,
+            "maxEnvelopeBytes": 582,
+            "firstPointer": "/7505878640962067595",
+            "navigationMs": 1.0432000000000698,
+            "memory": {
+              "rss": 335503360,
+              "heapTotal": 250826752,
+              "heapUsed": 147782856,
+              "external": 7521200,
+              "arrayBuffers": 3461832
+            }
+          },
+          {
+            "query": "__RefAtlas_missing_20261006__",
+            "firstBoundedReplyMs": 100.54239999999845,
+            "timeToFirstMatchMs": null,
+            "elapsedMs": 2128.5106000000014,
+            "complete": true,
+            "matchesReturned": 0,
+            "pages": 22,
+            "morePossible": false,
+            "bytesRead": 52399649,
+            "tokens": 1896773,
+            "maxEnvelopeBytes": 416,
+            "firstPointer": null,
+            "navigationMs": null,
+            "memory": {
+              "rss": 356687872,
+              "heapTotal": 271663104,
+              "heapUsed": 155949400,
+              "external": 6590128,
+              "arrayBuffers": 2530760
+            }
+          },
+          {
+            "query": "1",
+            "firstBoundedReplyMs": 2.007399999994959,
+            "timeToFirstMatchMs": 2.0075999999971827,
+            "elapsedMs": 2.0481999999974505,
+            "complete": false,
+            "matchesReturned": 32,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 243,
+            "maxEnvelopeBytes": 6102,
+            "firstPointer": "/12518437936274253375",
+            "navigationMs": 0.9907000000021071,
+            "memory": {
+              "rss": 356691968,
+              "heapTotal": 271663104,
+              "heapUsed": 156638336,
+              "external": 6774135,
+              "arrayBuffers": 2714767
+            }
+          }
+        ],
+        "cancellation": {
+          "cancelLatencyMs": 0.8597000000008848,
+          "navigationDuringFindMs": 102.1388999999981,
+          "work": {
+            "bytesRead": 0,
+            "tokens": 0
+          }
+        }
+      },
+      {
+        "file": "Config/LevelOutput_Baked/Floor/P10401_F10401001_Baked.json",
+        "sizeBytes": 29480186,
+        "fingerprint": {
+          "hash": "7d588e77a1f70ca2af342d4b7d2f9056c324f3e62e70dbea4c1df8e50f4d56df",
+          "size": 29480186,
+          "mtimeMs": 1790920438402.4321
+        },
+        "measurements": [
+          {
+            "query": "GroupList",
+            "firstBoundedReplyMs": 1.6889000000010128,
+            "timeToFirstMatchMs": 1.6889999999984866,
+            "elapsedMs": 2203.8793000000005,
+            "complete": true,
+            "matchesReturned": 18,
+            "pages": 37,
+            "morePossible": false,
+            "bytesRead": 29480189,
+            "tokens": 3048925,
+            "maxEnvelopeBytes": 650,
+            "firstPointer": "/DimensionList/0/GroupList",
+            "navigationMs": 2149.5017000000007,
+            "memory": {
+              "rss": 294600704,
+              "heapTotal": 201056256,
+              "heapUsed": 99195856,
+              "external": 7532302,
+              "arrayBuffers": 3472934
+            }
+          },
+          {
+            "query": "__RefAtlas_missing_20261006__",
+            "firstBoundedReplyMs": 100.98110000000452,
+            "timeToFirstMatchMs": null,
+            "elapsedMs": 2277.310000000005,
+            "complete": true,
+            "matchesReturned": 0,
+            "pages": 23,
+            "morePossible": false,
+            "bytesRead": 29480189,
+            "tokens": 3048925,
+            "maxEnvelopeBytes": 451,
+            "firstPointer": null,
+            "navigationMs": null,
+            "memory": {
+              "rss": 294637568,
+              "heapTotal": 201580544,
+              "heapUsed": 112485144,
+              "external": 8813720,
+              "arrayBuffers": 4754352
+            }
+          },
+          {
+            "query": "1",
+            "firstBoundedReplyMs": 2.1938000000009197,
+            "timeToFirstMatchMs": 2.1939999999958673,
+            "elapsedMs": 2.2468000000008033,
+            "complete": false,
+            "matchesReturned": 32,
+            "pages": 1,
+            "morePossible": true,
+            "bytesRead": 4099,
+            "tokens": 431,
+            "maxEnvelopeBytes": 8538,
+            "firstPointer": "/DimensionList/0/GroupList/0/ID",
+            "navigationMs": 1.3416999999972177,
+            "memory": {
+              "rss": 294637568,
+              "heapTotal": 201580544,
+              "heapUsed": 113274952,
+              "external": 9042276,
+              "arrayBuffers": 4982908
+            }
+          }
+        ],
+        "cancellation": {
+          "cancelLatencyMs": 0.569100000000617,
+          "navigationDuringFindMs": 102.20969999999943,
+          "work": {
+            "bytesRead": 0,
+            "tokens": 0
+          }
+        }
+      }
+    ],
+    "repositoryBefore": {
+      "head": "724b139d8c9c32d12552eb95745a4fee72bfe48b",
+      "status": ""
+    },
+    "repositoryAfter": {
+      "head": "724b139d8c9c32d12552eb95745a4fee72bfe48b",
+      "status": ""
+    },
+    "maxRssKiB": 425048
+  },
+  "native": {
+    "dev": {
+      "ok": true,
+      "measuredAt": "2026-10-06T01:17:22.320Z",
+      "versions": {
+        "node": "24.21.0",
+        "acorn": "8.18.0",
+        "ada": "4.0.0",
+        "amaro": "1.1.11",
+        "ares": "1.34.8",
+        "brotli": "1.2.0",
+        "cldr": "48.0",
+        "icu": "78.2",
+        "llhttp": "9.4.3",
+        "merve": "1.2.2",
+        "modules": "149",
+        "napi": "10",
+        "nbytes": "0.1.4",
+        "ncrypto": "0.0.1",
+        "nghttp2": "1.70.0",
+        "nghttp3": "",
+        "ngtcp2": "",
+        "openssl": "0.0.0",
+        "simdjson": "4.6.7",
+        "simdutf": "7.7.0",
+        "sqlite": "3.53.4",
+        "tz": "2025c",
+        "undici": "7.29.1",
+        "unicode": "17.0",
+        "uv": "1.52.1",
+        "uvwasi": "0.0.23",
+        "v8": "15.2.124.28-electron.0",
+        "zlib": "1.3.2.1-motley",
+        "zstd": "1.6.0",
+        "electron": "44.5.1",
+        "chrome": "152.0.7977.130"
+      },
+      "security": {
+        "contextIsolation": true,
+        "nodeIntegration": false,
+        "sandbox": true
+      },
+      "find": {
+        "stages": [
+          {
+            "stage": "prepare"
+          },
+          {
+            "stage": "opened",
+            "shortcuts": 1,
+            "prevented": 1,
+            "trusted": 1
+          },
+          {
+            "stage": "typed",
+            "pointer": "/SkillID",
+            "matches": 32,
+            "complete": false
+          },
+          {
+            "stage": "next"
+          },
+          {
+            "stage": "previous"
+          },
+          {
+            "stage": "locale-layout",
+            "checks": [
+              "locale-query-match-focus-continuity",
+              "bounded-find-bar"
+            ]
+          },
+          {
+            "stage": "closed"
+          },
+          {
+            "stage": "explicit-opened"
+          },
+          {
+            "stage": "button-next"
+          },
+          {
+            "stage": "button-previous"
+          },
+          {
+            "stage": "button-closed"
+          },
+          {
+            "stage": "container-match",
+            "pointer": "/entries"
+          },
+          {
+            "stage": "source-switch"
+          },
+          {
+            "stage": "stale-prepare"
+          },
+          {
+            "stage": "stale"
+          },
+          {
+            "stage": "reloaded"
+          },
+          {
+            "stage": "real-data",
+            "reports": [
+              {
+                "path": "ExcelOutput/AvatarConfig.json",
+                "query": "AvatarID",
+                "pointer": "/0/AvatarID",
+                "elapsedMs": 8.400000000372529,
+                "count": 2,
+                "complete": false
+              },
+              {
+                "path": "ExcelOutput/AvatarSkillConfig.json",
+                "query": "1407",
+                "pointer": "/496/SkillName/Hash",
+                "elapsedMs": 66.90000000037253,
+                "count": 2,
+                "complete": false
+              },
+              {
+                "path": "TextMap/TextMapCHS.json",
+                "query": "攻击",
+                "pointer": "/4114836937708119474",
+                "elapsedMs": 15.200000000186265,
+                "count": 5,
+                "complete": false
+              }
+            ]
+          },
+          {
+            "stage": "large-started"
+          },
+          {
+            "stage": "large-canceled",
+            "cancelMs": 1.8999999994412065,
+            "frames": 28
+          },
+          {
+            "stage": "finish",
+            "checks": [
+              "structured-facts",
+              "native-shortcut-typing-enter-shift-enter-escape",
+              "next-previous-buttons",
+              "source-revision-stale-reload",
+              "focus-locale-continuity"
+            ]
+          }
+        ],
+        "nativeFindCalls": 0
+      },
+      "consoleErrors": [],
+      "externalDataUnchanged": true,
+      "screenshots": [
+        "find-dev.png",
+        "find-dev-narrow.png"
+      ],
+      "screenshotsVisuallyChecked": true
+    },
+    "built": {
+      "ok": true,
+      "measuredAt": "2026-10-06T01:18:26.986Z",
+      "versions": {
+        "node": "24.21.0",
+        "acorn": "8.18.0",
+        "ada": "4.0.0",
+        "amaro": "1.1.11",
+        "ares": "1.34.8",
+        "brotli": "1.2.0",
+        "cldr": "48.0",
+        "icu": "78.2",
+        "llhttp": "9.4.3",
+        "merve": "1.2.2",
+        "modules": "149",
+        "napi": "10",
+        "nbytes": "0.1.4",
+        "ncrypto": "0.0.1",
+        "nghttp2": "1.70.0",
+        "nghttp3": "",
+        "ngtcp2": "",
+        "openssl": "0.0.0",
+        "simdjson": "4.6.7",
+        "simdutf": "7.7.0",
+        "sqlite": "3.53.4",
+        "tz": "2025c",
+        "undici": "7.29.1",
+        "unicode": "17.0",
+        "uv": "1.52.1",
+        "uvwasi": "0.0.23",
+        "v8": "15.2.124.28-electron.0",
+        "zlib": "1.3.2.1-motley",
+        "zstd": "1.6.0",
+        "electron": "44.5.1",
+        "chrome": "152.0.7977.130"
+      },
+      "security": {
+        "contextIsolation": true,
+        "nodeIntegration": false,
+        "sandbox": true
+      },
+      "find": {
+        "stages": [
+          {
+            "stage": "prepare"
+          },
+          {
+            "stage": "opened",
+            "shortcuts": 1,
+            "prevented": 1,
+            "trusted": 1
+          },
+          {
+            "stage": "typed",
+            "pointer": "/SkillID",
+            "matches": 32,
+            "complete": false
+          },
+          {
+            "stage": "next"
+          },
+          {
+            "stage": "previous"
+          },
+          {
+            "stage": "locale-layout",
+            "checks": [
+              "locale-query-match-focus-continuity",
+              "bounded-find-bar"
+            ]
+          },
+          {
+            "stage": "closed"
+          },
+          {
+            "stage": "explicit-opened"
+          },
+          {
+            "stage": "button-next"
+          },
+          {
+            "stage": "button-previous"
+          },
+          {
+            "stage": "button-closed"
+          },
+          {
+            "stage": "container-match",
+            "pointer": "/entries"
+          },
+          {
+            "stage": "source-switch"
+          },
+          {
+            "stage": "stale-prepare"
+          },
+          {
+            "stage": "stale"
+          },
+          {
+            "stage": "reloaded"
+          },
+          {
+            "stage": "real-data",
+            "reports": [
+              {
+                "path": "ExcelOutput/AvatarConfig.json",
+                "query": "AvatarID",
+                "pointer": "/0/AvatarID",
+                "elapsedMs": 9.899999999441206,
+                "count": 2,
+                "complete": false
+              },
+              {
+                "path": "ExcelOutput/AvatarSkillConfig.json",
+                "query": "1407",
+                "pointer": "/496/SkillName/Hash",
+                "elapsedMs": 68.20000000018626,
+                "count": 2,
+                "complete": false
+              },
+              {
+                "path": "TextMap/TextMapCHS.json",
+                "query": "攻击",
+                "pointer": "/4114836937708119474",
+                "elapsedMs": 11.299999999813735,
+                "count": 5,
+                "complete": false
+              }
+            ]
+          },
+          {
+            "stage": "large-started"
+          },
+          {
+            "stage": "large-canceled",
+            "cancelMs": 1,
+            "frames": 26
+          },
+          {
+            "stage": "finish",
+            "checks": [
+              "structured-facts",
+              "native-shortcut-typing-enter-shift-enter-escape",
+              "next-previous-buttons",
+              "source-revision-stale-reload",
+              "focus-locale-continuity"
+            ]
+          }
+        ],
+        "nativeFindCalls": 0
+      },
+      "consoleErrors": [],
+      "externalDataUnchanged": true,
+      "screenshots": [
+        "find-built.png",
+        "find-built-narrow.png"
+      ],
+      "screenshotsVisuallyChecked": true,
+      "localizationBundle": {
+        "rendererOnly": true,
+        "assets": [
+          {
+            "name": "index-CuhHT_fu.js",
+            "bytes": 637095,
+            "gzipBytes": 121754
+          }
+        ]
+      }
+    },
+    "packaged": {
+      "ok": true,
+      "measuredAt": "2026-10-06T01:19:50.578Z",
+      "versions": {
+        "node": "24.21.0",
+        "acorn": "8.18.0",
+        "ada": "4.0.0",
+        "amaro": "1.1.11",
+        "ares": "1.34.8",
+        "brotli": "1.2.0",
+        "cldr": "48.0",
+        "icu": "78.2",
+        "llhttp": "9.4.3",
+        "merve": "1.2.2",
+        "modules": "149",
+        "napi": "10",
+        "nbytes": "0.1.4",
+        "ncrypto": "0.0.1",
+        "nghttp2": "1.70.0",
+        "nghttp3": "",
+        "ngtcp2": "",
+        "openssl": "0.0.0",
+        "simdjson": "4.6.7",
+        "simdutf": "7.7.0",
+        "sqlite": "3.53.4",
+        "tz": "2025c",
+        "undici": "7.29.1",
+        "unicode": "17.0",
+        "uv": "1.52.1",
+        "uvwasi": "0.0.23",
+        "v8": "15.2.124.28-electron.0",
+        "zlib": "1.3.2.1-motley",
+        "zstd": "1.6.0",
+        "electron": "44.5.1",
+        "chrome": "152.0.7977.130"
+      },
+      "security": {
+        "contextIsolation": true,
+        "nodeIntegration": false,
+        "sandbox": true
+      },
+      "find": {
+        "stages": [
+          {
+            "stage": "prepare"
+          },
+          {
+            "stage": "opened",
+            "shortcuts": 1,
+            "prevented": 1,
+            "trusted": 1
+          },
+          {
+            "stage": "typed",
+            "pointer": "/SkillID",
+            "matches": 32,
+            "complete": false
+          },
+          {
+            "stage": "next"
+          },
+          {
+            "stage": "previous"
+          },
+          {
+            "stage": "locale-layout",
+            "checks": [
+              "locale-query-match-focus-continuity",
+              "bounded-find-bar"
+            ]
+          },
+          {
+            "stage": "closed"
+          },
+          {
+            "stage": "explicit-opened"
+          },
+          {
+            "stage": "button-next"
+          },
+          {
+            "stage": "button-previous"
+          },
+          {
+            "stage": "button-closed"
+          },
+          {
+            "stage": "container-match",
+            "pointer": "/entries"
+          },
+          {
+            "stage": "source-switch"
+          },
+          {
+            "stage": "stale-prepare"
+          },
+          {
+            "stage": "stale"
+          },
+          {
+            "stage": "reloaded"
+          },
+          {
+            "stage": "real-data",
+            "reports": [
+              {
+                "path": "ExcelOutput/AvatarConfig.json",
+                "query": "AvatarID",
+                "pointer": "/0/AvatarID",
+                "elapsedMs": 8.5,
+                "count": 2,
+                "complete": false
+              },
+              {
+                "path": "ExcelOutput/AvatarSkillConfig.json",
+                "query": "1407",
+                "pointer": "/496/SkillName/Hash",
+                "elapsedMs": 65.5,
+                "count": 2,
+                "complete": false
+              },
+              {
+                "path": "TextMap/TextMapCHS.json",
+                "query": "攻击",
+                "pointer": "/4114836937708119474",
+                "elapsedMs": 12.699999999254942,
+                "count": 5,
+                "complete": false
+              }
+            ]
+          },
+          {
+            "stage": "large-started"
+          },
+          {
+            "stage": "large-canceled",
+            "cancelMs": 1.1000000005587935,
+            "frames": 28
+          },
+          {
+            "stage": "finish",
+            "checks": [
+              "structured-facts",
+              "native-shortcut-typing-enter-shift-enter-escape",
+              "next-previous-buttons",
+              "source-revision-stale-reload",
+              "focus-locale-continuity"
+            ]
+          }
+        ],
+        "nativeFindCalls": 0
+      },
+      "consoleErrors": [],
+      "externalDataUnchanged": true,
+      "screenshots": [
+        "find-packaged.png",
+        "find-packaged-narrow.png"
+      ],
+      "screenshotsVisuallyChecked": true,
+      "localizationBundle": {
+        "rendererOnly": true,
+        "assets": [
+          {
+            "name": "index-CuhHT_fu.js",
+            "bytes": 637095,
+            "gzipBytes": 121754
+          }
+        ]
+      },
+      "packageContents": {
+        "runtimeOnly": true,
+        "externalDataExcluded": true,
+        "nativeUnpacked": true,
+        "compilerExcluded": true,
+        "pluginCacheExcluded": true,
+        "catalogsRendererOnly": true,
+        "explorerRendererOnly": true
+      },
+      "normalModeGuard": {
+        "checks": [
+          "normal-packaged-diagnostics-denied",
+          "normal-packaged-probe"
+        ],
+        "diagnostics": false,
+        "nodeIntegration": false
+      }
+    }
+  },
+  "bundleBaseline": {
+    "measuredAt": "2026-10-05T13:51:20.913Z",
+    "bundle": {
+      "rendererOnly": true,
+      "assets": [
+        {
+          "name": "index-ip9bhN-6.js",
+          "bytes": 587502,
+          "gzipBytes": 114766
+        }
+      ]
+    }
+  },
+  "packageSizes": {
+    "asarBytes": 1661364,
+    "winUnpackedBytes": 413893330
+  },
+  "finalExternalAudit": {
+    "unchanged": true,
+    "head": "724b139d8c9c32d12552eb95745a4fee72bfe48b",
+    "status": "",
+    "fingerprints": [
+      {
+        "path": "ExcelOutput/AvatarConfig.json",
+        "hash": "d8f3c9f55078611ad010751f82333735eb7bc732e22df6b8ad235021658e0456",
+        "size": 240466,
+        "mtimeMs": 1790920441202.4895
+      },
+      {
+        "path": "ExcelOutput/EquipmentConfig.json",
+        "hash": "74ea91580ab4a251ee16c3b491be46465f37ec2f6178982a92a6cbf4c0086ebc",
+        "size": 132304,
+        "mtimeMs": 1790920441439.1382
+      },
+      {
+        "path": "ExcelOutput/AvatarSkillConfig.json",
+        "hash": "552f36efa00798ea7a733041c656dd7169739b986f973cb424f2417009f63839",
+        "size": 11438925,
+        "mtimeMs": 1790920441260.1775
+      },
+      {
+        "path": "ExcelOutput/MonsterConfig.json",
+        "hash": "dfdfe23c803419c4fd96e8ef3a7bf1028c985d64135c89f5f7a43123eec703c8",
+        "size": 4534605,
+        "mtimeMs": 1790920441934.08
+      },
+      {
+        "path": "TextMap/TextMapCHS.json",
+        "hash": "a9028313c772e684c91359b467b398a1ded2079de67a191dff80d9adf43dfca4",
+        "size": 52399646,
+        "mtimeMs": 1790920447463.8948
+      },
+      {
+        "path": "Config/LevelOutput_Baked/Floor/P10401_F10401001_Baked.json",
+        "hash": "7d588e77a1f70ca2af342d4b7d2f9056c324f3e62e70dbea4c1df8e50f4d56df",
+        "size": 29480186,
+        "mtimeMs": 1790920438402.4321
+      },
+      {
+        "path": "Config/SoundBankLookUp.json",
+        "hash": "9c01464ab35491da9b264431ebbd06967dfe96b51d79a5c8dd90c46cefee4d02",
+        "size": 10920724,
+        "mtimeMs": 1790920441057.999
+      }
+    ]
+  },
+  "macOSArm64": "NOT YET RUN",
+  "logs": [
+    "slice-g-final-runner.log",
+    "slice-g-final-runner-after-cursor-fix.log",
+    "slice-g-final-runner-controlled.log",
+    "slice-g-catalog-diagnostic.log",
+    "slice-g-remaining-gates.log",
+    "slice-g-remaining-gates-no-window-interaction.log"
+  ],
+  "finalCheapChecks": {
+    "ordinaryTestsPassed": 286,
+    "optInRealDataSkippedInOrdinarySuite": 1,
+    "findTests": 33,
+    "typeErrors": 0,
+    "typeWarnings": 0,
+    "format": "PASS",
+    "docsLinks": "PASS (45 Markdown documents)",
+    "gitDiffCheck": "PASS",
+    "runtimeChangedAfterProductionBuild": false
+  }
+}

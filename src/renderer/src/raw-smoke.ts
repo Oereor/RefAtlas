@@ -52,6 +52,8 @@ export async function runRawSmoke(stage: string): Promise<unknown> {
           'listNodeChildren',
           'readScalarSegment',
           'cancelRequest',
+          'findInSource',
+          'closeSourceFind',
         ]
           .sort()
           .join(','),

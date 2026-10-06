@@ -4,6 +4,8 @@
 
 **Phase 0、Phase 1、Phase 1A 均已关闭；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** Phase 2A 已确认原则写入 ADR-0007–0010，见 [评审收尾报告](docs/investigations/phase-2a-review-closeout.md)；[原调查](docs/investigations/phase-2a-data-access-architecture.md) 保留历史候选与实测。Windows x64 与 macOS arm64 的 native/package gate 均已通过，electron-vite + electron-builder 长期路线已接受，当前版本不永久冻结；macOS x64 不属于支持范围。见 [Phase 1A 收尾](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。本轮已实现只读 raw Data Service、revision、统一 parser 和有界 query primitives，见 [实现与验收报告](docs/investigations/phase-2-raw-access-foundation.md)。`tools/investigation/` 保持独立非生产；Source Browser Slice E 已独立授权实现 change/reload/location recovery；当前验收和跨平台范围见 [Slice E 报告](docs/investigations/phase-2-source-browser-slice-e-change-reload-integration.md)。
 
+当前 Source Locator 与 active-source Find 均已实现。Find 使用 Ctrl/Cmd+F 或 Node Browser 的显式入口，150ms debounce、原始事实 literal Contains、Previous/Next 和 Escape，所有源只读。验收与限制见 [Slice G 报告](docs/investigations/phase-2-source-browser-slice-g-find-in-source.md) 与 STATUS；macOS F/G NOT YET RUN。下一架构焦点为另行授权的 Phase 3A，交付后 STOP / WAIT FOR REVIEW。
+
 ## 开始阅读
 
 Source Browser Slice A 已评审，可继续开发；其新实现 macOS arm64 已由本轮累计 Source Browser gate 验证。Slice B 已实现 Renderer-only localization foundation，Windows 完整验收结果见 [Slice B 报告](docs/investigations/phase-2-source-browser-slice-b-localization-foundation.md) 和 [STATUS](docs/STATUS.md)。Slice C 已实现正式 Source Explorer shell，Windows 11 阶段单次完整验收 exit 0，见 [Slice C 报告](docs/investigations/phase-2-source-browser-slice-c-source-explorer.md)。

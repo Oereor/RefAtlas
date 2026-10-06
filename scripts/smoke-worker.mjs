@@ -86,6 +86,26 @@ try {
     content.security?.sandbox !== true
   )
     throw new Error('实际 BrowserWindow 安全配置验证失败')
+  if (
+    !content.renderer.find ||
+    content.renderer.find.nativeFindCalls !== 0 ||
+    !content.renderer.find.stages.some(
+      (stage) =>
+        stage.stage === 'opened' &&
+        stage.shortcuts === 1 &&
+        stage.prevented === 1 &&
+        stage.trusted === 1,
+    ) ||
+    !content.renderer.find.stages.some((stage) => stage.stage === 'finish')
+  )
+    throw new Error('Find native gate incomplete')
+  if (
+    realBefore &&
+    !content.renderer.find.stages.some(
+      (stage) => stage.stage === 'large-canceled' && stage.frames > 0,
+    )
+  )
+    throw new Error('Large source Find cancellation not verified')
   if (mode === 'packaged' && !content.renderer.sqlite.every((result) => result.nativeUnpacked))
     throw new Error('native addon 未验证在 ASAR 外加载')
   if (

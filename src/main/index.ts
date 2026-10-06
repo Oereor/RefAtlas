@@ -161,6 +161,8 @@ for (const kind of [
   'release',
   'locate',
   'catalog',
+  'find',
+  'find-close',
 ] as const)
   registerRaw(RAW_CHANNELS[kind], async (event, input) => {
     const command = commandFromInput(kind, input)
@@ -235,6 +237,13 @@ async function launch(): Promise<void> {
     await writeFile(join(root, 'cancel.json'), '[' + '0,'.repeat(1_000_000) + '0]', 'utf8')
     await writeFile(join(root, 'huge.json'), JSON.stringify('x'.repeat(512 * 1024)), 'utf8')
     await writeFile(join(root, 'bad.json'), '{"a":1,}', 'utf8')
+    await writeFile(
+      join(root, 'find.json'),
+      '{"SkillID":140701,"related":131407,"a~b/c":"Skill中文🙂","entries":[' +
+        Array.from({ length: 205 }, () => '140701').join(',') +
+        ']}',
+      'utf8',
+    )
     await writeFile(join(root, 'other.json'), '{"kind":"fixture"}', 'utf8')
     await writeFile(
       join(root, 'node-browser.json'),
@@ -728,11 +737,90 @@ async function launch(): Promise<void> {
     await locatorStage('click-failed')
     await locatorClick('[data-locator-source]')
     await locatorStage('click-refresh')
+    const findReports: unknown[] = []
+    const findStage = async (stage: string) => {
+      await progress('Find ' + stage)
+      findReports.push(
+        await window!.webContents.executeJavaScript(
+          'window.runFindSmoke(' + JSON.stringify(stage) + ')',
+        ),
+      )
+    }
+    let nativeFindCalls = 0
+    const originalFind = window.webContents.findInPage.bind(window.webContents)
+    window.webContents.findInPage = (text, options) => {
+      nativeFindCalls++
+      return originalFind(text, options)
+    }
+    await findStage('prepare')
+    window.webContents.sendInputEvent({
+      type: 'keyDown',
+      keyCode: 'F',
+      modifiers: shortcutModifiers,
+    })
+    window.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'F', modifiers: shortcutModifiers })
+    await findStage('opened')
+    window.webContents.insertText('1407')
+    await findStage('typed')
+    key('Return')
+    await findStage('next')
+    window.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Return', modifiers: ['shift'] })
+    window.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Return', modifiers: ['shift'] })
+    await findStage('previous')
+    await findStage('locale-layout')
+    const findScreenshot = async (suffix = '') => {
+      await window!.webContents.executeJavaScript(
+        'new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))',
+      )
+      await writeFile(
+        resolve(
+          process.cwd(),
+          'artifacts/find-' +
+            (process.env.ELECTRON_RENDERER_URL ? 'dev' : app.isPackaged ? 'packaged' : 'built') +
+            suffix +
+            '.png',
+        ),
+        (await window!.webContents.capturePage()).toPNG(),
+      )
+    }
+    await findScreenshot()
+    window.setSize(900, 600)
+    await findScreenshot('-narrow')
+    window.setSize(1280, 800)
+    key('Escape')
+    await findStage('closed')
+    await locatorClick('[data-action="find-open"]')
+    await findStage('explicit-opened')
+    await locatorClick('[data-action="find-next"]')
+    await findStage('button-next')
+    await locatorClick('[data-action="find-previous"]')
+    await findStage('button-previous')
+    await locatorClick('[data-action="find-close"]')
+    await findStage('button-closed')
+    await findStage('container-match')
+    await findStage('source-switch')
+    await findStage('stale-prepare')
+    await writeFile(
+      join(dirname(reportPath), 'raw-fixtures/find.json'),
+      '{"SkillID":140702,"related":131407}',
+    )
+    await findStage('stale')
+    await locatorClick('[data-action="source-reload"]')
+    await findStage('reloaded')
     if (process.argv.includes('--explorer-real-data')) {
       smokeWorkspaceSelections = [resolve(process.cwd(), '../TurnBasedGameData')]
       await nodeStage('real-data')
       await locatorStage('real-data')
+      await findStage('real-data')
+      window.webContents.insertText('__large_no_match__')
+      await findStage('large-started')
+      key('Escape')
+      await findStage('large-canceled')
     }
+    await findStage('finish')
+    if (nativeFindCalls !== 0) throw new Error('Chromium native find invoked')
+    window.webContents.findInPage = originalFind
+    rendererReport.find = { stages: findReports, nativeFindCalls }
     await locatorStage('finish')
     rendererReport.locator = locatorReports
     rendererReport.nodeBrowser = nodeReports

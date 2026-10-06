@@ -37,6 +37,8 @@ const raw: RawBridge = Object.freeze<RawBridge>({
       ? ipcRenderer.invoke(RAW_CHANNELS.open, input)
       : Promise.resolve(rawFailure('INVALID_INPUT')),
   closeWorkspace: (input) => invokeRaw('close', input),
+  findInSource: (input) => invokeRaw('find', input),
+  closeSourceFind: (input) => invokeRaw('find-close', input),
   getSourceInfo: (input) => invokeRaw('info', input),
   reloadSource: (input) => invokeRaw('reload', input),
   listDirectory: (input) => invokeRaw('directory', input),

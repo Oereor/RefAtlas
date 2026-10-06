@@ -11,6 +11,7 @@ function value<Value>(result: Result<Value>): Value {
 }
 
 export async function runFoundationGuardSmoke(): Promise<unknown> {
+  assert(typeof window.runFindSmoke === 'undefined', '普通打包态不得暴露 Find smoke')
   assert(typeof window.runExplorerSmoke === 'undefined', '普通打包态不得暴露 explorer smoke')
   assert(typeof window.runNodeBrowserSmoke === 'undefined', '普通打包态不得暴露 NodeBrowser smoke')
   assert(
