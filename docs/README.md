@@ -1,5 +1,20 @@
 # RefAtlas 项目文档
 
+**ARCHIVED — This documentation set is archived historical material for the standalone RefAtlas project.** Standalone 开发于 **2026-10-06** 停止；本套文档保留产品探索、架构与数据研究价值，不再构成 active-development specification 或 backlog。当前权威状态见 [STATUS](STATUS.md)，收尾记录见 [archival closeout](investigations/standalone-archival-closeout.md)。
+
+实际使用方向已转向独立、轻量的 [RefAtlas-VSCode](https://github.com/Oereor/RefAtlas-VSCode)。它目前仅为名称精确为 `Hash` 的 numeric JSON property 提供 `TextMap/TextMapCHS.json` 目标的原生 Hover / Definition / Peek（找到目标时），不继承 standalone 的 specification、架构或 roadmap。
+
+## 归档资料阅读顺序
+
+1. [仓库 README](../README.md) / [STATUS](STATUS.md)：归档决定、产品理由与取消工作。
+2. [PROJECT](PROJECT.md) / [ARCHITECTURE](ARCHITECTURE.md)：历史产品定义与 standalone 架构；[ROADMAP](ROADMAP.md) 为冻结的历史规划。
+3. [ADR](decisions/README.md)：standalone 开发时期已接受的决定及原有替代历史。
+4. [investigations](investigations/README.md)：保留的研究报告、候选与 evidence。
+
+## 归档前的文档说明（历史）
+
+下文保留原开发时期的职责、状态导语和工作规则。“当前”“下一架构焦点”“结束更新”等表述仅属于历史时点；旧 OPEN / AWAITING REVIEW / NOT YET RUN 不触发新工作，以顶部链接的归档决定为当前真相。
+
 中文权威项目文档位于 `RefAtlas/docs/`，与应用代码纳入同一 Git 仓库。外层 `RefAtlas-Project/` 只是本地工作区容器；同级 `TurnBasedGameData/` 仍为只读外部数据。
 
 Search investigation line 已 completed / retained as historical evidence；V1 workspace-wide raw content search 已由产品决定 defer，当前范围与引用优先方向见 [ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md)，本次 [架构收尾报告](investigations/phase-2-search-scope-architecture-closeout.md) 记录维护与验证。Source Locator 本轮IMPLEMENTED，Windows必要gates累计通过/Mac NOT YET RUN，验收见 [Slice F 报告](investigations/phase-2-source-browser-slice-f-source-locator.md)与 STATUS；active-source Find 已在 Slice G 实现，Windows 验收状态/Mac NOT YET RUN 见 [Slice G 报告](investigations/phase-2-source-browser-slice-g-find-in-source.md)与 STATUS；下一架构焦点是评审后另行授权的 Phase 3A Dataset Contract，而非 Search Foundation。Search Round 2 的 [Electron ACL/execution-lane 历史证据](investigations/phase-2-search-execution-lane-validation.md) 保留；FEFF 仍是 OPEN 的 Raw Access correctness defect。当前阶段真相见 STATUS。

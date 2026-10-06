@@ -1,5 +1,9 @@
 # 开发与文档流程
 
+**ARCHIVED — 历史开发流程，2026-10-06。** Standalone RefAtlas 已停止开发，当前决定见 [STATUS](STATUS.md)。下文保留开发时期的验证、维护和阶段规则，用于理解历史代码及用户明确请求的极小维护；不授权恢复实现、open investigations、平台验证、清理或依赖现代化。历史“待授权”“下一节点”不构成 active backlog，除非用户明确要求重新激活 standalone，否则不启动 active-development workflow 或平台 gates。
+
+本次纯文档归档维护只执行 `npm run docs:check` 与 `git diff --check`；Markdown 不在 formatter 范围。不运行 production tests、build、package、Electron smoke、validate:foundation、real-data gates、Mac F/G validation 或 Search benchmarks。下文历史 Validation Cadence 不扩大本次任务范围。
+
 权威文档位于本仓库 `docs/`，与代码使用同一 Git 仓库。重大工作前按 [入口](README.md) 阅读 PROJECT、STATUS、ARCHITECTURE 与相关 ADR/调查，核实 AGENTS、现有修改和外部仓库状态。**调查或收尾任务不意味着生产实现授权。**
 
 ## 工作规则

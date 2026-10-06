@@ -1,5 +1,19 @@
 # RefAtlas
 
+**ARCHIVED — Archived standalone experiment / research project**
+
+归档日期：**2026-10-06（UTC+8）**。Standalone RefAtlas 已停止开发，作为 historical experiment / research archive 保留；不再推进 standalone roadmap，也不存在下一阶段。当前归档决定见 [STATUS](docs/STATUS.md)，收尾记录见 [archival closeout](docs/investigations/standalone-archival-closeout.md)。
+
+这项探索建立了对 TurnBasedGameData 结构、raw-data fidelity、大整数 ID/hash、搜索取舍和引用语义的重要认识，并留下可工作的基础设施。研究使实际需求更加清晰：主要浏览痛点是在正常阅读 raw JSON 时快速理解 Hash 对应的本地化文本。VS Code 已提供文件浏览、raw JSON 查看/编辑、tabs、history、split editor、search、Go to Definition 和 Peek，重新实现完整 standalone workbench 的基础设施成本超出了这一需求。停止开发是产品范围收窄的决定，不是技术、架构或性能失败。
+
+当前实际使用方向已转向独立、轻量的 [RefAtlas-VSCode](https://github.com/Oereor/RefAtlas-VSCode)：将名称精确为 `Hash` 的 numeric JSON property 解析到 `TextMap/TextMapCHS.json`，找到目标时提供原生 Hover / Definition / Peek。它是独立且更窄的 product reset，不是换一种方式实现 Phase 3，也不继承本仓库的大型 roadmap。
+
+代码、ADR、调查报告、evidence 和调查工具保留历史与研究价值。旧报告中的 OPEN / AWAITING REVIEW / NOT YET RUN 不代表计划继续工作。
+
+## Historical development information
+
+以下为归档前的产品、开发命令、实现和验收说明，保留当时状态与限制；其中“当前”“下一步”“待授权”等表述属于历史时点，不授权恢复开发或执行 gates。
+
 面向开发者、逆向研究者和配置维护者的桌面原始配置与显式引用调查工作台。
 
 **Phase 0、Phase 1、Phase 1A 均已关闭；Phase 2A investigation：CLOSED / REVIEWED；Phase 2 production implementation：STARTED；Raw Access Foundation：COMPLETE / AWAITING REVIEW。** Phase 2A 已确认原则写入 ADR-0007–0010，见 [评审收尾报告](docs/investigations/phase-2a-review-closeout.md)；[原调查](docs/investigations/phase-2a-data-access-architecture.md) 保留历史候选与实测。Windows x64 与 macOS arm64 的 native/package gate 均已通过，electron-vite + electron-builder 长期路线已接受，当前版本不永久冻结；macOS x64 不属于支持范围。见 [Phase 1A 收尾](docs/investigations/phase-1a-closeout.md) 与 [macOS 原生验证](docs/investigations/phase-1a-macos-arm64-validation.md)。本轮已实现只读 raw Data Service、revision、统一 parser 和有界 query primitives，见 [实现与验收报告](docs/investigations/phase-2-raw-access-foundation.md)。`tools/investigation/` 保持独立非生产；Source Browser Slice E 已独立授权实现 change/reload/location recovery；当前验收和跨平台范围见 [Slice E 报告](docs/investigations/phase-2-source-browser-slice-e-change-reload-integration.md)。

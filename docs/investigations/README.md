@@ -1,5 +1,11 @@
 # 调查与证据
 
+**ARCHIVED — Investigation reports are retained as research evidence.** Standalone RefAtlas 于 **2026-10-06** 停止开发，当前决定见 [STATUS](../STATUS.md)。旧报告与下列摘要中的 OPEN / UNKNOWN / AWAITING REVIEW / NOT YET RUN、“下一架构焦点”与待修复事项均是当时状态，现在不会触发新工作；不因归档改写报告、evidence 或候选语义。
+
+Phase 0、Raw Access、Search 和 Phase 3A 的数据事实仍可供其他工具参考。Phase 3A Dataset Contract identity/reference taxonomy 是有价值的研究结果，仍不等于 accepted schema；其后续 Contract schema/API/DSL、Resolver 和 graph implementation 已取消。历史 Search DEFER 状态与 FEFF / Mac F/G 未完成事实继续保留，不是 archived standalone 的 active backlog。
+
+- [Standalone archival closeout](standalone-archival-closeout.md)：最终产品方向决定、保留成果、取消工作、纯文档验证与 Git 状态；收尾后 STOP / WAIT FOR REVIEW。
+
 - [Phase 3A — Dataset Contract Identity / Reference Taxonomy](phase-3a-dataset-contract-reference-taxonomy.md)：五个真实案例的 typed 值、物理/逻辑身份、基数、nested/context/path 与 TextMap localization 调查；FACT/OBSERVATION/HYPOTHESIS 分离，最小候选能力 M1–M8 待评审。没有 production Contract/Resolver/index/UI 或 FEFF 修复，交付后 STOP / WAIT FOR REVIEW。
 - [Phase 3A 紧凑证据](evidence/phase-3a-dataset-contract-reference-taxonomy.json)：source/target Pointers、原始类型与数值词法、完整选定目标集合、历史计数复用及 11 个外部文件的起止只读审计；非 Contract schema 或生产关系真相。
 

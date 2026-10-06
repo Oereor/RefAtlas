@@ -1,5 +1,9 @@
 # 产品定义
 
+**ARCHIVED — 历史产品定义。** 本文记录 standalone RefAtlas 在开发时期的产品 specification；该产品方向已于 **2026-10-06** 停止，不再推进其中的未来需求，当前归档决定见 [STATUS](STATUS.md)。下文的“当前”“V1”“未来”“后续阶段”属于历史产品语境。
+
+实际使用方向转向独立、更窄的 [RefAtlas-VSCode](https://github.com/Oereor/RefAtlas-VSCode)：名称精确为 `Hash` 的 numeric JSON property → `TextMap/TextMapCHS.json`，有目标时提供原生 Hover / Definition / Peek。**RefAtlas-VSCode 不是本 specification 的继续实现，也不是 “Phase 3 implemented differently”；它是一次 product reset。** 不应从本文的 Dataset Contract、graph、search 或 desktop requirements 推导 successor 的需求或 roadmap；其产品目标以自己的仓库文档为准。
+
 ## 定位
 
 RefAtlas 面向开发者、逆向研究者和配置维护者，是桌面原始配置与显式引用调查工作台。首个数据集为 TurnBasedGameData，但不是 HSR 玩家百科或 HSR-Database 重制版。

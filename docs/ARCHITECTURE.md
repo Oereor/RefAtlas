@@ -1,5 +1,9 @@
 # 已接受架构与约束
 
+**Archived standalone architecture — 2026-10-06。** 本文保留 standalone RefAtlas 开发时期的架构记录。Electron/Svelte、Main/Preload/Utility Process/Data Service 及下文实现边界继续描述旧项目；未来规划和待验证项属于历史状态，不构成归档后的工作清单。当前归档决定见 [STATUS](STATUS.md)。
+
+这些架构决定不构成 [RefAtlas-VSCode](https://github.com/Oereor/RefAtlas-VSCode) 的 architecture requirements，不进行架构迁移。Successor 是独立、轻量的产品重置，其架构以自己的仓库文档为准；归档不追溯否定 standalone 已接受的 ADR。
+
 2026-10-04 Phase 1 与 Phase 1A 已关闭，Phase 2A 已评审并关闭；用户明确确认的原始访问、搜索及 UI 本地化原则已进入 ADR-0007–0010。Windows x64 与 macOS arm64 的最小桌面链路和原生 ASAR 目录包均已验证。产品原则见 [PROJECT](PROJECT.md)，决定历史见 [ADR](decisions/README.md)，调查是历史证据而非当前架构规范。Phase 2 production implementation 已 STARTED；首片 Raw Access Foundation 经用户明确授权实现并验证，见 [实现报告](investigations/phase-2-raw-access-foundation.md)。Slice C 已建立 Source Explorer，Slice D 已接入当前 revision 的 Node Browser/Inspector；Slice E 已补齐显式 Reload 和同 Pointer recovery；active-source Find 已由 Slice G 实现，契约未实现，workspace 内容搜索仍 deferred。A/B/C/D macOS arm64 累计 gate 已 PASS WITH FIXES，shared watcher Windows 补验已在 Slice E preflight 完成，见 [累计报告](investigations/phase-2-source-browser-macos-arm64-validation.md)。Slice E 的 [Mac 定向验收](investigations/phase-2-source-browser-slice-e-macos-arm64-validation.md) 已 PASS WITH FIXES，仅 harness 修改；A/B/C/D/E generic browsing foundation 平台 gate 已关闭，Mac minimize 通过范围为台前调度关闭，开启组合保留限制。
 
 2026-10-05 产品范围更新：[ADR-0011](decisions/ADR-0011-search-scope-and-reference-first-direction.md) 已接受搜索范围与引用优先方向，部分替代 ADR-0009 的 workspace-wide content search 要求；既有 investigation evidence 保留。当前 V1 workspace discovery 仅要求 Source Locator，raw content find 限 active source，跨 source 语义导航由 Dataset Contract / Reference Resolver 承担。Slice F 已接入路径 catalog / Source Locator 的窄 raw API，生产拓扑保持 Raw Utility ownership；Find 已由 Slice G 实现，契约尚未实现，验收状态见 STATUS。

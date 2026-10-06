@@ -1,5 +1,15 @@
 # RefAtlas 开发约束
 
+## Archive guard — 2026-10-06
+
+**This repository is archived. Do not resume implementation, roadmap work, open investigations, platform validation, cleanup, or dependency modernization unless the user explicitly asks to reactivate the standalone project.**
+
+Standalone RefAtlas 已停止开发，当前真相见 [STATUS](docs/STATUS.md)。旧 OPEN / UNKNOWN / AWAITING REVIEW / NOT YET RUN 和阶段授权记录仅是历史事实，不构成新任务；不存在下一阶段。归档收尾也不授权重新激活项目。
+
+下文保留的开发规范主要用于理解历史代码及用户明确请求的极小维护，不应自动启动 active-development workflow。`../TurnBasedGameData/` 继续严格只读；`../RefAtlas-VSCode/` 在本次归档任务中只读。Git/network 安全规则继续有效，未经请求不提交、不建分支、不操作远程状态。纯文档维护采用 `docs:check` 与 `git diff --check`；不因下文历史验收规范自动执行生产、平台或 real-data gates。
+
+## 历史开发规范
+
 重大工作前阅读 `docs/README.md`、`docs/PROJECT.md`、`docs/STATUS.md`、`docs/ARCHITECTURE.md` 与相关 `docs/decisions/` ADR、`docs/investigations/` 调查。权威文档在本仓库版本管理；调查证据不是当前架构决定。
 
 影响架构、状态、路线图或性能事实的实现与相应权威文档应在同一审查变更中更新；不影响文档事实的琐碎改动无需强制改文档。性能变化更新 `docs/PERFORMANCE.md`。

@@ -1,5 +1,7 @@
 # 架构决策记录
 
+**Archive note — 2026-10-06。** Standalone RefAtlas 已归档，当前决定见 [STATUS](../STATUS.md)。ADRs remain historical records of decisions accepted for the standalone RefAtlas project. Archiving the project does not retroactively invalidate or rewrite those decisions, and they do not apply automatically to RefAtlas-VSCode. 下文已接受状态、既有替代关系与维护约定保留历史含义，不触发新工作；不逐个改为 REJECTED / SUPERSEDED。
+
 这里保存明确接受的决定，证据放在 [investigations](../investigations/README.md)。当前结论见 [ARCHITECTURE](../ARCHITECTURE.md)，产品原则见 [PROJECT](../PROJECT.md)。
 
 ## 已接受决策

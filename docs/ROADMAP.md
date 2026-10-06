@@ -1,15 +1,18 @@
-# 高层路线图
+# 高层路线图 — Archived
 
-进度见 [STATUS](STATUS.md)，阶段推进需评审，不自动执行。
+本路线图记录 standalone RefAtlas 在停止开发前的历史规划。**2026-10-06 起冻结，不再推进后续阶段，也不存在下一阶段。** 当前归档决定与完整取消清单见 [STATUS](STATUS.md)。阶段状态如下，原范围保留用于理解历史工作；历史正文中的授权、DEFER 或未来规划不代表归档后计划。
 
 | 阶段 | 高层范围 |
 | --- | --- |
-| Phase 0 | 引导、规范、勘察、性能实验、生态调查；已完成评审并关闭 |
-| Phase 1：CLOSED（Phase 1A：CLOSED） | 桌面基础、两个正式平台 gate 与工具链决定齐备，无剩余 Phase 1 子阶段 |
-| Phase 2：production implementation STARTED | Raw Access、Source Explorer、Node Browser/Inspector、source lifecycle / stale / reload；generic browsing foundation 双平台 gate 已验证（限制见 STATUS）；Source Locator IMPLEMENTED（Windows累计验收/Mac NOT YET RUN见STATUS）；active-source Find IMPLEMENTED（Windows gate/Mac NOT YET RUN 见 STATUS）；FEFF correctness work 待独立授权；Search investigation line 已关闭，全库内容搜索 deferred |
-| Phase 3 | Phase 3A Dataset Contract architecture / investigation → Dataset Contract → Forward Reference Resolution → Inspector reference preview → Incoming References → reference navigation / local graph；各阶段单独授权 |
-| Phase 4 / 后续 UX | Tabs / History / 固定/Compare / Diff、性能与体验；Global Content Search 仅在真实需求触发范围复审后重新规划 |
-| Phase 5 | 可选 Agent，作为 Query API 客户端，先读与调查 |
+| Phase 0：历史完成 / CLOSED | 引导、规范、勘察、性能实验、生态调查；已完成评审并关闭 |
+| Phase 1 / Phase 1A：历史完成 / CLOSED | 桌面基础、两个正式平台 gate 与工具链决定齐备，无剩余 Phase 1 子阶段 |
+| Phase 2：历史部分实现；剩余工作 CANCELLED / NOT PLANNED | Raw Access、Source Explorer、Node Browser/Inspector、source lifecycle / stale / reload；generic browsing foundation 双平台 gate 已验证（限制见 STATUS）；Source Locator 与 active-source Find 已实现，Windows 累计验收与 Mac F/G NOT YET RUN 保留；FEFF 未修复；Search investigation line 已关闭，历史全库内容搜索 deferred 记录保留，后续实现与验证取消 |
+| Phase 3A：INVESTIGATION COMPLETED / 历史研究保留 | Dataset Contract identity/reference taxonomy 调查完成，候选语义及 M1–M8 未成为 accepted schema；研究报告与 evidence 原样保留 |
+| Remaining Phase 3：CANCELLED / NOT PLANNED | 原规划：Dataset Contract → Forward Reference Resolution → Inspector reference preview → Incoming References → reference navigation / local graph；归档后不推进 |
+| Phase 4 / 后续 UX：CANCELLED / NOT PLANNED | 原规划：Tabs / History / 固定/Compare / Diff、性能与体验、按需求复审 Global Content Search；归档后不推进 |
+| Phase 5：CANCELLED / NOT PLANNED | 原规划：可选 Agent，作为 Query API 客户端，先读与调查；归档后不推进 |
+
+下列阶段说明保留归档前的范围与推进语境，仅为历史规划；取消状态以本表和 STATUS 为准。
 
 ## 已完成：Phase 1A — 桌面基础与架构验证
 
@@ -20,7 +23,7 @@
 - Windows 开发/构建冒烟，以及 Windows x64、macOS arm64 打包后 better-sqlite3 加载冒烟。
 - 验证构建工具集成与打包配置，建立后续测试/CI 基础；接受的栈不等于接受具体版本矩阵。
 
-## 下一阶段边界
+## 归档前的阶段推进规划（历史，已停止）
 
 Phase 1 整体已关闭，无剩余 Phase 1B 或其他子阶段。Phase 2 Raw Access Foundation、Source Browser A/B/C/D/E 已实现，双平台 generic browsing foundation gate 已验证（Mac minimize 限台前调度关闭），评审状态见 STATUS。
 

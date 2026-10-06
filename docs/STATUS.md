@@ -1,4 +1,30 @@
-# 当前状态
+# PROJECT STATUS: ARCHIVED / DEVELOPMENT DISCONTINUED
+
+归档日期：**2026-10-06（UTC+8）**。Standalone RefAtlas development is discontinued。项目保留为历史实验、架构与研究 archive，**不再推进 standalone roadmap，不存在下一阶段**。收尾记录见 [standalone archival closeout](investigations/standalone-archival-closeout.md)。
+
+研究已建立对 TurnBasedGameData 结构、raw-data fidelity、大整数 ID/hash、搜索取舍和引用语义的重要认识。产品范围重新审视后，主要真实痛点收窄为阅读 raw JSON 时理解 Hash 对应的本地化文本；VS Code 原生浏览能力加薄层 deterministic reference navigation 已足以解决这一需求，完整 standalone workbench 的基础设施成本不再合理。这是产品方向决定，不是技术、架构或性能失败。
+
+实际使用方向已转向独立的 [RefAtlas-VSCode](https://github.com/Oereor/RefAtlas-VSCode)。依据其当前 README，它仅将名称精确为 `Hash` 的 numeric JSON property 解析到 `TextMap/TextMapCHS.json`，找到目标时提供原生 Hover / Definition / Peek。它有独立、更窄的目标，不是 Phase 3 的另一种实现，不继承本仓库 specification、架构或 roadmap。
+
+## 归档后的权威状态
+
+- Phase 0–3A 历史工作、代码、ADR、调查及 evidence 保持原样；Phase 0/1/1A、Phase 2A、Raw Access、Source Browser、Search 和 ADR-0011 的研究与验收事实继续保留。
+- Phase 3A investigation 已完成，其 identity/reference taxonomy 仍是有价值的研究结果；不会继续 Dataset Contract schema/API，standalone Phase 3 development 已由产品方向决定取消。
+- Phase 2 未完成事项不再构成 active backlog。FEFF 仍未修复，Mac F/G 仍 NOT YET RUN，原 Windows runner 与 Mac minimize 等限制保持历史口径，不在本仓库继续推进。
+- Search 的历史 DEFERRED / DROP 状态保持原记录；归档后的后续工作统一为 CANCELLED / NOT PLANNED，不表示等待恢复。
+- **Historical OPEN / UNKNOWN / AWAITING REVIEW / NOT YET RUN markers in older reports do not imply planned future work.** 下文的“当前方向”“下一架构焦点”“需独立授权”等均属于归档前历史状态，以本节为当前真相。
+
+## 已取消的 standalone 后续工作 — CANCELLED / NOT PLANNED
+
+- Dataset Contract schema/API/DSL、Reference Resolver、Inspector reference preview、Incoming References、reference navigation、Local Graph。
+- FEFF production fix、Source Browser Slice F/G macOS validation，以及剩余 Phase 2 平台验证与收尾。
+- Global Content Search、S1、FTS/trigram、persistent search cache / content cache、dedicated Search Utility。
+- Tabs、History、固定/Compare、Diff。
+- Agent integration、正式 desktop release、release workflow、signing / notarization。
+
+这些工作并未因此被判定技术上不可行；它们不再由 archived standalone product 的需求所支持。归档文档收尾后 **STOP / WAIT FOR REVIEW**，不进行代码清理、bug 修复、依赖升级或 GitHub repository settings 操作。
+
+## 归档前状态快照（历史）
 
 更新日期：2026-10-06（UTC+8）。
 
@@ -119,7 +145,7 @@ Phase 2A 的 Node/浏览、parser/range 和 UI localization 原则继续有效�
 - macOS 27.0.1 / Apple M2 原生 arm64：65 项普通测试、临时 filesystem/watcher/stat 回退探针、六来源真实数据 gate、dev/built/ASAR packaged raw smoke 均通过。parser runtime dependency 与 better-sqlite3 native unpack 实际可用；无 production bug 或源码修改，详见 [Mac 验证报告](investigations/phase-2-raw-access-macos-arm64-validation.md)。
 - 未新增产品 UI、SQLite 持久化、search/trigram、Dataset Contract 或 source writes；更大 scalar/child-index 优化未做。两平台 gate 不代表所有文件系统、严格 snapshot isolation、正式性能 SLA 或整个 Phase 2 已完成。
 
-## 下一步
+## 归档前的下一步（历史规划，已停止）
 
 Slice A 已评审，Slice B localization 已获授权并实现；最终 Windows gate 与评审状态见本页顶部及 [Slice B 报告](investigations/phase-2-source-browser-slice-b-localization-foundation.md)。Slice A/B/C/D 新实现的 macOS arm64 累计原生 gate 已完成，证据见本页顶部，不借用旧 Raw Foundation 结果。
 
